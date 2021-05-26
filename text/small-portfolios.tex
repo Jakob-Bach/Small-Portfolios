@@ -1,0 +1,33 @@
+\documentclass[]{article}
+
+\title{Small Portfolios}
+\author{Markus Iser \and Jakob Bach}
+
+\usepackage[style=ieee, backend=bibtex]{biblatex}
+\usepackage{amsmath} % mathematical symbols
+\usepackage{amssymb} % mathematical symbols
+\usepackage{enumitem} % nicely formatted enumerations
+\usepackage{graphicx} % plots
+\usepackage{subcaption} % figures with multiple sub-figures and sub-captions
+\usepackage{hyperref} % links and URLs
+\addbibresource{references.bib}
+
+\begin{document}
+
+\maketitle
+
+\input{sections/abstract.tex}
+
+\input{sections/introduction.tex}
+\input{sections/related-work.tex}
+\input{sections/approach.tex}
+\input{sections/experimental-design.tex}
+\input{sections/evaluation.tex}
+\input{sections/conclusion.tex}
+
+\printbibliography
+
+\appendix
+\input{sections/appendix.tex}
+
+\end{document}
