@@ -98,3 +98,40 @@ $y_s$ denotes whether a solver is in the portfolio.
 Besides the cardinality constraint on the number of solvers, there are two additional constraints.
 First, exactly one solver is chosen for each instance.
 Second, a solver can only be chosen for an instance if it is part of the portfolio.
+
+\subsubsection{Beam Search}
+
+Beam search is a greedy algorithm that finds portfolios in an iterative manner.
+Algorithm~\ref{al:beam-search} describes the approach:
+
+\begin{algorithm}[htb]
+	\KwIn{Penalized runtimes $r_T(s,i)$, portfolio size $k$, beam width $w$}
+	\KwOut{Portfolio $P$ with $|P|=k$}
+	$\mathbb{P}^0$ $\leftarrow$ \{$\emptyset$\}\tcp*[r]{portfolios of size 0}
+	\For{$i \leftarrow 1$ \KwTo $k$}{
+		$\mathbb{P}^i \leftarrow \emptyset$\tcp*[r]{portfolios of size $i$}
+		\ForEach{$P \in \mathbb{P}^{i-1}$}{
+			\ForEach{$s \in S$}{
+				\If{$s \notin P$}{
+					$\mathbb{P}^i \leftarrow \mathbb{P}^i \cup \{ P \cup \{ s \} \}$\tcp*[r]{add new portfolio}
+				}
+			}
+		}
+		$\mathbb{P}^i \leftarrow$ sort($\mathbb{P}_i$, $r_T$)\tcp*[r]{sort portfolios by costs}
+		$\mathbb{P}^i \leftarrow \{\mathbb{P}_j^i \in \mathbb{P}^i \mid j \leq w \}$\tcp*[r]{best $w$ portfolios of size $i$}
+	}
+	\Return $\underset{P \in \mathbb{P}^k}{\arg\min}~c_{T}(P)$\;
+	\caption{Beam Search}
+	\label{al:beam-search}
+\end{algorithm}
+
+The algorithm starts with an empty portfolio.
+In each iteration, the algorithm creates all combinations of portfolios from the previous iteration and individual solvers which are not part of these portfolios.
+I.e., the algorithm expands existing portfolios by adding single solvers.
+Before going to the next iteration, only the $w$ portfolios with the lowest cost are retained.
+The beam-width $w$ is an input parameter.
+For $w=1$, only one portfolio remains at the end of each iteration.
+For maximal $w$, all portfolios remain.
+
+The algorithm is a heuristic that does not necessarily find the optimal solution to the \ref{eq:small-portfolio-problem}.
+In return, its only needs to check $O(n \cdot w)$ portfolios per iteration, yielding a runtime advantage compared to exhaustive search.
