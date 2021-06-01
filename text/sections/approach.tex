@@ -56,3 +56,13 @@ This serves as an upper bound for actual portfolio costs and it the \emph{virtua
 
 The small portfolio-problem is to find a portfolio with minimum costs that contains at most $k$ solvers.
 For each solver out of $S$, one needs to decide whether it becomes part of the portfolio $P$ or not.
+
+\subsection{Solution Approaches}
+
+\subsubsection{Exhaustive Search}
+
+The simplest way to solve the small-portfolio problem is by exhaustively searching all portfolios with at most $k$ solvers.
+Due to the use of a VBS, adding a solver to the portfolio cannot increase costs.
+Thus, it is sufficient to search over all portfolios with exactly $k$ solvers.
+Still, there are $\binom{n}{k}$ possible portfolios to search.
+This can become infeasible, given sufficiently large $n$ and $k \gg 1$ as well as $k \ll n$.
