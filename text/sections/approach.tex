@@ -1,2 +1,58 @@
 \section{Approach}
 \label{sec:approach}
+
+First, we introduce the small-portfolio problem.
+Next, we present multiple approaches to solve it.
+
+\subsection{Small-Portfolio Problem}
+
+\paragraph{Given Data}
+
+\begin{align*}
+	S &= \{s_1, \dots, s_n\} \tag*{Solvers}\\
+	I &= \{i_1, \dots, i_m\} \tag*{Instances}\\
+	r &: S \times I \rightarrow \mathbb{N} \cup \{\bot\} \tag*{Runtimes (censored)}\\
+	T &\in \mathbb{N} \tag*{Timeout}\\
+	r_T(s,i) &:= \begin{cases}
+		2*T & \text{if }r(s,i) = \bot\\
+		r(s,i) & \text{otherwise}
+	\end{cases} \tag*{Penalized Runtimes}
+\end{align*}
+
+Let $S$ be a set of solvers and $I$ be a set of SAT instances.
+Let $r(s,i)$ be the runtimes of the solvers on the instances.
+If a solver encounters an error, e.g., runs out of memory, or takes longer than time $T$ on an instance, the runtime is set to $\bot$ first.
+Next, we penalize these missing runtimes with the double timeout, i.e., we use a PAR2 score.
+We use these penalized runtimes $r_T(s,i)$ to score the solvers.
+
+\paragraph{Target Function}
+
+\begin{align*}
+	c_{T} &: 2^S \rightarrow \mathbb{N}\\
+	c_{T}(P) &:= \begin{cases}
+		|I|*2*T & \text{if }P=\emptyset\\
+		\sum_{i \in I}{\min\{r_T(s,i) \mid s \in P\}} & \text{otherwise}
+	\end{cases} \tag*{Portfolio Cost}
+\end{align*}
+
+The cost of a solver equals its penalized runtime, summed over all instances.
+A portfolio $P \subseteq S$ is a set of solvers.
+To compute the cost of a portfolio $c_{T}(P)$, we assume to have an oracle that always chooses the fastest solver for each instance.
+This is the \emph{virtual-best solver} (VBS).
+
+In reality, one may train a prediction model that recommends a solver for each instance.
+Such a prediction model uses features of the SAT instances to make its recommendations.
+Only if the prediction model always recommends the fastest solver out of $P$ for each instance, the portfolio has the same costs as the VBS for $P$.
+Else, the costs are higher, i.e., $c_{T}(P)$ is a lower bound for the actual portfolio costs.
+In the worst case, the prediction model always recommends the slowest solver out of $P$ for each instance.
+This serves as an upper bound for actual portfolio costs and it the \emph{virtual worst solver} (VWS).
+
+\paragraph{Optimization Problem}
+
+\begin{align*}
+	\min_P \quad & c_{T}(P)\\
+	s.t. \quad & |P| \leq k
+\end{align*}
+
+The small portfolio-problem is to find a portfolio with minimum costs that contains at most $k$ solvers.
+For each solver out of $S$, one needs to decide whether it becomes part of the portfolio $P$ or not.
