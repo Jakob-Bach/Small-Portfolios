@@ -1,9 +1,6 @@
-\documentclass[]{article}
+\documentclass[conference]{IEEEtran}
 
-\title{Small Portfolios}
-\author{Markus Iser \and Jakob Bach}
-
-\usepackage[style=ieee, backend=bibtex]{biblatex}
+%\usepackage[style=ieee, backend=bibtex]{biblatex}
 \usepackage[ruled,linesnumbered,vlined]{algorithm2e} % pseudo-code
 \usepackage{amsmath} % mathematical symbols
 \usepackage{amssymb} % mathematical symbols
@@ -11,13 +8,34 @@
 \usepackage{graphicx} % plots
 \usepackage{subcaption} % figures with multiple sub-figures and sub-captions
 \usepackage{hyperref} % links and URLs
-\addbibresource{references.bib}
+%\addbibresource{references.bib}
 
 \begin{document}
 
+\title{Creating Optimal Small Portfolios}
+
+\author{\IEEEauthorblockN{Jakob Bach}
+\IEEEauthorblockA{\textit{KIT Department of Informatics} \\
+\textit{Karlsruhe Institute of Technology}\\
+Karlsruhe, Germany \\
+jakob.bach@kit.edu}
+\and
+\IEEEauthorblockN{Markus Iser}
+\IEEEauthorblockA{\textit{KIT Department of Informatics} \\
+\textit{Karlsruhe Institute of Technology}\\
+Karlsruhe, Germany \\
+jakob.bach@kit.edu}
+}
+
 \maketitle
 
-\input{sections/abstract.tex}
+\begin{abstract}
+
+\end{abstract}
+
+\begin{IEEEkeywords}
+Propositional Satisfiability, Solver Portfolios, Runtime Prediction Models
+\end{IEEEkeywords}
 
 \input{sections/introduction.tex}
 \input{sections/related-work.tex}
@@ -26,7 +44,8 @@
 \input{sections/evaluation.tex}
 \input{sections/conclusion.tex}
 
-\printbibliography
+\bibliographystyle{IEEEtran}
+\bibliography{IEEEabrv,references}
 
 \appendix
 \input{sections/appendix.tex}
