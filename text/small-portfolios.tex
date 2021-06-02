@@ -10,6 +10,8 @@
 \usepackage{hyperref} % links and URLs
 %\addbibresource{references.bib}
 
+\newtheorem{definition}{Definition}
+
 \begin{document}
 
 \title{Analysis of Optimal Small Portfolios}
@@ -50,6 +52,7 @@ Section~\ref{sec:approach} introduces the small-portfolio problem and multiple s
 Section~\ref{sec:experimental-design} describes our experimental design.
 Section~\ref{sec:evaluation} presents experimental results.
 Section~\ref{sec:conclusion} concludes.
+
 \section{Related Work}
 \label{sec:related-work}
 
@@ -190,6 +193,87 @@ For maximal $w$, all portfolios remain.
 
 The algorithm is a heuristic that does not necessarily find the optimal solution to the \ref{eq:small-portfolio-problem}.
 In return, its only needs to check $O(n \cdot w)$ portfolios per iteration, yielding a runtime advantage compared to exhaustive search.
+Additionally, we can provide a bound for the costs of a portfolio found by beam search with $w=1$.
+To this end, we use a result from \cite{nemhauser1978analysis} for greedy algorithms on non-negative monotone submodular set functions.
+In the following, we show that a slightly transformed version of the objective function in the \ref{eq:small-portfolio-problem} fulfills the requirements for the bound.
+We start with the following definitions~\cite{krause2014submodular}:
+
+\begin{definition}[Submodular set function]
+	A function $f : 2^V \rightarrow \mathbb{R}$ is submodular if for every $A, B \subseteq V$, $f(A \cap B) + f(A \cup B) \leq f(A) + f(B)$.
+	\label{def:submodular}
+\end{definition}
+
+\begin{definition}[Monotone set function]
+	A function $f : 2^V \rightarrow \mathbb{R}$ is monotone if for every $A \subseteq B \subseteq V$, $f(A) \leq f(B)$.
+	\label{sef:monotone}
+\end{definition}
+
+Our cost function $c_{T}: 2^S \rightarrow \mathbb{N}$ is a set function, but it is non-increasing instead of non-decreasing (monotone).
+Thus, we define the following transformed version:
+
+\begin{align*}
+	u_{T} &: 2^S \rightarrow \mathbb{N}\\
+	u_{T}(P) &:= \begin{cases}
+		0 & \text{if }P=\emptyset\\
+		c_W - c_{T}(P) & \text{otherwise}
+	\end{cases} \tag*{Portfolio Utility}
+\end{align*}
+
+with the cost of the virtual-worst solver defined as:
+
+\begin{align*}
+	c_W := \sum_{i \in I}{\max_{s \in S}{r_T(s,i)}} \tag*{Virtual Worst Solver}
+\end{align*}
+
+Our definition of portfolio utility is non-negative, as $c_{T}(P) \leq c_W$.
+Additionally, $u_{T}(P)$ is monotone.
+In general, for $A \subseteq B \subseteq \mathbb{R}$, it holds that $\min(A) \geq \min(B)$.
+For $A \subseteq B \subseteq S$, we obtain $\sum_{i \in I}{\min_{s \in A}{r_T(s,i)}} \geq \sum_{i \in I}{\min_{s \in B}{r_T(s,i)}}$.
+Thus, $c_{T}(A) \geq c_{T}(B)$ and therefore $u_{T}(A) \leq u_{T}(B)$. \hfill$\square$
+
+Next, we show that $u_{T}(P)$ is submodular.
+Let $A,B \subseteq S$, $A,B \neq \emptyset$ be two portfolios.
+For our proof, we split the set of instances $I$ in two subsets.
+$I_A := \{i \in I \mid \min_{s \in A}{r_T(s,i)} < \min_{s \in B}{r_T(s,i)} \}$ contains the instances where portfolio A is faster.
+$I_B := I \setminus I_A$ contains the remaining instances.
+We now show that Definition~\ref{def:submodular} holds:
+
+%TODO Make width narrower and define multi-line format in a way that permits page breaks
+\begin{align*}
+	& u_{T}(A) + u_{T}(B) - u_{T}(A \cap B) - u_{T}(A \cup B)\\
+	= & c_W - c_{T}(A) + c_W - c_{T}(B) - c_W + c_{T}(A \cap B) - c_W + c_{T}(A \cup B)\\
+	= & - \sum_{i \in I}{\min_{s \in A}{r_T(s,i)}} - \sum_{i \in I}{\min_{s \in B}{r_T(s,i)}} + \sum_{i \in I}{\min_{s \in A \cap B}{r_T(s,i)}} + \sum_{i \in I}{\min_{s \in A \cup B}{r_T(s,i)}}\\
+	= & - \sum_{i \in I_A}{\min_{s \in A}{r_T(s,i)}} - \sum_{i \in I_B}{\min_{s \in A}{r_T(s,i)}} - \sum_{i \in I_A}{\min_{s \in B}{r_T(s,i)}} - \sum_{i \in I_B}{\min_{s \in B}{r_T(s,i)}}\\
+	& + \sum_{i \in I_A}{\min_{s \in A \cap B}{r_T(s,i)}} + \sum_{i \in I_B}{\min_{s \in A \cap B}{r_T(s,i)}} + \sum_{i \in I_A}{\min_{s \in A \cup B}{r_T(s,i)}} + \sum_{i \in I_B}{\min_{s \in A \cup B}{r_T(s,i)}}\\
+	= & - \sum_{i \in I_B}{\min_{s \in A}{r_T(s,i)}} - \sum_{i \in I_A}{\min_{s \in B}{r_T(s,i)}} + \sum_{i \in I_A}{\min_{s \in A \cap B}{r_T(s,i)}} + \sum_{i \in I_B}{\min_{s \in A \cap B}{r_T(s,i)}}\\
+	\geq & 0 \Leftrightarrow u_{T}(A \cap B) + u_{T}(A \cup B) \leq u_{T}(A) + u_{T}(B)
+\end{align*}\hfill$\square$
+
+We made use of the fact that $\sum_{i \in I_A}{\min_{s \in A}{r_T(s,i)}} = \sum_{i \in I_A}{\min_{s \in A \cup B}{r_T(s,i)}}$ and $\sum_{i \in I_B}{\min_{s \in B}{r_T(s,i)}} = \sum_{i \in I_B}{\min_{s \in A \cup B}{r_T(s,i)}}$.
+Also, $\sum_{i \in I_A}{\min_{s \in A \cap B}{r_T(s,i)}} \geq \sum_{i \in I_A}{\min_{s \in B}{r_T(s,i)}}$ and $\sum_{i \in I_B}{\min_{s \in A \cap B}{r_T(s,i)}} \geq \sum_{i \in I_B}{\min_{s \in A}{r_T(s,i)}}$, since $A \subseteq A \cap B$ and $B \subseteq A \cap B$.
+Note the we stated $A,B \neq \emptyset$.
+However, in these cases, the inequality simply holds with equality.
+E.g., let $B = \emptyset$:
+
+\begin{align*}
+	& u_{T}(A) + u_{T}(B) - u_{T}(A \cap B) - u_{T}(A \cup B)\\
+	= & u_{T}(A) + u_{T}(\emptyset) - u_{T}(\emptyset) - u_{T}(A)\\
+	= & 0
+\end{align*}
+
+Having shown that $u_{T}(P)$ is non-negative, monotone and submodular, we can give the following bound on a beam-search result $P_{beam}^k$ with $w=1$~\cite{nemhauser1978analysis, krause2014submodular}:
+
+\begin{equation}
+	u_{T}(P_{beam}^k) \geq (1 - \frac{1}{e}) * \max_{|P| \leq k}{u_{T}(P)}
+\end{equation}
+
+I.e., there is a lower bound on the utility of a portfolio found by beam search.
+With a minor transformation, this is an upper bound on the cost of a portfolio found by beam search:
+
+\begin{equation}
+	c_{T}(P_{beam}^k) - c_W \leq (1 - \frac{1}{e}) * (\min_{|P| \leq k}{c_{T}(P)} - c_W)
+\end{equation}
+
 \section{Experimental Design}
 \label{sec:experimental-design}
 
@@ -199,8 +283,10 @@ We implement our experimental design in Python and make our code available onlin
 To create the dataset of solver runtimes, we use the package~\emph{gbd-tools}~\cite{iser2020collaborative}.
 As prediction models, we use decision trees from the package \emph{scikit-learn}~\cite{scikit-learn}.
 To solve the small portfolio-problem exactly, we use the package \emph{mip}~\cite{python-mip}.
+
 \section{Evaluation}
 \label{sec:evaluation}
+
 \section{Conclusions and Future Work}
 \label{sec:conclusion}
 
