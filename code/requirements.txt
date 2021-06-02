@@ -1,6 +1,9 @@
+cffi==1.14.5
 joblib==1.0.1
+mip==1.13.0
 numpy==1.20.3
 pandas==1.2.4
+pycparser==2.20
 python-dateutil==2.8.1
 pytz==2021.1
 scikit-learn==0.24.2
