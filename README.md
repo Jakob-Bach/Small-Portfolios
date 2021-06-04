@@ -84,5 +84,12 @@ After setting up and activating an environment, you are ready to run the code.
 From the directory `code`, run
 
 ```bash
+python -m prepare_dataset
+```
 
+to download and pre-process the datasets.
+Next, start the pipeline with
+
+```bash
+python -m run_experiments
 ```
