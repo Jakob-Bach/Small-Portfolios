@@ -64,7 +64,8 @@ Next, we present multiple approaches to solve it.
 
 \subsection{Small-Portfolio Problem}
 
-\paragraph{Given Data}
+\subsubsection{Given Data}
+\label{sec:approach:problem:data}
 
 \begin{align*}
 	S &= \{s_1, \dots, s_n\} \tag*{Solvers}\\
@@ -83,7 +84,8 @@ If a solver encounters an error, e.g., runs out of memory, or takes longer than 
 Next, we penalize these missing runtimes with the double timeout, i.e., we use a PAR2 score.
 We use these penalized runtimes $r_T(s,i)$ to score the solvers.
 
-\paragraph{Target Function}
+\subsubsection{Target Function}
+\label{sec:approach:problem:target}
 
 \begin{align*}
 	c_{T} &: 2^S \rightarrow \mathbb{N}\\
@@ -105,7 +107,7 @@ Else, the costs are higher, i.e., $c_{T}(P)$ is a lower bound for the actual por
 In the worst case, the prediction model always recommends the slowest solver out of $P$ for each instance.
 This serves as an upper bound for actual portfolio costs and it the \emph{virtual worst solver} (VWS).
 
-\paragraph{Optimization Problem}
+\subsubsection{Optimization Problem}
 
 \begin{equation}
 	\label{eq:small-portfolio-problem}
@@ -120,6 +122,7 @@ The \ref{eq:small-portfolio-problem} is to find a portfolio with minimum costs t
 For each solver out of $S$, one needs to decide whether it becomes part of the portfolio $P$ or not.
 
 \subsection{Solution Approaches}
+\label{sec:approach:solution}
 
 \subsubsection{Exhaustive Search}
 
@@ -276,6 +279,77 @@ With a minor transformation, this is an upper bound on the cost of a portfolio f
 
 \section{Experimental Design}
 \label{sec:experimental-design}
+
+\subsection{Optimization Approaches}
+
+We analyze the \ref{eq:small-portfolio-problem} for two definitions of runtime in the objective function:
+
+\begin{itemize}
+	\item \emph{PAR2}:
+	The penalized runtimes as described in Section~\ref{sec:approach:problem:data}, with a penalty of $2*T$ for runtimes over the timeout $T$:
+	\begin{align*}
+		r_T(s,i) &:= \begin{cases}
+			2*T & \text{if }r(s,i) = \bot\\
+			r(s,i) & \text{otherwise}
+		\end{cases}
+	\end{align*}
+	\item \emph{Solved}:
+	A heavily discretized version of the runtimes, only stating whether a solver did not finish within $T$.
+	\begin{align*}
+		r_T(s,i) &:= \begin{cases}
+			1 & \text{if }r(s,i) = \bot\\
+			0 & \text{otherwise}
+		\end{cases}
+	\end{align*}
+\end{itemize}
+
+We employ the three solution approaches from Section~\ref{sec:approach:solution} to search for portfolios:
+%TODO Use actual parameter values
+
+\begin{itemize}
+	\item \emph{Exhaustive}:
+	We use this approach to find and compare all portfolios of a given size $k$.
+	However, to keep the runtime under control, we limit our experiments to $k \in \{1, \dots, 5\}$.
+	\item \emph{Integer Problem}:
+	We use this approach to exactly determine the best portfolio for each $k \in \{1, \dots, |S|\}$.
+	\item \emph{Beam Search}:
+	We use this approach to search for good portfolios heuristically.
+	We evaluate all $k \in \{1, \dots, |S|\}$ and also vary the beam width $w \in \{1, 2, \dots, 10, 20, \dots, 100\}$.
+\end{itemize}
+
+\subsection{Prediction Approaches}
+
+All the solution approaches from the previous section use an oracle, the VBS, to choose a solver from the portfolio for an instance.
+We also analyze the more realistic scenario of using a prediction model to recommend a solver.
+To this end, we take the portfolios found by the solution approaches and train a decision tree~\cite{breiman1984classification}.
+For each instance, the prediction target is the best solver out of the portfolio.
+To analyze how complex the prediction model needs to be, we vary the depth of the tree from one to ten systematically. %TODO use actual number
+We evaluate prediction performance in two ways:
+
+\begin{itemize}
+	\item \emph{Objective value}:
+	We take the solvers recommended by the prediction model and sum up their costs, i.e., penalized runtimes or whether the instance was solved.
+	The resulting objective value cannot be better than for the VBS, but also cannot be worse than for the VWS; see Section~\ref{sec:approach:problem:target}.
+	\item \emph{MCC}:
+	We evaluate the predictions directly with Matthews correlation coefficient~\cite{matthews1975comparison, gorodkin2004comparing}.
+	This does not take into account how fast the recommended solvers actually are, but only if the fastest solver is recommended or not.
+	We use MCC instead of simpler metrics like accuracy, as the class labels might be imbalanced.
+	I.e., one solver might be the fastest for most of the instances, and always predicting that solver would already yield a high accuracy.
+	MCC has a range of $[-1,1]$, being zero for both random guessing and always guessing the same solver.
+	To test how well predictions generalize, we compute MCC in 10-fold stratified cross-validation.
+\end{itemize}
+
+\subsection{Dataset}
+
+We obtain a dataset from the \emph{Global Benchmark Database}~\cite{iser2020collaborative}.
+The dataset has $|S| = 48$ solvers and $|I| = 316$ instances.
+We take the instances from the main track of the SAT Competition 2020\footnote{\url{https://satcompetition.github.io/2020/}}~\cite{balyo2020proceedings}, but discard the instances where no solver finished in time.
+For predictions, we make use of 143 features to characterize instances:
+138 from SATzilla~\cite{xu2008satzilla, xu2012satzilla2012} and five from a gate-recognition approach~\cite{iser2020recognition}.
+We replace missing values of features with their training-set mean.
+%TODO @Markus from which SATzilla version exactly?
+%TODO @Markus vielleicht hast du noch eine bessere Referenz, ich habe erst mal deine Diss genommen
+
 
 \paragraph{Implementation}
 
