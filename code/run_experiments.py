@@ -59,6 +59,7 @@ def run_experiments(data_dir: pathlib.Path, results_dir: pathlib.Path, n_process
     if any(results_dir.iterdir()):
         print('Results directory is not empty. Files might be overwritten, but not deleted.')
     runtimes = pd.read_csv(data_dir / 'runtimes.csv').drop(columns='hash')
+    runtimes = runtimes[(runtimes != prepare_dataset.PENALTY).any(axis='columns')]  # drop unsolved instances
     solved_states = (runtimes == prepare_dataset.PENALTY).astype(int)  # discretized runtimes
     settings_list = define_experimental_design(problems={'PAR2': runtimes, 'solved': solved_states})
     progress_bar = tqdm.tqdm(total=len(settings_list))
