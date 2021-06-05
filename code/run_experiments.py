@@ -31,6 +31,8 @@ def define_experimental_design(problems: Dict[str, pd.DataFrame]) -> List[Dict[s
         for w in list(range(1, 11)) + list(range(20, 101, 10)):
             results.append({'problem': problem_name, 'func': 'beam_search',
                             'args': {'runtimes': problem_data, 'k': 48, 'w': w}})
+    for i, result in enumerate(results):
+        result['settings_id'] = i
     return results
 
 
@@ -52,6 +54,7 @@ def run_search(settings: Dict[str, Any], features: pd.DataFrame) -> pd.DataFrame
     end_time = time.process_time()
     results = pd.concat([results, pd.DataFrame(prediction_results)], axis='columns')
     results['prediction_time'] = end_time - start_time
+    results['settings_id'] = settings['settings_id']
     results['problem'] = settings['problem']
     results['algorithm'] = settings['func']  # add algo's name and params to result
     for key, value in settings['args'].items():
