@@ -12,34 +12,40 @@ from typing import Any, Dict, List, Optional
 import pandas as pd
 import tqdm
 
+import prepare_dataset
 import search
 
 
 # Create a list of search algorithms and their parametrization.
-def define_experimental_design() -> List[Dict[str, Any]]:
+# "problems" should be a dict of problem names and the corresponding datasets (runtimes).
+def define_experimental_design(problems: Dict[str, pd.DataFrame]) -> List[Dict[str, Any]]:
     results = []
-    for k in range(1, 6):
-        results.append({'func': 'exhaustive_search', 'args': {'k': k}})
-    for k in range(1, 49):
-        results.append({'func': 'mip_search', 'args': {'k': k}})
-    for w in list(range(1, 11)) + list(range(20, 101, 10)):
-        results.append({'func': 'beam_search', 'args': {'k': 48, 'w': w}})
+    for problem_name, problem_data in problems.items():
+        for k in range(1, 6):
+            results.append({'problem': problem_name, 'func': 'exhaustive_search',
+                            'args': {'runtimes': problem_data, 'k': k}})
+        for k in range(1, 49):
+            results.append({'problem': problem_name, 'func': 'mip_search',
+                            'args': {'runtimes': problem_data, 'k': k}})
+        for w in list(range(1, 11)) + list(range(20, 101, 10)):
+            results.append({'problem': problem_name, 'func': 'beam_search',
+                            'args': {'runtimes': problem_data, 'k': 48, 'w': w}})
     return results
 
 
 # Run one portfolio search, wrapped in some other stuff to improve results structure.
-def run_search(runtimes: pd.DataFrame, settings: Dict[str, Any]) -> pd.DataFrame:
+def run_search(settings: Dict[str, Any]) -> pd.DataFrame:
     search_func = getattr(search, settings['func'])
-    search_args = settings['args'].copy()  # copy since we don't want to add runtimes to result later
-    search_args['runtimes'] = runtimes
     start_time = time.process_time()
-    results = search_func(**search_args)  # returns list of tuples
+    results = search_func(**settings['args'])  # returns list of tuples
     end_time = time.process_time()
     results = pd.DataFrame(results, columns=['solvers', 'objective_value'])
     results['time'] = end_time - start_time
+    results['problem'] = settings['problem']
     results['algorithm'] = settings['func']  # add algo's name and params to result
     for key, value in settings['args'].items():
-        results[key] = value
+        if key != 'runtimes':
+            results[key] = value
     return results
 
 
@@ -53,10 +59,11 @@ def run_experiments(data_dir: pathlib.Path, results_dir: pathlib.Path, n_process
     if any(results_dir.iterdir()):
         print('Results directory is not empty. Files might be overwritten, but not deleted.')
     runtimes = pd.read_csv(data_dir / 'runtimes.csv').drop(columns='hash')
-    settings_list = define_experimental_design()
+    solved_states = (runtimes == prepare_dataset.PENALTY).astype(int)  # discretized runtimes
+    settings_list = define_experimental_design(problems={'PAR2': runtimes, 'solved': solved_states})
     progress_bar = tqdm.tqdm(total=len(settings_list))
     process_pool = multiprocessing.Pool(processes=n_processes)
-    results = [process_pool.apply_async(run_search, kwds={'runtimes': runtimes, 'settings': settings},
+    results = [process_pool.apply_async(run_search, kwds={'settings': settings},
                                         callback=lambda x: progress_bar.update())
                for settings in settings_list]
     process_pool.close()
