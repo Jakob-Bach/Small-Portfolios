@@ -12,6 +12,7 @@ from typing import Any, Dict, List, Optional
 import pandas as pd
 import tqdm
 
+import prediction
 import prepare_dataset
 import search
 
@@ -34,13 +35,23 @@ def define_experimental_design(problems: Dict[str, pd.DataFrame]) -> List[Dict[s
 
 
 # Run one portfolio search, wrapped in some other stuff to improve results structure.
-def run_search(settings: Dict[str, Any]) -> pd.DataFrame:
+# "settings" should contain the data for the portfolio search itself (search algorithm,
+# parametrization, solver runtimes). "features" should contain instance features, which are
+# relevant for model-based portfolios (but don't play a role in the optimization).
+def run_search(settings: Dict[str, Any], features: pd.DataFrame) -> pd.DataFrame:
     search_func = getattr(search, settings['func'])
     start_time = time.process_time()
     results = search_func(**settings['args'])  # returns list of tuples
     end_time = time.process_time()
     results = pd.DataFrame(results, columns=['solvers', 'objective_value'])
-    results['time'] = end_time - start_time
+    results['search_time'] = end_time - start_time
+    start_time = time.process_time()
+    prediction_results = [prediction.predict_and_evaluate(runtimes=settings['args']['runtimes'][portfolio],
+                                                          features=features)
+                          for portfolio in results['solvers']]
+    end_time = time.process_time()
+    results = pd.concat([results, pd.DataFrame(prediction_results)], axis='columns')
+    results['prediction_time'] = end_time - start_time
     results['problem'] = settings['problem']
     results['algorithm'] = settings['func']  # add algo's name and params to result
     for key, value in settings['args'].items():
@@ -59,12 +70,15 @@ def run_experiments(data_dir: pathlib.Path, results_dir: pathlib.Path, n_process
     if any(results_dir.iterdir()):
         print('Results directory is not empty. Files might be overwritten, but not deleted.')
     runtimes = pd.read_csv(data_dir / 'runtimes.csv').drop(columns='hash')
-    runtimes = runtimes[(runtimes != prepare_dataset.PENALTY).any(axis='columns')]  # drop unsolved instances
+    features = pd.read_csv(data_dir / 'features.csv').drop(columns='hash')
+    keep_instance = (runtimes != prepare_dataset.PENALTY).any(axis='columns')
+    runtimes = runtimes[keep_instance]  # drop instances not solved by any solver in time
+    features = features[keep_instance]
     solved_states = (runtimes == prepare_dataset.PENALTY).astype(int)  # discretized runtimes
     settings_list = define_experimental_design(problems={'PAR2': runtimes, 'solved': solved_states})
     progress_bar = tqdm.tqdm(total=len(settings_list))
     process_pool = multiprocessing.Pool(processes=n_processes)
-    results = [process_pool.apply_async(run_search, kwds={'settings': settings},
+    results = [process_pool.apply_async(run_search, kwds={'settings': settings, 'features': features},
                                         callback=lambda x: progress_bar.update())
                for settings in settings_list]
     process_pool.close()
