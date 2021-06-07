@@ -58,12 +58,14 @@ def run_search(settings: Dict[str, Any]) -> pd.DataFrame:
 
 
 # Evaluate predictions for "runtimes" of one portfolio, using instance "features" for training.
-# Return evaluation metrics.
-def run_prediction(runtimes: pd.DataFrame, features: pd.DataFrame) -> Dict[str, float]:
+# Return evaluation metrics, adding "ids" as additional columns to identify the portfolio.
+def run_prediction(runtimes: pd.DataFrame, features: pd.DataFrame, ids: Dict[str, int]) -> pd.DataFrame:
     start_time = time.process_time()
     results = prediction.predict_and_evaluate(runtimes=runtimes, features=features)
     end_time = time.process_time()
     results['prediction_time'] = end_time - start_time
+    for id_key, id_value in ids.items():
+        results[id_key] = id_value
     return results
 
 
@@ -96,14 +98,14 @@ def run_experiments(data_dir: pathlib.Path, results_dir: pathlib.Path, n_process
     print('Running prediction ...')
     progress_bar = tqdm.tqdm(total=len(search_results))
     prediction_results = [process_pool.apply_async(run_prediction, kwds={
-        'runtimes': problems[search_results['problem'].iloc[i]][search_results['solvers'].iloc[i]],
-        'features': features}, callback=lambda x: progress_bar.update())
-        for i in range(len(search_results))]
+        'runtimes': problems[search_result['problem']][search_result['solvers']],
+        'features': features, 'ids': search_result[['settings_id', 'solution_id']]},
+        callback=lambda x: progress_bar.update())
+        for _, search_result in search_results.iterrows()]
     process_pool.close()
     process_pool.join()
     progress_bar.close()
-    prediction_results = pd.DataFrame([x.get() for x in prediction_results])
-    prediction_results[['settings_id', 'solution_id']] = search_results[['settings_id', 'solution_id']]
+    prediction_results = pd.concat([x.get() for x in prediction_results])
     prediction_results.to_csv(results_dir / 'prediction_results.csv', index=False)
 
 
