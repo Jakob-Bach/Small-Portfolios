@@ -9,6 +9,7 @@ import pathlib
 import time
 from typing import Any, Dict, List, Optional
 
+import numpy as np
 import pandas as pd
 import tqdm
 
@@ -37,29 +38,32 @@ def define_experimental_design(problems: Dict[str, pd.DataFrame]) -> List[Dict[s
 
 
 # Run one portfolio search, wrapped in some other stuff to improve results structure.
-# "settings" should contain the data for the portfolio search itself (search algorithm,
-# parametrization, solver runtimes). "features" should contain instance features, which are
-# relevant for model-based portfolios (but don't play a role in the optimization).
-def run_search(settings: Dict[str, Any], features: pd.DataFrame) -> pd.DataFrame:
+# "settings" should contain the data for the search (algorithm, parametrization, solver runtimes).
+# Return evaluation portfolios and metrics.
+def run_search(settings: Dict[str, Any]) -> pd.DataFrame:
     search_func = getattr(search, settings['func'])
     start_time = time.process_time()
     results = search_func(**settings['args'])  # returns list of tuples
     end_time = time.process_time()
     results = pd.DataFrame(results, columns=['solvers', 'objective_value'])
     results['search_time'] = end_time - start_time
-    start_time = time.process_time()
-    prediction_results = [prediction.predict_and_evaluate(runtimes=settings['args']['runtimes'][portfolio],
-                                                          features=features)
-                          for portfolio in results['solvers']]
-    end_time = time.process_time()
-    results = pd.concat([results, pd.DataFrame(prediction_results)], axis='columns')
-    results['prediction_time'] = end_time - start_time
     results['settings_id'] = settings['settings_id']
+    results['solution_id'] = np.arange(len(results))  # there might be multiple results per search
     results['problem'] = settings['problem']
     results['algorithm'] = settings['func']  # add algo's name and params to result
     for key, value in settings['args'].items():
         if key != 'runtimes':
             results[key] = value
+    return results
+
+
+# Evaluate predictions for "runtimes" of one portfolio, using instance "features" for training.
+# Return evaluation metrics.
+def run_prediction(runtimes: pd.DataFrame, features: pd.DataFrame) -> Dict[str, float]:
+    start_time = time.process_time()
+    results = prediction.predict_and_evaluate(runtimes=runtimes, features=features)
+    end_time = time.process_time()
+    results['prediction_time'] = end_time - start_time
     return results
 
 
@@ -78,17 +82,29 @@ def run_experiments(data_dir: pathlib.Path, results_dir: pathlib.Path, n_process
     runtimes = runtimes[keep_instance]  # drop instances not solved by any solver in time
     features = features[keep_instance]
     solved_states = (runtimes == prepare_dataset.PENALTY).astype(int)  # discretized runtimes
-    settings_list = define_experimental_design(problems={'PAR2': runtimes, 'solved': solved_states})
+    problems = {'PAR2': runtimes, 'solved': solved_states}
+    settings_list = define_experimental_design(problems=problems)
+    print('Running search ...')
     progress_bar = tqdm.tqdm(total=len(settings_list))
     process_pool = multiprocessing.Pool(processes=n_processes)
-    results = [process_pool.apply_async(run_search, kwds={'settings': settings, 'features': features},
-                                        callback=lambda x: progress_bar.update())
-               for settings in settings_list]
+    search_results = [process_pool.apply_async(run_search, kwds={'settings': settings},
+                                               callback=lambda x: progress_bar.update())
+                      for settings in settings_list]
+    search_results = pd.concat([x.get() for x in search_results]).reset_index(drop=True)
+    progress_bar.close()
+    search_results.to_csv(results_dir / 'search_results.csv', index=False)
+    print('Running prediction ...')
+    progress_bar = tqdm.tqdm(total=len(search_results))
+    prediction_results = [process_pool.apply_async(run_prediction, kwds={
+        'runtimes': problems[search_results['problem'].iloc[i]][search_results['solvers'].iloc[i]],
+        'features': features}, callback=lambda x: progress_bar.update())
+        for i in range(len(search_results))]
     process_pool.close()
     process_pool.join()
     progress_bar.close()
-    results = pd.concat([x.get() for x in results])
-    results.to_csv(results_dir / 'results.csv', index=False)
+    prediction_results = pd.DataFrame([x.get() for x in prediction_results])
+    prediction_results[['settings_id', 'solution_id']] = search_results[['settings_id', 'solution_id']]
+    prediction_results.to_csv(results_dir / 'prediction_results.csv', index=False)
 
 
 if __name__ == '__main__':
