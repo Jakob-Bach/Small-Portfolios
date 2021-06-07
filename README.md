@@ -13,7 +13,7 @@ The repo contains two folders, one containing the text of the paper and one cont
 ## Setup
 
 Before running scripts to reproduce the experiments, you need to set up an environment with all necessary dependencies.
-Our code is implemented in Python (version 3.9; other versions, including lower ones, might work as well).
+Our code is implemented in Python (version 3.8; other versions, including lower ones, might work as well).
 
 ### Option 1: `conda` Environment
 
@@ -21,7 +21,7 @@ If you use `conda`, you can install the right Python version into a new `conda` 
 and activate the environment as follows:
 
 ```bash
-conda create --name <conda-env-name> python=3.9
+conda create --name <conda-env-name> python=3.8
 conda activate <conda-env-name>
 ```
 
