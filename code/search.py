@@ -44,12 +44,17 @@ def beam_search(runtimes: pd.DataFrame, k: int, w: int) -> List[Tuple[List[str],
     results = []
     old_portfolios = [([], float('inf'))]
     for _ in range(k):
-        new_portfolios = set()  # eliminate duplicates (same portfolio can be created in multiple ways)
+        new_portfolios = []
         for portfolio, _ in old_portfolios:  # only iterate portfolios, ignore runtimes (for now)
             for solver in runtimes.columns:
                 if solver not in portfolio:  # only create portfolios that are larger
-                    new_portfolios.add(frozenset(portfolio + [solver]))
-        new_portfolios = [(list(new_portfolio), runtimes[new_portfolio].min(axis='columns').sum())
+                    # Same portfolio can be created in multiple ways, so we need to de-duplicate;
+                    # set/frozenset are non-deterministic, so we use lists for both single
+                    # portfolios and the list of all portfolios:
+                    new_portfolio = sorted(portfolio + [solver])
+                    if new_portfolio not in new_portfolios:
+                        new_portfolios.append(new_portfolio)
+        new_portfolios = [(new_portfolio, runtimes[new_portfolio].min(axis='columns').sum())
                           for new_portfolio in new_portfolios]
         new_portfolios.sort(key=lambda x: x[1])  # sort by runtime
         old_portfolios = new_portfolios[:w]  # retain w best solutions
