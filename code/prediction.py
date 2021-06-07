@@ -29,6 +29,7 @@ def predict_and_evaluate(runtimes: pd.DataFrame, features: pd.DataFrame) -> pd.D
     # class labels (since we use position-based indexing later):
     y = runtimes.idxmin(axis='columns').replace(runtimes.columns, range(len(runtimes.columns)))
     results = []
+    feature_importances = []
     for train_idx, test_idx in splitter.split(X=features, y=y):
         X_train = features.iloc[train_idx]
         y_train = y.iloc[train_idx]
@@ -52,10 +53,14 @@ def predict_and_evaluate(runtimes: pd.DataFrame, features: pd.DataFrame) -> pd.D
             result['train_objective'] = runtimes_train.values[range(len(train_idx)), pred_train].mean()
             result['test_objective'] = runtimes_test.values[range(len(test_idx)), pred_test].mean()
             model_results.append(result)
+            feature_importances.append(model.feature_importances_)
         result = pd.DataFrame(model_results)
         result['train_vbs'] = runtimes_train.min(axis='columns').mean()
         result['test_vbs'] = runtimes_test.min(axis='columns').mean()
         result['train_vws'] = runtimes_train.max(axis='columns').mean()
         result['test_vws'] = runtimes_test.max(axis='columns').mean()
         results.append(result)
-    return pd.concat(results).groupby('tree_depth').mean().reset_index()  # average over folds
+    results = pd.concat(results).reset_index(drop=True)
+    feature_importances = pd.DataFrame(feature_importances, columns=['imp.' + x for x in features.columns])
+    results = pd.concat([results, feature_importances], axis='columns')
+    return results.groupby('tree_depth').mean().reset_index()  # average over folds
