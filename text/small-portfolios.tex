@@ -304,12 +304,11 @@ We analyze the \ref{eq:small-portfolio-problem} for two definitions of runtime i
 \end{itemize}
 
 We employ the three solution approaches from Section~\ref{sec:approach:solution} to search for portfolios:
-%TODO Use actual parameter values
 
 \begin{itemize}
 	\item \emph{Exhaustive}:
 	We use this approach to find and compare all portfolios of a given size $k$.
-	However, to keep the runtime under control, we limit our experiments to $k \in \{1, \dots, 5\}$.
+	However, to keep the runtime under control, we limit our experiments to $k \in \{1, \dots, 4\}$.
 	\item \emph{Integer Problem}:
 	We use this approach to exactly determine the best portfolio for each $k \in \{1, \dots, |S|\}$.
 	\item \emph{Beam Search}:
@@ -323,7 +322,7 @@ All the solution approaches from the previous section use an oracle, the VBS, to
 We also analyze the more realistic scenario of using a prediction model to recommend a solver.
 To this end, we take the portfolios found by the solution approaches and train a decision tree~\cite{breiman1984classification}.
 For each instance, the prediction target is the best solver out of the portfolio.
-To analyze how complex the prediction model needs to be, we vary the depth of the tree from one to ten systematically. %TODO use actual number
+To analyze how complex the prediction model needs to be, we vary the depth of the tree from one to five, besides using trees of unlimited depth.
 We evaluate prediction performance in two ways:
 
 \begin{itemize}
