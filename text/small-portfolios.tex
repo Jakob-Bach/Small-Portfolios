@@ -56,6 +56,36 @@ Section~\ref{sec:conclusion} concludes.
 \section{Related Work}
 \label{sec:related-work}
 
+%TODO conduct deeper literature research
+%TODO expand a bit, if necessary; currently, description of references is rather short
+
+\cite{kerschke2019automated} provides an overview of algorithm selection.
+Portfolios of SAT solvers are a sub-category of this.
+Many portfolio approaches have several stages and configuration options, which makes configuring and selecting the best portfolio approach difficult.
+To this end, \cite{lindauer2015autofolio} provides an automatic configurator.
+Also, one can analyze the impact of configuration options, e.g., with the tool CAVE~\cite{biedenkapp2018cave}.
+
+One of the most well-known complex portfolio approaches is SATzilla, of which multiple versions exist~\cite{xu2008satzilla, xu2012satzilla2012}.
+Besides complex portfolio approaches, there are also simple ones, e.g., selecting a solver nearest-neighbor-based, without training a prediction model~\cite{malitsky2011non, nikolic2013simple, samulowitz2013snappy}.
+
+\cite{amadini2014empirical, amadini2016extensive} analyze portfolios of CSP solvers in terms of average runtime and solved instances.
+Thus, they focus on different instances and solvers than we, though the evaluation procedure has some similarities.
+Similar to us, they vary the portfolio size $k$.
+They compare several classification methods in portfolios, besides adapting complex SAT portfolio approaches like SATzilla.
+In contrast, we focus on one simple classification model, vary its complexity, and analyze feature importance.
+Also, we analyze parametrization of beam search and compare all portfolios for small $k$ exhaustively.
+Finally, we solve the small-portfolio-problem exactly, while \cite{amadini2014empirical} only use heuristic search algorithms.
+
+\cite{nof2020real} formalizes the small-portfolio problem as maximization problem.
+They show submodularity and NP-completeness.
+Also, they provide an SMT encoding to exactly solve the problem.
+In their evaluation, they use beam search with a beam width of one.
+In contrast, we analyze parametrization of beam search and compare all portfolios for small $k$ exhaustively.
+Also, \cite{nof2020real} does not analyze portfolios with prediction models.
+For the exact solution, we provide an encoding as integer-problem.
+Finally, their domain is different than ours, as they focus on instances of an allocation problem whose solution is evaluated already after 0.1 s.
+In comparison, we allows 5000 s for solvers on our SAT instances.
+
 \section{Approach}
 \label{sec:approach}
 
