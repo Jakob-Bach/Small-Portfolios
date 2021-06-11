@@ -2,6 +2,8 @@
 
 Download GBD databases, transform to CVS, and extract input data for experimental pipeline:
 solver runtimes and instance features for main track of SAT Competition 2020.
+
+Usage: python -m prepare_dataset --help
 """
 
 import argparse

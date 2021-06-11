@@ -1,6 +1,8 @@
 """Run experiments
 
 Main experimental pipeline. Runs different portfolio-search algorithms with different parameters.
+
+Usage: python -m run_experiments --help
 """
 
 import argparse

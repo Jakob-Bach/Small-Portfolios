@@ -93,3 +93,9 @@ Next, start the pipeline with
 ```bash
 python -m run_experiments
 ```
+
+To create the plots for the paper, run
+
+```bash
+python -m run_evaluation
+```
