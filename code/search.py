@@ -21,6 +21,7 @@ def mip_search(runtimes: pd.DataFrame, k: int) -> List[Tuple[List[str], float]]:
     model = mip.Model()
     model.verbose = 0
     model.threads = 1
+    model.max_mip_gap = 0  # without this, solutions might be slightly sub-optimal
     instance_solver_vars = [[model.add_var(f'x_{i}_{j}', var_type=mip.BINARY)
                              for j in range(runtimes.shape[1])] for i in range(runtimes.shape[0])]
     solver_vars = [model.add_var(f'y_{j}', var_type=mip.BINARY)for j in range(runtimes.shape[1])]
