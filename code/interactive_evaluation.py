@@ -14,11 +14,16 @@ import seaborn as sns
 import prepare_dataset
 
 
-# Load results, make solvers a list again:
+# Load search results, make solvers a list again:
 search_results = pd.read_csv('data/search_results.csv', converters={'solvers': ast.literal_eval})
 # Fix k for beam search (beam search run up to k, but also saves smaller intermediate results)
 search_results.loc[search_results['algorithm'] == 'beam_search', 'k'] =\
     search_results.loc[search_results['algorithm'] == 'beam_search', 'solvers'].transform(len)
+
+# Load prediction results
+prediction_results = pd.read_csv('data/prediction_results.csv')
+prediction_results = prediction_results.merge(search_results)
+
 # Load runtimes, which we need for beam-search bounds
 runtimes = pd.read_csv('data/runtimes.csv').drop(columns='hash')
 runtimes = runtimes[(runtimes != prepare_dataset.PENALTY).any(axis='columns')]
@@ -26,6 +31,13 @@ runtimes = runtimes[(runtimes != prepare_dataset.PENALTY).any(axis='columns')]
 
 # ---Analyze objective value---
 
+
+# For comparison: Performance of single solvers
+# - How often is a solver fastest?
+print(runtimes.idxmin(axis='columns').value_counts())
+# - How often is a solver the only one to solve an instance?
+print(runtimes[(runtimes == prepare_dataset.PENALTY).sum(axis='columns') ==
+               (runtimes.shape[1] - 1)].idxmin(axis='columns').value_counts())
 
 # Objective of MIP search (exact solution) over k
 # Create table with optimal VBS values, reproducing results from the paper "SAT Competition 2020";
@@ -47,8 +59,8 @@ sns.lineplot(x='k', y='objective_gain', data=data[data['problem'] == 'solved'])
 data = search_results.loc[search_results['algorithm'] == 'mip_search', ['objective_value', 'problem', 'k']]
 print(data.pivot(index='k', columns='problem', values='objective_value').corr())
 
-# Objective of beam search over k and w, compared to exact solution
-# For beam search, we need to extract best solution for each k and w first
+# Objective of best beam-search solution over k and w, compared to exact solution
+# Extract best solution for each k and w first (instead of using all solutions per k and w):
 data = search_results[search_results['algorithm'] == 'beam_search'].groupby(
     ['problem', 'algorithm', 'k', 'w'])['objective_value'].min().reset_index()
 mip_data = search_results.loc[search_results['algorithm'] == 'mip_search',
@@ -76,6 +88,12 @@ sns.boxplot(x='k', y='objective_value', data=data[(data['problem'] == 'solved') 
                                                   (data['algorithm'] != 'upper_bound')])
 sns.boxplot(x='w', y='objective_frac', data=data[data['problem'] == 'PAR2'])
 sns.boxplot(x='w', y='objective_diff', data=data[data['problem'] == 'solved'])
+
+# Objective of all beam-search solutions over k and w
+w = search_results['w'].max()  # makes sense to use a somewhat large w
+data = search_results[(search_results['algorithm'] == 'beam_search') & (search_results['w'] == w)]
+sns.boxplot(x='k', y='objective_value', data=data[data['problem'] == 'PAR2'])
+sns.boxplot(x='k', y='objective_value', data=data[data['problem'] == 'solved'])
 
 # Objective of exhaustive search over k
 data = search_results[search_results['algorithm'] == 'exhaustive_search']
@@ -184,3 +202,113 @@ contributions = pd.DataFrame([{
 contributions = contributions.merge(solvers[['solver_name', 'single_rank']])
 print(contributions.sort_values(by='avg_contribution', ascending=False))
 print(contributions.corr())
+
+
+# ---Analyze relationship between various prediction and non-prediction metrics---
+
+
+data = prediction_results.loc[
+    (prediction_results['problem'] == 'PAR2') & (prediction_results['algorithm'] == 'mip_search'),
+    ['tree_depth', 'train_mcc', 'test_mcc', 'train_objective', 'test_objective', 'train_vbs',
+     'test_vbs', 'train_vws', 'test_vws', 'prediction_time', 'search_time', 'k']].corr()
+sns.heatmap(data, vmin=-1, vmax=1, cmap='RdYlGn', annot=True, cbar=False, fmt='.2f')
+
+
+# ---Analyse prediction performance (directly)---
+
+
+# Correlation between prediction_performance of the two problems
+data = prediction_results.loc[prediction_results['algorithm'] == 'mip_search',
+                              ['problem', 'k', 'tree_depth', 'train_mcc', 'test_mcc']]
+print(data.pivot(index=['k', 'tree_depth'], columns='problem', values=['train_mcc', 'test_mcc']).corr())
+
+# Prediction performance over k
+# 1) Choose *one* search, e.g.
+data = prediction_results.loc[prediction_results['algorithm'] == 'mip_search']
+data = prediction_results.loc[(prediction_results['algorithm'] == 'beam_search') &
+                              (prediction_results['w'] == 100)]
+data = prediction_results.loc[prediction_results['algorithm'] == 'exhaustive_search']
+# 2) Plot
+data = data.loc[data['k'] != 1, ['problem', 'k', 'tree_depth', 'train_mcc', 'test_mcc']]
+data = data.melt(id_vars=['problem', 'k', 'tree_depth'], value_vars=['train_mcc', 'test_mcc'],
+                 var_name='split', value_name='mcc')
+# - If multiple performances per k:
+sns.boxplot(x='k', y='mcc', hue='split', data=data[data['problem'] == 'PAR2'])
+sns.boxplot(x='k', y='mcc', hue='split', data=data[data['problem'] == 'solved'])
+# - If just one performance per k (or you just want to see mean):
+sns.lineplot(x='k', y='mcc', hue='split', data=data[data['problem'] == 'PAR2'])
+sns.lineplot(x='k', y='mcc', hue='split', data=data[data['problem'] == 'solved'])
+
+# Performance over tree depth (used melted dataset from above)
+sns.boxplot(x='tree_depth', y='mcc', hue='split', data=data[data['problem'] == 'PAR2'])
+sns.boxplot(x='tree_depth', y='mcc', hue='split', data=data[data['problem'] == 'solved'])
+
+
+# ---Analyze performance (objective value) of predicted solvers---
+
+
+# Objective values of predicted solvers over k
+# 1) Prepare data, add normalized metrics
+data = prediction_results.drop(columns=[x for x in prediction_results.columns if x.startswith('imp.')])
+for split in ['train', 'test']:
+    data[f'{split}_objective_diff'] = data[f'{split}_objective'] - data[f'{split}_vbs']
+    data[f'{split}_objective_ratio'] = data[f'{split}_objective'] / data[f'{split}_vbs']
+    data[f'{split}_objective_norm'] = (data[f'{split}_objective'] - data[f'{split}_vbs']) /\
+        (data[f'{split}_vws'] - data[f'{split}_objective'])
+# 2) Choose *one* search, e.g.
+data = data.loc[data['algorithm'] == 'mip_search']
+data = data.loc[(data['algorithm'] == 'beam_search') & (data['w'] == 100)]
+data = data.loc[data['algorithm'] == 'exhaustive_search']
+# 3) Choose *one* scenario, e.g.
+plot_vars = ['train_objective', 'test_objective']
+plot_vars = ['train_objective_ratio', 'test_objective_ratio']
+plot_vars = ['test_objective', 'test_vbs', 'test_vws']
+# 4) Plot
+data = data.loc[data['k'] != 1, ['problem', 'k', 'tree_depth'] + plot_vars]
+data = data.melt(id_vars=['problem', 'k', 'tree_depth'], value_vars=plot_vars,
+                 var_name='category', value_name='objective')
+# - a) If multiple performances per k:
+sns.boxplot(x='k', y='objective', hue='category', data=data[data['problem'] == 'PAR2'])
+sns.boxplot(x='k', y='objective', hue='category', data=data[data['problem'] == 'solved'])
+# - b) If just one performance per k (or you just want to see mean):
+sns.lineplot(x='k', y='objective', hue='category', data=data[data['problem'] == 'PAR2'])
+sns.lineplot(x='k', y='objective', hue='category', data=data[data['problem'] == 'solved'])
+
+# Objective values for a small set of top portfolios (found by one search)
+# 1) Choose *one* search, e.g.
+data = prediction_results[
+    (prediction_results['algorithm'] == 'beam_search') & (prediction_results['w'] == 100) &
+    (prediction_results['k'] == 2) & (prediction_results['tree_depth'] == -1) &
+    (prediction_results['problem'] == 'PAR2')].sort_values(by='test_vbs').reset_index()
+data = prediction_results[
+    (prediction_results['algorithm'] == 'exhaustive_search') & (prediction_results['k'] == 2) &
+    (prediction_results['tree_depth'] == -1) & (prediction_results['problem'] == 'PAR2')].sort_values(
+        by='test_vbs').reset_index().iloc[:1000]
+# 2) Plot
+data[['test_vbs', 'test_objective', 'test_vws']].plot.line()
+
+
+# ---Analyze feature importance in prediction---
+
+
+# Overall importance (aggregating all experimental settings)
+importance_cols = [x for x in prediction_results.columns if x.startswith('imp.')]
+data = prediction_results[importance_cols].mean() * 100  # importance as percentage
+print(data.sort_values(ascending=False))
+print(data.describe())
+data.plot.hist()  # distribution of importances
+data.sort_values(ascending=False).cumsum().reset_index().plot()  # cumulated importance
+print((data > 100 / len(data)).sum())  # how many importances higher than expected value
+
+# Variation (over features) of importance for MIP search (exact solution) over k
+data = prediction_results.loc[prediction_results['algorithm'] == 'mip_search', importance_cols + ['problem', 'k']]
+data['importance_sd'] = data[importance_cols].std(axis='columns')
+sns.lineplot(x='k', y='importance_sd', hue='problem', data=data)
+
+
+# ---Analyze prediction time---
+
+
+print(prediction_results.groupby('algorithm')['prediction_time'].describe())
+print(prediction_results.groupby('k')['prediction_time'].describe())
+print(prediction_results.groupby('problem')['prediction_time'].describe())
