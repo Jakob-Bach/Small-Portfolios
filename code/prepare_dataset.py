@@ -6,6 +6,8 @@ solver runtimes and instance features for main track of SAT Competition 2020.
 Usage: python -m prepare_dataset --help
 """
 
+from typing import Tuple
+
 import argparse
 import pathlib
 import urllib.request
@@ -44,6 +46,27 @@ def transform_dbs_to_csvs(data_dir: pathlib.Path) -> None:
             dataset.to_csv(data_dir / database.replace('.db', '.csv'), index=False)
 
 
+# Save runtimes and features for experimental pipeline.
+def save_dataset(runtimes: pd.DataFrame, features: pd.DataFrame, data_dir: pathlib.Path) -> None:
+    runtimes.to_csv(data_dir / 'runtimes.csv', index=False)
+    features.to_csv(data_dir / 'features.csv', index=False)
+
+
+# Load runtimes and features. If "exclude_solved", delete instances (rows) where all solvers have
+# the penalty value.
+def load_dataset(data_dir: pathlib.Path, exclude_unsolved: bool = True) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    runtimes = pd.read_csv(data_dir / 'runtimes.csv')
+    features = pd.read_csv(data_dir / 'features.csv')
+    assert (runtimes['hash'] == features['hash']).all()
+    runtimes.drop(columns='hash', inplace=True)
+    features.drop(columns='hash', inplace=True)
+    if exclude_unsolved:
+        keep_instance = (runtimes != PENALTY).any(axis='columns')
+        runtimes = runtimes[keep_instance]  # drop instances not solved by any solver in time
+        features = features[keep_instance]
+    return runtimes, features
+
+
 # Create file with runtimes and file with instance features. To that end, do some pre-processing.
 def transform_csvs_for_pipeline(data_dir: pathlib.Path) -> None:
     meta_db = pd.read_csv(data_dir / 'meta.csv')
@@ -55,7 +78,6 @@ def transform_csvs_for_pipeline(data_dir: pathlib.Path) -> None:
     numeric_cols = [x for x in runtimes.columns if x != 'hash']
     runtimes[numeric_cols] = runtimes[numeric_cols].transform(pd.to_numeric, errors='coerce')
     runtimes.fillna(value=PENALTY, inplace=True)
-    runtimes.to_csv(data_dir / 'runtimes.csv', index=False)
 
     gates_db = pd.read_csv(data_dir / 'gates.csv').drop(columns=['local', 'filename', 'tags', 'variables', 'clauses'])
     gates_db = gates_db[gates_db['hash'].isin(hashes)].reset_index(drop=True)
@@ -66,7 +88,8 @@ def transform_csvs_for_pipeline(data_dir: pathlib.Path) -> None:
     assert (runtimes['hash'] == features['hash']).all()
     numeric_cols = [x for x in features.columns if x != 'hash']
     features[numeric_cols] = features[numeric_cols].transform(pd.to_numeric, errors='coerce')
-    features.to_csv(data_dir / 'features.csv', index=False)
+
+    save_dataset(runtimes=runtimes, features=features, data_dir=data_dir)
 
 
 # Main routine: Download, pre-process, save.

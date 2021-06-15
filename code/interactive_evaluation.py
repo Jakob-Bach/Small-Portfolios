@@ -7,6 +7,7 @@ of plots; plots are not saved.
 
 import ast
 import math
+import pathlib
 
 import pandas as pd
 import seaborn as sns
@@ -25,8 +26,7 @@ prediction_results = pd.read_csv('data/prediction_results.csv')
 prediction_results = prediction_results.merge(search_results)
 
 # Load runtimes, which we need for beam-search bounds
-runtimes = pd.read_csv('data/runtimes.csv').drop(columns='hash')
-runtimes = runtimes[(runtimes != prepare_dataset.PENALTY).any(axis='columns')]
+runtimes, _ = prepare_dataset.load_dataset(data_dir=pathlib.Path('data/'))
 
 
 # ---Analyze objective value---
