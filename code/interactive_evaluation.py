@@ -35,6 +35,8 @@ runtimes, _ = prepare_dataset.load_dataset(data_dir=pathlib.Path('data/'))
 # For comparison: Performance of single solvers
 # - How often is a solver fastest?
 print(runtimes.idxmin(axis='columns').value_counts())
+# - How many instances does each solver solve?
+print((runtimes != prepare_dataset.PENALTY).sum(axis='rows').sort_values(ascending=False))
 # - How often is a solver the only one to solve an instance?
 print(runtimes[(runtimes == prepare_dataset.PENALTY).sum(axis='columns') ==
                (runtimes.shape[1] - 1)].idxmin(axis='columns').value_counts())
@@ -42,7 +44,7 @@ print(runtimes[(runtimes == prepare_dataset.PENALTY).sum(axis='columns') ==
 # Objective of MIP search (exact solution) over k
 # Create table with optimal VBS values, reproducing results from the paper "SAT Competition 2020";
 # need to account for instances not solved by any solver, which we excluded from our experiments
-data = search_results[(search_results['algorithm'] == 'mip_search') & (search_results['problem'] == 'PAR2')]
+data = search_results[(search_results['algorithm'] == 'mip_search') & (search_results['problem'] == 'PAR2')].copy()
 data['full_objective_value'] = (data['objective_value'] + 10000 * 84) / 400
 print(data[['full_objective_value', 'k']].set_index('k').round(1))
 # Plot
