@@ -496,6 +496,74 @@ For the objective function \emph{Solved}, all correlations are between -0.38 und
 Thus, the presence of all individual solvers is at most weakly correlated to the objective value.
 This means one needs a combination of solvers to clearly influence the objective value in either direction.
 
+\subsection{Prediction Results}
+
+\subsubsection{MCC}
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=\columnwidth]{plots/mcc.pdf}
+	\caption{Test-set MCC for beam-search portfolios with $w=100$. Decision trees of unlimited depth.}
+	\label{fig:mcc}
+\end{figure}
+
+Figure~\ref{fig:mcc} shows test-set classification performance with decision trees of unlimited depth, using the portfolios from beam-search with $w=100$.
+We focus on these search results instead of exact search to have multiple portfolios for each $k$.
+We do not show training-set performance, since it always is 1.0.
+Test-set prediction performance is rather low for all $k$.
+This could cause a bad objective value for these model-based portfolios, as we will analyze latter.
+For low $k$, the prediction performance varies strongly between portfolios, while for larger $k$, the variation becomes smaller.
+
+With a perfect training-set performance, but a low test set performance, the model seems to be overfitting to the training set.
+As a counter-measure, one can limit the model size, i.e., decrease the depth of the decision trees.
+This indeed decreases the gap between training-set performance and test-set performance.
+However, the decrease mainly results from a decrease in training-set performance, while average test-set performance is rather similar for all tree depths apart from a depth of two.
+Thus, decreasing tree depth does not improve generalization capabilities of the models.
+
+\subsubsection{Objective Value}
+
+\begin{figure*}[htb]
+	\centering
+	\begin{subfigure}{0.98\columnwidth}
+		\centering
+		\includegraphics[width=\columnwidth]{plots/objective-prediction-PAR2.pdf}
+		\caption{\emph{PAR2} objective function.}
+		\label{fig:objective-prediction-PAR2}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}{0.98\columnwidth}
+		\centering
+		\includegraphics[width=\columnwidth]{plots/objective-prediction-solved.pdf}
+		\caption{\emph{Solved} objective function.}
+		\label{fig:objective-prediction-solved}
+	\end{subfigure}
+	\caption{Objective value for beam-search-portfolios with $w=100$. Decision trees of unlimited depth.}
+	\label{fig:objective-prediction}
+\end{figure*}
+
+Figure~\ref{fig:objective-prediction} shows test-set objective value with decision trees of unlimited depth, using the portfolios from beam-search with $w=100$.
+For comparison, we also displays VBS and VWS score for the same portfolios.
+As shown before, VBS score decreases with $k$.
+This also allows portfolios with prediction model to potentially improve their performance.
+In contrast, VWS score increases with $k$.
+This is because larger portfolios contain more solvers which are only good on some instances, instead of being good on average.
+If a prediction model mainly predicts these solvers, objective value can become a lot worse.
+Overall, the range of the potential objective value of a portfolio with prediction model grows with $k$.
+Depending on the prediction quality, objective value can develop in either direction.
+In our case, objective value remains rather stable with $k$.
+This implies that the prediction model cannot help to leverage the larger amount of solvers in the portfolio.
+Given the low prediction performance in terms of MCC, this is expected.
+As a consequence, the gap between VBS and the predicted solver grows with $k$.
+
+\subsubsection{Feature Importance}
+
+Averaging importance over all trained models, the most important feature has an importance of 5.69\%, the least important feature has an importance of 0\%.
+To reach an cumulated average importance of 50\%, one needs 29 out of 143 features.
+This indicates that not just a small set of features is important, but many features can contribute towards predictions.
+Indeed, prediction models use 47 features on average.
+Note that this figure includes decision trees of all depths, i.e., also shallow trees that are not even able to include that many features.
+If we limit our analysis to decision trees of unlimited depth, the models use 116 features on average.
+
 \section{Conclusions and Future Work}
 \label{sec:conclusion}
 

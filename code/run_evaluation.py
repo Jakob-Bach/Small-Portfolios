@@ -41,6 +41,10 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
     # Load runtimes, which we need for beam-search bounds and single-solver analysis
     runtimes, _ = prepare_dataset.load_dataset(data_dir=data_dir)
 
+    # Load prediction results
+    prediction_results = pd.read_csv(results_dir / 'prediction_results.csv')
+    prediction_results = prediction_results.merge(search_results)
+
     # ------Optimization Results------
 
     # ----Performance of Single Solvers----
@@ -150,6 +154,59 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
         print(f'- {problem}:')
         print(data.loc[data['problem'] == problem, runtimes.columns].corrwith(
             data.loc[data['problem'] == problem, 'objective_value'], method='spearman').describe().round(2))
+
+    # ------Prediction Results------
+
+    # ----MCC----
+
+    # Figure 2: MCC for top beam-search portfolios per k
+    w = search_results['w'].max()
+    data = prediction_results.loc[(prediction_results['algorithm'] == 'beam_search') &
+                                  (prediction_results['w'] == w)]
+    data = data.loc[(data['k'] > 1) & (data['k'] <= 20) & (data['tree_depth'] == -1), ['problem', 'k', 'test_mcc']]
+    plt.figure(figsize=(4, 3))
+    sns.boxplot(x='k', y='test_mcc', hue='problem', fliersize=0, data=data)
+    plt.tight_layout()
+    plt.savefig(plot_dir / 'mcc.pdf')
+
+    print('Median MCC per tree depth, using all prediction results:')
+    print(prediction_results.groupby(['problem', 'tree_depth'])[['train_mcc', 'test_mcc']].median().round(2))
+    data = prediction_results[['problem', 'tree_depth', 'train_mcc', 'test_mcc']].copy()
+    print('Train-test MCC difference per tree depth, using all prediction results:')
+    data['train_test_diff'] = data['train_mcc'] - data['test_mcc']
+    print(data.groupby(['problem', 'tree_depth'])['train_test_diff'].describe().round(2))
+
+    # ----Objective Value----
+
+    # Figure 3: Objective value vs. VBS and VWS for model-based top beam-search portfolios
+    w = search_results['w'].max()
+    data = prediction_results.loc[(prediction_results['algorithm'] == 'beam_search') &
+                                  (prediction_results['w'] == w)]
+    plot_vars = ['test_objective', 'test_vbs', 'test_vws']
+    data = data.loc[(data['k'] != 1) & (data['k'] <= 10) & (data['tree_depth'] == -1), ['problem', 'k'] + plot_vars]
+    data = data.melt(id_vars=['problem', 'k'], value_vars=plot_vars,
+                     var_name='score', value_name='objective')
+    plt.figure(figsize=(4, 3))
+    sns.boxplot(x='k', y='objective', hue='score', data=data[data['problem'] == 'PAR2'])
+    plt.tight_layout()
+    plt.savefig(plot_dir / 'objective-prediction-PAR2.pdf')
+    plt.figure(figsize=(4, 3))
+    sns.boxplot(x='k', y='objective', hue='score', data=data[data['problem'] == 'solved'])
+    plt.tight_layout()
+    plt.savefig(plot_dir / 'objective-prediction-solved.pdf')
+
+    # ----Feature Importance----
+
+    print('Average feature importance (in %) over all prediction scenarios:')
+    importance_cols = [x for x in prediction_results.columns if x.startswith('imp.')]
+    data = prediction_results[importance_cols].mean() * 100  # importance as percentage
+    print(data.describe())
+    print(f'To reach an importance of 50%, one needs {sum(data.sort_values(ascending=False).cumsum() < 50) + 1} features.')
+    print('How many features are used in each model?')
+    print((prediction_results[importance_cols] > 0).sum(axis='columns').describe().round(2))
+    print('How many features are used in each model of unlimited depth?')
+    print((prediction_results.loc[prediction_results['tree_depth'] == -1, importance_cols] > 0).sum(
+        axis='columns').describe().round(2))
 
 
 # Parse some command line argument and run evaluation.
