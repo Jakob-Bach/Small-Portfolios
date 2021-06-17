@@ -33,10 +33,11 @@ markus.iser@kit.edu}
 \maketitle
 
 \begin{abstract}
-Successful approaches that tackle hard combinatorial problems such as propositional satisfiability are often in some sense mutually complementary in terms of their running time. 
-Parallel portfolio approaches and instance-specific algorithm selection approaches take advantage of this. 
-In this paper, we present a systematic analysis of solver portfolios using runtime measurements from the SAT~Competition~2020 as an example. 
-We present and compare solutions for the calculation of theoretically optimal portfolios of limited size and compare them to the quality of the prediction models trained for them. 
+Successful approaches that tackle hard combinatorial problems such as propositional satisfiability are often in some sense complementary, i.e., each approach is only the best on some problem instances.
+Parallel portfolios and instance-specific algorithm selection take advantage of this.
+In this paper, we present a systematic analysis of solver portfolios using runtime measurements from the SAT~Competition~2020.
+First, we present and compare search approaches to find theoretically optimal portfolios of limited size.
+Second, we use prediction models to make instance-specific solver recommendations within the portfolios and evaluate this approach as well.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -384,7 +385,7 @@ We replace missing values of features with their training-set mean.
 %TODO @Markus vielleicht hast du noch eine bessere Referenz, ich habe erst mal deine Diss genommen
 
 
-\paragraph{Implementation}
+\subsection{Implementation}
 
 We implement our experimental design in Python and make our code available online\footnote{\url{https://github.com/Jakob-Bach/Small-Portfolios}}.
 To create the dataset of solver runtimes, we use the package~\emph{gbd-tools}~\cite{iser2020collaborative}.
@@ -563,10 +564,23 @@ This indicates that not just a small set of features is important, but many feat
 Indeed, prediction models use 47 features on average.
 Note that this figure includes decision trees of all depths, i.e., also shallow trees that are not even able to include that many features.
 If we limit our analysis to decision trees of unlimited depth, the models use 116 features on average.
+The large number of features used by the models could also be a sign that our current feature set is not suitable to discriminate between solvers.
 
 \section{Conclusions and Future Work}
 \label{sec:conclusion}
 
+SAT solvers are often complementary, i.e, they are particularly good on some instances and less good on other instances.
+Thus, one combines several solvers into portfolios.
+We analyzed such portfolios with runtime data from the SAT~Competition~2020.
+In particular, we focused on portfolios with a limited number of solvers, so-called \emph{small portfolios}.
+We presented an integer-problem to find small portfolios exactly as well as a beam-search approach to find small portfolios fast.
+Regarding portfolio size, we saw a strong improvement in objective value for adding solvers to small portfolios, but a small impact once the portfolio reaches a certain size.
+Regarding the solution approach, we found that beam-search yields close-to-optimal solutions.
+After determining portfolios, we combined them with prediction models that made instance-specific solver recommendations.
+However, these models performed rather poorly on the given dataset, such that the objective value of portfolios with predictions did not improve with the portfolio size.
+
+In future work, we want to improve prediction performance, in particular, by adapting the set of instance features.
+Also, we want to integrate our portfolio-search functionality into the Python package~\emph{gbd-tools}, so it can be directly used in queries to the database GBD.
 
 \bibliographystyle{IEEEtran}
 \bibliography{IEEEabrv,references}
