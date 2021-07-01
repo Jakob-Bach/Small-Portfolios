@@ -9,6 +9,7 @@ from typing import List, Tuple
 
 import mip
 import pandas as pd
+import z3
 
 
 # Exhaustively search over all k-portfolios and return portfolios with their objective values.
@@ -38,6 +39,27 @@ def mip_search(runtimes: pd.DataFrame, k: int) -> List[Tuple[List[str], float]]:
     model.optimize()
     best_solution = [col for var, col in zip(solver_vars, runtimes.columns) if var.x == 1]
     return [(best_solution, model.objective_value)]
+
+
+# Determine optimal k-portfolio by solving an SMT problem exactly.
+# Formulation inspired (though simplified here) by Nof, Y., & Strichman, O. (2020). Real-time
+# solving of computationally hard problems using optimal algorithm portfolios.
+def smt_search(runtimes: pd.DataFrame, k: int) -> List[Tuple[List[str], float]]:
+    instance_vars = [z3.Real(f'v_{i}') for i in range(runtimes.shape[0])]
+    solver_vars = [z3.Bool(f's_{j}') for j in range(runtimes.shape[1])]
+    value_constraints = [z3.Or([z3.And(instance_vars[i] == runtimes.iloc[i, j], solver_vars[j])
+                                for j in range(runtimes.shape[1])]) for i in range(runtimes.shape[0])]
+    optimizer = z3.Optimize()
+    objective = optimizer.minimize(z3.Sum(instance_vars) / runtimes.shape[0])
+    optimizer.add(value_constraints)
+    optimizer.add(z3.AtMost(*solver_vars, k))
+    optimizer.check()
+    best_solution = [col for var, col in zip(solver_vars, runtimes.columns) if bool(optimizer.model()[var])]
+    if objective.value().is_real():  # Z3 uses representation as fraction
+        objective_value = objective.value().numerator_as_long() / objective.value().denominator_as_long()
+    else:
+        objective_value = objective.value().as_long()
+    return [(best_solution, objective_value)]
 
 
 # Greedy forward search (starting with portfolio of size 0 and iteratively adding solvers) up
