@@ -28,3 +28,4 @@ TatSu==5.6.1
 threadpoolctl==2.1.0
 tqdm==4.61.0
 Werkzeug==2.0.1
+z3-solver==4.8.10.0
