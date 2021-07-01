@@ -72,10 +72,10 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
                                   ['problem', 'algorithm', 'k', 'objective_value']]
     bound_data = mip_data.copy()
     bound_data['algorithm'] = 'upper_bound'
-    c_w = runtimes.max(axis='columns').sum()  # VWS performance for PAR2
+    c_w = runtimes.max(axis='columns').mean()  # VWS performance for PAR2
     bound_data.loc[bound_data['problem'] == 'PAR2', 'objective_value'] = c_w / math.e +\
         (1 - 1 / math.e) * bound_data.loc[bound_data['problem'] == 'PAR2', 'objective_value']
-    c_w = (runtimes == prepare_dataset.PENALTY).astype(int).max(axis='columns').sum()  # for Unsolved
+    c_w = (runtimes == prepare_dataset.PENALTY).astype(int).max(axis='columns').mean()  # for Unsolved
     bound_data.loc[bound_data['problem'] == 'Unsolved', 'objective_value'] = c_w / math.e +\
         (1 - 1 / math.e) * bound_data.loc[bound_data['problem'] == 'Unsolved', 'objective_value']
     data = pd.concat([beam_data, mip_data, bound_data]).reset_index(drop=True)

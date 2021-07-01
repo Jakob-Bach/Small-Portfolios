@@ -45,7 +45,7 @@ print(runtimes[(runtimes == prepare_dataset.PENALTY).sum(axis='columns') ==
 # Create table with optimal VBS values, reproducing results from the paper "SAT Competition 2020";
 # need to account for instances not solved by any solver, which we excluded from our experiments
 data = search_results[(search_results['algorithm'] == 'mip_search') & (search_results['problem'] == 'PAR2')].copy()
-data['full_objective_value'] = (data['objective_value'] + 10000 * 84) / 400
+data['full_objective_value'] = data['objective_value'] + 10000 * 84 / 400
 print(data[['full_objective_value', 'k']].set_index('k').round(1))
 # Plot
 data = search_results[search_results['algorithm'] == 'mip_search'].copy()
@@ -69,10 +69,10 @@ mip_data = search_results.loc[search_results['algorithm'] == 'mip_search',
                               ['problem', 'algorithm', 'k', 'w', 'objective_value']]
 bound_data = mip_data.copy()
 bound_data['algorithm'] = 'upper_bound'
-c_w = runtimes.max(axis='columns').sum()  # VWS performance
+c_w = runtimes.max(axis='columns').mean()  # VWS performance
 bound_data.loc[bound_data['problem'] == 'PAR2', 'objective_value'] = c_w / math.e +\
     (1 - 1 / math.e) * bound_data.loc[bound_data['problem'] == 'PAR2', 'objective_value']
-c_w = (runtimes == prepare_dataset.PENALTY).astype(int).max(axis='columns').sum()
+c_w = (runtimes == prepare_dataset.PENALTY).astype(int).max(axis='columns').mean()
 bound_data.loc[bound_data['problem'] == 'Unsolved', 'objective_value'] = c_w / math.e +\
     (1 - 1 / math.e) * bound_data.loc[bound_data['problem'] == 'Unsolved', 'objective_value']
 data = pd.concat([data, mip_data, bound_data]).reset_index(drop=True)

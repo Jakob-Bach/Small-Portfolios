@@ -161,12 +161,12 @@ We use these penalized runtimes $r_T(s,i)$ to score the solvers.
 \begin{align*}
 	c_{T} &: 2^S \rightarrow \mathbb{N}\\
 	c_{T}(P) &:= \begin{cases}
-		|I|*2*T & \text{if }P=\emptyset\\
-		\sum_{i \in I}{\min\{r_T(s,i) \mid s \in P\}} & \text{otherwise}
+		2*T & \text{if }P=\emptyset\\
+		\frac{1}{|I|} * \sum_{i \in I}{\min\{r_T(s,i) \mid s \in P\}} & \text{otherwise}
 	\end{cases} \tag*{Portfolio Cost}
 \end{align*}
 
-The cost of a solver equals its penalized runtime, summed over all instances.
+The cost of a solver equals its penalized runtime, averaged over all instances.
 A portfolio $P \subseteq S$ is a set of solvers.
 To compute the cost of a portfolio $c_{T}(P)$, we assume to have an oracle that always chooses the fastest solver for each instance.
 This is the \emph{virtual-best solver} (VBS).
@@ -212,7 +212,7 @@ This allows to obtain an exact solution for the problem with a standard integer-
 \begin{equation}
 	\label{eq:small-portfolio-integer-problem}
 	\begin{aligned}
-		\min_{x,y} \quad & \sum_{i \in I} \sum_{s \in S} r_T(s,i) * x_{s,i} \\
+		\min_{x,y} \quad & \frac{1}{|I|} * \sum_{i \in I} \sum_{s \in S} r_T(s,i) * x_{s,i} \\
 		s.t. \quad & \begin{aligned}
 			\forall_{i\in I} \sum_{s \in S} x_{s,i} &= 1\\
 			\forall_{s \in S} \sum_{i \in I} x_{s,i} &\leq |I| * y_s\\
@@ -296,13 +296,13 @@ Thus, we define the following transformed version:
 with the cost of the virtual-worst solver defined as:
 
 \begin{align*}
-	c_W := \sum_{i \in I}{\max_{s \in S}{r_T(s,i)}} \tag*{Virtual Worst Solver}
+	c_W := \frac{1}{|I|} * \sum_{i \in I}{\max_{s \in S}{r_T(s,i)}} \tag*{Virtual Worst Solver}
 \end{align*}
 
 Our definition of portfolio utility is non-negative, as $c_{T}(P) \leq c_W$.
 Additionally, $u_{T}(P)$ is monotone.
 In general, for $A \subseteq B \subseteq \mathbb{R}$, it holds that $\min(A) \geq \min(B)$.
-For $A \subseteq B \subseteq S$, we obtain $\sum_{i \in I}{\min_{s \in A}{r_T(s,i)}} \geq \sum_{i \in I}{\min_{s \in B}{r_T(s,i)}}$.
+For $A \subseteq B \subseteq S$, we obtain $\frac{1}{|I|} * \sum_{i \in I}{\min_{s \in A}{r_T(s,i)}} \geq \frac{1}{|I|} * \sum_{i \in I}{\min_{s \in B}{r_T(s,i)}}$.
 Thus, $c_{T}(A) \geq c_{T}(B)$ and therefore $u_{T}(A) \leq u_{T}(B)$. \hfill$\square$
 
 Next, we show that $u_{T}(P)$ is submodular.
@@ -313,6 +313,7 @@ $I_B := I \setminus I_A$ contains the remaining instances.
 We now show that Definition~\ref{def:submodular} holds:
 
 %TODO Make width narrower and define multi-line format in a way that permits page breaks
+%TODO if this is not removed anyway, "\frac{1}{|I|} *" has to be added a lot of times (since we normalized the objective)
 \begin{align*}
 	& u_{T}(A) + u_{T}(B) - u_{T}(A \cap B) - u_{T}(A \cup B)\\
 	= & c_W - c_{T}(A) + c_W - c_{T}(B) - c_W + c_{T}(A \cap B) - c_W + c_{T}(A \cup B)\\
@@ -367,7 +368,6 @@ We analyze the \ref{eq:small-portfolio-problem} for two definitions of runtime i
 	\end{align*}
 	\item \emph{Unsolved}:
 	A heavily discretized version of the runtimes, only stating whether a solver did not finish within $T$.
-	Thus, as minimization problem, the objective value represents the number of unsolved instances.
 	\begin{align*}
 		r_T(s,i) &:= \begin{cases}
 			1 & \text{if }r(s,i) = \bot\\
@@ -400,7 +400,7 @@ We evaluate prediction performance in two ways:
 
 \begin{itemize}
 	\item \emph{Objective value}:
-	We take the solvers recommended by the prediction model and sum up their costs, i.e., penalized runtimes or how many instances remain unsolved.
+	We take the solvers recommended by the prediction model and average their costs, i.e., penalized runtimes or how many instances remain unsolved.
 	The resulting objective value cannot be better than for the VBS, but also cannot be worse than for the VWS; see Section~\ref{sec:approach:problem:target}.
 	\item \emph{MCC}:
 	We evaluate the predictions directly with Matthews correlation coefficient~\cite{matthews1975comparison, gorodkin2004comparing}.

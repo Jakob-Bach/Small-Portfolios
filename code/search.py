@@ -10,9 +10,9 @@ import mip
 import pandas as pd
 
 
-# Exhaustively search over all k-portfolios and return their objective values.
+# Exhaustively search over all k-portfolios and return portfolios with their objective values.
 def exhaustive_search(runtimes: pd.DataFrame, k: int) -> List[Tuple[List[str], float]]:
-    return [(list(portfolio), runtimes[list(portfolio)].min(axis='columns').sum())
+    return [(list(portfolio), runtimes[list(portfolio)].min(axis='columns').mean())
             for portfolio in itertools.combinations(runtimes.columns, k)]
 
 
@@ -31,8 +31,9 @@ def mip_search(runtimes: pd.DataFrame, k: int) -> List[Tuple[List[str], float]]:
         model.add_constr(mip.xsum(instance_solver_vars[i][j] for i in range(runtimes.shape[0])) <=
                          runtimes.shape[0] * solver_vars[j])
     model.add_constr(mip.xsum(solver_vars) <= k)  # cardinality constraint
-    model.objective = mip.minimize(mip.xsum(instance_solver_vars[i][j] * runtimes.iloc[i, j]
-                                            for i in range(runtimes.shape[0]) for j in range(runtimes.shape[1])))
+    model.objective = mip.minimize(
+        mip.xsum(instance_solver_vars[i][j] * runtimes.iloc[i, j]
+                 for i in range(runtimes.shape[0]) for j in range(runtimes.shape[1])) / runtimes.shape[0])
     model.optimize()
     best_solution = [col for var, col in zip(solver_vars, runtimes.columns) if var.x == 1]
     return [(best_solution, model.objective_value)]
@@ -55,7 +56,7 @@ def beam_search(runtimes: pd.DataFrame, k: int, w: int) -> List[Tuple[List[str],
                     new_portfolio = sorted(portfolio + [solver])
                     if new_portfolio not in new_portfolios:
                         new_portfolios.append(new_portfolio)
-        new_portfolios = [(new_portfolio, runtimes[new_portfolio].min(axis='columns').sum())
+        new_portfolios = [(new_portfolio, runtimes[new_portfolio].min(axis='columns').mean())
                           for new_portfolio in new_portfolios]
         new_portfolios.sort(key=lambda x: x[1])  # sort by runtime
         old_portfolios = new_portfolios[:w]  # retain w best solutions
