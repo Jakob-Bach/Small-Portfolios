@@ -1,8 +1,8 @@
-# Small Portfolios
+# Analysis of Optimal Small Portfolios
 
 This repository contains the code and text of the paper
 
-> Iser, Markus, and Jakob Bach. "Small Portfolios"
+> Bach, Jakob and Markus Iser. "Analysis of Optimal Small Portfolios"
 
 This document describes the repo structure and the steps to reproduce the experiments.
 
