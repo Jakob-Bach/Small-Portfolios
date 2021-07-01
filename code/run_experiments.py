@@ -82,7 +82,7 @@ def run_experiments(data_dir: pathlib.Path, results_dir: pathlib.Path, n_process
         print('Results directory is not empty. Files might be overwritten, but not deleted.')
     runtimes, features = prepare_dataset.load_dataset(data_dir=data_dir)
     solved_states = (runtimes == prepare_dataset.PENALTY).astype(int)  # discretized runtimes
-    problems = {'PAR2': runtimes, 'solved': solved_states}
+    problems = {'PAR2': runtimes, 'Unsolved': solved_states}
     settings_list = define_experimental_design(problems=problems)
     print('Running search ...')
     progress_bar = tqdm.tqdm(total=len(settings_list))

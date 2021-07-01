@@ -50,12 +50,12 @@ print(data[['full_objective_value', 'k']].set_index('k').round(1))
 # Plot
 data = search_results[search_results['algorithm'] == 'mip_search'].copy()
 sns.lineplot(x='k', y='objective_value', data=data[data['problem'] == 'PAR2'])
-sns.lineplot(x='k', y='objective_value', data=data[data['problem'] == 'solved'])
+sns.lineplot(x='k', y='objective_value', data=data[data['problem'] == 'Unsolved'])
 # Gain in objectve value over k
 data['objective_gain'] = data.groupby('problem')['objective_value'].transform(lambda x: (x.shift() - x) / x.shift())
 data['objective_gain'] = data['objective_gain'].fillna(0)
 sns.lineplot(x='k', y='objective_gain', data=data[data['problem'] == 'PAR2'])
-sns.lineplot(x='k', y='objective_gain', data=data[data['problem'] == 'solved'])
+sns.lineplot(x='k', y='objective_gain', data=data[data['problem'] == 'Unsolved'])
 
 # Correlation between objective value for the two problems
 data = search_results.loc[search_results['algorithm'] == 'mip_search', ['objective_value', 'problem', 'k']]
@@ -73,8 +73,8 @@ c_w = runtimes.max(axis='columns').sum()  # VWS performance
 bound_data.loc[bound_data['problem'] == 'PAR2', 'objective_value'] = c_w / math.e +\
     (1 - 1 / math.e) * bound_data.loc[bound_data['problem'] == 'PAR2', 'objective_value']
 c_w = (runtimes == prepare_dataset.PENALTY).astype(int).max(axis='columns').sum()
-bound_data.loc[bound_data['problem'] == 'solved', 'objective_value'] = c_w / math.e +\
-    (1 - 1 / math.e) * bound_data.loc[bound_data['problem'] == 'solved', 'objective_value']
+bound_data.loc[bound_data['problem'] == 'Unsolved', 'objective_value'] = c_w / math.e +\
+    (1 - 1 / math.e) * bound_data.loc[bound_data['problem'] == 'Unsolved', 'objective_value']
 data = pd.concat([data, mip_data, bound_data]).reset_index(drop=True)
 data['objective_frac'] = data.groupby(['problem', 'k'])['objective_value'].apply(lambda x: x / x.min())
 data['objective_diff'] = data.groupby(['problem', 'k'])['objective_value'].apply(lambda x: x - x.min())
@@ -85,23 +85,23 @@ print(data[data['algorithm'] == 'beam_search'].groupby(['problem', 'w'])['object
 sns.boxplot(x='k', y='objective_value', data=data[data['problem'] == 'PAR2'])
 sns.boxplot(x='k', y='objective_value', data=data[(data['problem'] == 'PAR2') &
                                                   (data['algorithm'] != 'upper_bound')])
-sns.boxplot(x='k', y='objective_value', data=data[data['problem'] == 'solved'])
-sns.boxplot(x='k', y='objective_value', data=data[(data['problem'] == 'solved') &
+sns.boxplot(x='k', y='objective_value', data=data[data['problem'] == 'Unsolved'])
+sns.boxplot(x='k', y='objective_value', data=data[(data['problem'] == 'Unsolved') &
                                                   (data['algorithm'] != 'upper_bound')])
 sns.boxplot(x='w', y='objective_frac', data=data[data['problem'] == 'PAR2'])
-sns.boxplot(x='w', y='objective_diff', data=data[data['problem'] == 'solved'])
+sns.boxplot(x='w', y='objective_diff', data=data[data['problem'] == 'Unsolved'])
 
 # Objective of all beam-search solutions over k and w
 w = search_results['w'].max()  # makes sense to use a somewhat large w
 data = search_results[(search_results['algorithm'] == 'beam_search') & (search_results['w'] == w)]
 sns.boxplot(x='k', y='objective_value', data=data[data['problem'] == 'PAR2'])
-sns.boxplot(x='k', y='objective_value', data=data[data['problem'] == 'solved'])
+sns.boxplot(x='k', y='objective_value', data=data[data['problem'] == 'Unsolved'])
 
 # Objective of exhaustive search over k
 data = search_results[search_results['algorithm'] == 'exhaustive_search']
 print(data.groupby(['problem', 'k'])['objective_value'].describe().round(2))
 sns.boxplot(x='k', y='objective_value', data=data[data['problem'] == 'PAR2'])
-sns.boxplot(x='k', y='objective_value', data=data[data['problem'] == 'solved'])
+sns.boxplot(x='k', y='objective_value', data=data[data['problem'] == 'Unsolved'])
 
 
 # ---Analyze search time---
@@ -236,14 +236,14 @@ data = data.melt(id_vars=['problem', 'k', 'tree_depth'], value_vars=['train_mcc'
                  var_name='split', value_name='mcc')
 # - If multiple performances per k:
 sns.boxplot(x='k', y='mcc', hue='split', data=data[data['problem'] == 'PAR2'])
-sns.boxplot(x='k', y='mcc', hue='split', data=data[data['problem'] == 'solved'])
+sns.boxplot(x='k', y='mcc', hue='split', data=data[data['problem'] == 'Unsolved'])
 # - If just one performance per k (or you just want to see mean):
 sns.lineplot(x='k', y='mcc', hue='split', data=data[data['problem'] == 'PAR2'])
-sns.lineplot(x='k', y='mcc', hue='split', data=data[data['problem'] == 'solved'])
+sns.lineplot(x='k', y='mcc', hue='split', data=data[data['problem'] == 'Unsolved'])
 
 # Performance over tree depth (used melted dataset from above)
 sns.boxplot(x='tree_depth', y='mcc', hue='split', data=data[data['problem'] == 'PAR2'])
-sns.boxplot(x='tree_depth', y='mcc', hue='split', data=data[data['problem'] == 'solved'])
+sns.boxplot(x='tree_depth', y='mcc', hue='split', data=data[data['problem'] == 'Unsolved'])
 
 
 # ---Analyze performance (objective value) of predicted solvers---
@@ -271,10 +271,10 @@ data = data.melt(id_vars=['problem', 'k', 'tree_depth'], value_vars=plot_vars,
                  var_name='category', value_name='objective')
 # - a) If multiple performances per k:
 sns.boxplot(x='k', y='objective', hue='category', data=data[data['problem'] == 'PAR2'])
-sns.boxplot(x='k', y='objective', hue='category', data=data[data['problem'] == 'solved'])
+sns.boxplot(x='k', y='objective', hue='category', data=data[data['problem'] == 'Unsolved'])
 # - b) If just one performance per k (or you just want to see mean):
 sns.lineplot(x='k', y='objective', hue='category', data=data[data['problem'] == 'PAR2'])
-sns.lineplot(x='k', y='objective', hue='category', data=data[data['problem'] == 'solved'])
+sns.lineplot(x='k', y='objective', hue='category', data=data[data['problem'] == 'Unsolved'])
 
 # Objective values for a small set of top portfolios (found by one search)
 # 1) Choose *one* search, e.g.

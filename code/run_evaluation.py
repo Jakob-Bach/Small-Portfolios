@@ -75,9 +75,9 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
     c_w = runtimes.max(axis='columns').sum()  # VWS performance for PAR2
     bound_data.loc[bound_data['problem'] == 'PAR2', 'objective_value'] = c_w / math.e +\
         (1 - 1 / math.e) * bound_data.loc[bound_data['problem'] == 'PAR2', 'objective_value']
-    c_w = (runtimes == prepare_dataset.PENALTY).astype(int).max(axis='columns').sum()  # for solved
-    bound_data.loc[bound_data['problem'] == 'solved', 'objective_value'] = c_w / math.e +\
-        (1 - 1 / math.e) * bound_data.loc[bound_data['problem'] == 'solved', 'objective_value']
+    c_w = (runtimes == prepare_dataset.PENALTY).astype(int).max(axis='columns').sum()  # for Unsolved
+    bound_data.loc[bound_data['problem'] == 'Unsolved', 'objective_value'] = c_w / math.e +\
+        (1 - 1 / math.e) * bound_data.loc[bound_data['problem'] == 'Unsolved', 'objective_value']
     data = pd.concat([beam_data, mip_data, bound_data]).reset_index(drop=True)
     data['k_objective_frac'] = data.groupby(['problem', 'k'])['objective_value'].apply(lambda x: x / x.min())
     data['k_objective_diff'] = data.groupby(['problem', 'k'])['objective_value'].apply(lambda x: x - x.min())
@@ -91,21 +91,21 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
     plt.tight_layout()
     plt.savefig(plot_dir / 'objective-PAR2.pdf')
     plt.figure(figsize=(4, 3))
-    sns.lineplot(x='k', y='objective_value', hue='algorithm', data=data[data['problem'] == 'solved'])
+    sns.lineplot(x='k', y='objective_value', hue='algorithm', data=data[data['problem'] == 'Unsolved'])
     plt.tight_layout()
-    plt.savefig(plot_dir / 'objective-solved.pdf')
+    plt.savefig(plot_dir / 'objective-unsolved.pdf')
 
     print('Ratio of PAR2 between best k-portfolio and best portfolio of all solvers:')
     print(data.loc[(data['problem'] == 'PAR2') & (data['algorithm'] == 'mip_search'),
                    ['k', 'objective_frac']].round(2))
     print('How many instances remain unsolved in best k-portfolio??')
-    print(data.loc[(data['problem'] == 'solved') & (data['algorithm'] == 'mip_search'),
+    print(data.loc[(data['problem'] == 'Unsolved') & (data['algorithm'] == 'mip_search'),
                    ['k', 'objective_value']])
     print('Ratio of PAR2 value between best greedy-search-portfolio and exact solution:')
     print(data.loc[(data['problem'] == 'PAR2') & (data['algorithm'] == 'beam_search'),
                    ['k', 'k_objective_frac']].round(3))
-    print('Difference in solved instances between best greedy-search-portfolio and exact solution:')
-    print(data.loc[(data['problem'] == 'solved') & (data['algorithm'] == 'beam_search'),
+    print('Difference in unsolved instances between best greedy-search-portfolio and exact solution:')
+    print(data.loc[(data['problem'] == 'Unsolved') & (data['algorithm'] == 'beam_search'),
                    ['k', 'k_objective_diff']].round(3))
 
     w = 10
@@ -117,8 +117,8 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
     data['k_objective_frac'] = data['k_objective_frac'].replace([float('nan'), float('inf')], 1)
     print(f'Ratio of PAR2 value between best {w=} beam-search-portfolio and exact solution:')
     print(data.loc[(data['problem'] == 'PAR2') & (data['algorithm'] == 'beam_search')].groupby('k')['k_objective_frac'].min().round(3))
-    print(f'Difference in solved instances between best {w=} greedy-search-portfolio and exact solution:')
-    print(data.loc[(data['problem'] == 'solved') & (data['algorithm'] == 'beam_search')].groupby('k')['k_objective_diff'].min().round(3))
+    print(f'Difference in unsolved instances between best {w=} greedy-search-portfolio and exact solution:')
+    print(data.loc[(data['problem'] == 'Unsolved') & (data['algorithm'] == 'beam_search')].groupby('k')['k_objective_diff'].min().round(3))
     print(f'Objective value of top {w=} portfolios in beam search')
     print(data[data['k'] <= 10].groupby(['problem', 'k'])['objective_value'].describe().round().fillna(0).astype(int))
 
@@ -150,7 +150,7 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
                           (search_results['k'] == k)].copy()
     for solver_name in runtimes.columns:
         data[solver_name] = data['solvers'].apply(lambda x: solver_name in x)  # is solver in portfolio?
-    for problem in ['PAR2', 'solved']:
+    for problem in ['PAR2', 'Unsolved']:
         print(f'- {problem}:')
         print(data.loc[data['problem'] == problem, runtimes.columns].corrwith(
             data.loc[data['problem'] == problem, 'objective_value'], method='spearman').describe().round(2))
@@ -191,9 +191,9 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
     plt.tight_layout()
     plt.savefig(plot_dir / 'objective-prediction-PAR2.pdf')
     plt.figure(figsize=(4, 3))
-    sns.boxplot(x='k', y='objective', hue='score', data=data[data['problem'] == 'solved'])
+    sns.boxplot(x='k', y='objective', hue='score', data=data[data['problem'] == 'Unsolved'])
     plt.tight_layout()
-    plt.savefig(plot_dir / 'objective-prediction-solved.pdf')
+    plt.savefig(plot_dir / 'objective-prediction-unsolved.pdf')
 
     # ----Feature Importance----
 
