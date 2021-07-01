@@ -163,18 +163,19 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
     w = search_results['w'].max()
     data = prediction_results.loc[(prediction_results['algorithm'] == 'beam_search') &
                                   (prediction_results['w'] == w)]
-    data = data.loc[(data['k'] > 1) & (data['k'] <= 20) & (data['tree_depth'] == -1), ['problem', 'k', 'test_mcc']]
+    data = data.loc[(data['k'] > 1) & (data['k'] <= 20) & (data['model'] == 'Random forest') &
+                    (data['n_estimators'] == 1), ['problem', 'k', 'test_mcc']]
     plt.figure(figsize=(4, 3))
     sns.boxplot(x='k', y='test_mcc', hue='problem', fliersize=0, data=data)
     plt.tight_layout()
     plt.savefig(plot_dir / 'mcc.pdf')
 
-    print('Median MCC per tree depth, using all prediction results:')
-    print(prediction_results.groupby(['problem', 'tree_depth'])[['train_mcc', 'test_mcc']].median().round(2))
-    data = prediction_results[['problem', 'tree_depth', 'train_mcc', 'test_mcc']].copy()
-    print('Train-test MCC difference per tree depth, using all prediction results:')
+    print('Median MCC per model and number of estimators, using all prediction results:')
+    print(prediction_results.groupby(['problem', 'model', 'n_estimators'])[['train_mcc', 'test_mcc']].median().round(2))
+    data = prediction_results[['problem', 'model', 'n_estimators', 'train_mcc', 'test_mcc']].copy()
+    print('Train-test MCC difference per model and number of estimators, using all prediction results:')
     data['train_test_diff'] = data['train_mcc'] - data['test_mcc']
-    print(data.groupby(['problem', 'tree_depth'])['train_test_diff'].describe().round(2))
+    print(data.groupby(['problem', 'model', 'n_estimators'])['train_test_diff'].describe().round(2))
 
     # ----Objective Value----
 
@@ -183,7 +184,8 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
     data = prediction_results.loc[(prediction_results['algorithm'] == 'beam_search') &
                                   (prediction_results['w'] == w)]
     plot_vars = ['test_objective', 'test_vbs', 'test_vws']
-    data = data.loc[(data['k'] != 1) & (data['k'] <= 10) & (data['tree_depth'] == -1), ['problem', 'k'] + plot_vars]
+    data = data.loc[(data['k'] != 1) & (data['k'] <= 10) & (data['model'] == 'Random forest') &
+                    (data['n_estimators'] == 1), ['problem', 'k'] + plot_vars]
     data = data.melt(id_vars=['problem', 'k'], value_vars=plot_vars,
                      var_name='score', value_name='objective')
     plt.figure(figsize=(4, 3))
@@ -204,8 +206,8 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
     print(f'To reach an importance of 50%, one needs {sum(data.sort_values(ascending=False).cumsum() < 50) + 1} features.')
     print('How many features are used in each model?')
     print((prediction_results[importance_cols] > 0).sum(axis='columns').describe().round(2))
-    print('How many features are used in each model of unlimited depth?')
-    print((prediction_results.loc[prediction_results['tree_depth'] == -1, importance_cols] > 0).sum(
+    print('How many features are used in each model with one estimator?')
+    print((prediction_results.loc[prediction_results['n_estimators'] == 1, importance_cols] > 0).sum(
         axis='columns').describe().round(2))
 
 

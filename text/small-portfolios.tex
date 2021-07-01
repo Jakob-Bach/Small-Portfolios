@@ -402,9 +402,11 @@ We employ the three solution approaches from Section~\ref{sec:approach:solution}
 
 All the solution approaches from the previous section use an oracle, the VBS, to choose a solver from the portfolio for an instance.
 We also analyze the more realistic scenario of using a prediction model to recommend a solver.
-To this end, we take the portfolios found by the solution approaches and train a decision tree~\cite{breiman1984classification}.
+To this end, we take the portfolios found by the solution approaches and train a prediction model.
 For each instance, the prediction target is the best solver out of the portfolio.
-To analyze how complex the prediction model needs to be, we vary the depth of the tree from one to five, besides using trees of unlimited depth.
+We use two model types: random forest~\cite{breiman2001random} and gradient-boosted trees~\cite{friedman2001greedy}.
+Preliminary experiments with single decision trees~\cite{breiman1984classification} of limited depth yielded unsatisfactory prediction performance.
+To analyze if prediction performance improves due to ensembling, we train models with one, ten, and 100 trees.
 We evaluate prediction performance in two ways:
 
 \begin{itemize}
@@ -436,7 +438,7 @@ We replace missing values of features with their training-set mean.
 
 We implement our experimental design in Python and make our code available online\footnote{\url{https://github.com/Jakob-Bach/Small-Portfolios}}.
 To create the dataset of solver runtimes, we use the package~\emph{gbd-tools}~\cite{iser2020collaborative}.
-As prediction models, we use decision trees from the package \emph{scikit-learn}~\cite{scikit-learn}.
+As prediction models, we use the package \emph{scikit-learn}~\cite{scikit-learn}.
 To solve the small portfolio-problem exactly, we use the package \emph{mip}~\cite{python-mip}.
 
 \section{Evaluation}

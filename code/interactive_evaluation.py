@@ -211,8 +211,8 @@ print(contributions.corr())
 
 data = prediction_results.loc[
     (prediction_results['problem'] == 'PAR2') & (prediction_results['algorithm'] == 'mip_search'),
-    ['tree_depth', 'train_mcc', 'test_mcc', 'train_objective', 'test_objective', 'train_vbs',
-     'test_vbs', 'train_vws', 'test_vws', 'prediction_time', 'search_time', 'k']].corr()
+    ['train_mcc', 'test_mcc', 'train_objective', 'test_objective', 'train_vbs', 'test_vbs',
+     'train_vws', 'test_vws', 'prediction_time', 'search_time', 'k']].corr()
 sns.heatmap(data, vmin=-1, vmax=1, cmap='RdYlGn', annot=True, cbar=False, fmt='.2f')
 
 
@@ -221,8 +221,8 @@ sns.heatmap(data, vmin=-1, vmax=1, cmap='RdYlGn', annot=True, cbar=False, fmt='.
 
 # Correlation between prediction_performance of the two problems
 data = prediction_results.loc[prediction_results['algorithm'] == 'mip_search',
-                              ['problem', 'k', 'tree_depth', 'train_mcc', 'test_mcc']]
-print(data.pivot(index=['k', 'tree_depth'], columns='problem', values=['train_mcc', 'test_mcc']).corr())
+                              ['problem', 'k', 'model', 'n_estimators', 'train_mcc', 'test_mcc']]
+print(data.pivot(index=['k', 'model', 'n_estimators'], columns='problem', values=['train_mcc', 'test_mcc']).corr())
 
 # Prediction performance over k
 # 1) Choose *one* search, e.g.
@@ -231,8 +231,8 @@ data = prediction_results.loc[(prediction_results['algorithm'] == 'beam_search')
                               (prediction_results['w'] == 100)]
 data = prediction_results.loc[prediction_results['algorithm'] == 'exhaustive_search']
 # 2) Plot
-data = data.loc[data['k'] != 1, ['problem', 'k', 'tree_depth', 'train_mcc', 'test_mcc']]
-data = data.melt(id_vars=['problem', 'k', 'tree_depth'], value_vars=['train_mcc', 'test_mcc'],
+data = data.loc[data['k'] != 1, ['problem', 'k', 'model', 'n_estimators', 'train_mcc', 'test_mcc']]
+data = data.melt(id_vars=['problem', 'k', 'model', 'n_estimators'], value_vars=['train_mcc', 'test_mcc'],
                  var_name='split', value_name='mcc')
 # - If multiple performances per k:
 sns.boxplot(x='k', y='mcc', hue='split', data=data[data['problem'] == 'PAR2'])
@@ -241,9 +241,9 @@ sns.boxplot(x='k', y='mcc', hue='split', data=data[data['problem'] == 'Unsolved'
 sns.lineplot(x='k', y='mcc', hue='split', data=data[data['problem'] == 'PAR2'])
 sns.lineplot(x='k', y='mcc', hue='split', data=data[data['problem'] == 'Unsolved'])
 
-# Performance over tree depth (used melted dataset from above)
-sns.boxplot(x='tree_depth', y='mcc', hue='split', data=data[data['problem'] == 'PAR2'])
-sns.boxplot(x='tree_depth', y='mcc', hue='split', data=data[data['problem'] == 'Unsolved'])
+# Performance over number of estimators (use melted dataset from above)
+sns.boxplot(x='n_estimators', y='mcc', hue='split', data=data[data['problem'] == 'PAR2'])
+sns.boxplot(x='n_estimators', y='mcc', hue='split', data=data[data['problem'] == 'Unsolved'])
 
 
 # ---Analyze performance (objective value) of predicted solvers---
@@ -266,8 +266,8 @@ plot_vars = ['train_objective', 'test_objective']
 plot_vars = ['train_objective_ratio', 'test_objective_ratio']
 plot_vars = ['test_objective', 'test_vbs', 'test_vws']
 # 4) Plot
-data = data.loc[data['k'] != 1, ['problem', 'k', 'tree_depth'] + plot_vars]
-data = data.melt(id_vars=['problem', 'k', 'tree_depth'], value_vars=plot_vars,
+data = data.loc[data['k'] != 1, ['problem', 'k', 'model', 'n_estimators'] + plot_vars]
+data = data.melt(id_vars=['problem', 'k', 'model', 'n_estimators'], value_vars=plot_vars,
                  var_name='category', value_name='objective')
 # - a) If multiple performances per k:
 sns.boxplot(x='k', y='objective', hue='category', data=data[data['problem'] == 'PAR2'])
@@ -280,12 +280,13 @@ sns.lineplot(x='k', y='objective', hue='category', data=data[data['problem'] == 
 # 1) Choose *one* search, e.g.
 data = prediction_results[
     (prediction_results['algorithm'] == 'beam_search') & (prediction_results['w'] == 100) &
-    (prediction_results['k'] == 2) & (prediction_results['tree_depth'] == -1) &
-    (prediction_results['problem'] == 'PAR2')].sort_values(by='test_vbs').reset_index()
+    (prediction_results['k'] == 2) & (prediction_results['model'] == 'Random forest') &
+    (prediction_results['n_estimators'] == 1) & (prediction_results['problem'] == 'PAR2')].sort_values(
+        by='test_vbs').reset_index()
 data = prediction_results[
     (prediction_results['algorithm'] == 'exhaustive_search') & (prediction_results['k'] == 2) &
-    (prediction_results['tree_depth'] == -1) & (prediction_results['problem'] == 'PAR2')].sort_values(
-        by='test_vbs').reset_index().iloc[:1000]
+    (prediction_results['model'] == 'Random forest') & (prediction_results['n_estimators'] == 1) &
+    (prediction_results['problem'] == 'PAR2')].sort_values(by='test_vbs').reset_index().iloc[:1000]
 # 2) Plot
 data[['test_vbs', 'test_objective', 'test_vws']].plot.line()
 

@@ -3,17 +3,20 @@
 Prediction-model-based portfolio evaluation (instead of just VBS-based one).
 """
 
+import itertools
 import warnings
 
 import pandas as pd
+import sklearn.ensemble
 import sklearn.impute
 import sklearn.metrics
 import sklearn.model_selection
-import sklearn.tree
 
 
 CV_FOLDS = 10
-TREE_DEPTHS = [1, 2, 3, 4, 5, None]
+MODELS = {'Random forest': sklearn.ensemble.RandomForestClassifier,
+          'Gradient boosting': sklearn.ensemble.GradientBoostingClassifier}
+N_ESTIMATORS = [1, 10, 100]
 
 
 # For "runtimes" of a portfolio and corresponding instance "feature", train prediction model
@@ -40,12 +43,12 @@ def predict_and_evaluate(runtimes: pd.DataFrame, features: pd.DataFrame) -> pd.D
         X_train = pd.DataFrame(imputer.fit_transform(X=X_train), columns=list(X_train))
         X_test = pd.DataFrame(imputer.transform(X=X_test), columns=list(X_test))
         model_results = []
-        for tree_depth in TREE_DEPTHS:
-            model = sklearn.tree.DecisionTreeClassifier(random_state=25, max_depth=tree_depth)
+        for model_name, n_estimators in itertools.product(MODELS, N_ESTIMATORS):
+            model = MODELS[model_name](random_state=25, n_estimators=n_estimators)
             model.fit(X=X_train, y=y_train)
             pred_train = model.predict(X_train)
             pred_test = model.predict(X_test)
-            result = {'tree_depth': -1 if tree_depth is None else tree_depth}  # None would be dropped in groupby()
+            result = {'model': model_name, 'n_estimators': n_estimators}
             result['train_mcc'] = sklearn.metrics.matthews_corrcoef(y_true=y_train, y_pred=pred_train)
             result['test_mcc'] = sklearn.metrics.matthews_corrcoef(y_true=y_test, y_pred=pred_test)
             # To compute objective value, we need to extract runtime of predicted solver for each
@@ -63,4 +66,4 @@ def predict_and_evaluate(runtimes: pd.DataFrame, features: pd.DataFrame) -> pd.D
     results = pd.concat(results).reset_index(drop=True)
     feature_importances = pd.DataFrame(feature_importances, columns=['imp.' + x for x in features.columns])
     results = pd.concat([results, feature_importances], axis='columns')
-    return results.groupby('tree_depth').mean().reset_index()  # average over folds
+    return results.groupby(['model', 'n_estimators']).mean().reset_index()  # average over folds
