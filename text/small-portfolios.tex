@@ -350,6 +350,12 @@ With a minor transformation, this is an upper bound on the cost of a portfolio f
 	\label{eq:upper-bound}
 \end{equation}
 
+\subsubsection{K-Best Search}
+
+This is a baseline used in~\cite{nof2020real}.
+It sorts all solvers by their individual performance and then picks the top $k$ from this list.
+Thus, opposed to beam search, it does not consider how solvers within a portfolio interact, e.g., if they complement each other.
+
 \section{Experimental Design}
 \label{sec:experimental-design}
 
@@ -387,6 +393,9 @@ We employ the three solution approaches from Section~\ref{sec:approach:solution}
 	\item \emph{Beam Search}:
 	We use this approach to search for good portfolios heuristically.
 	We evaluate all $k \in \{1, \dots, |S|\}$ and also vary the beam width $w \in \{1, 2, \dots, 10, 20, \dots, 100\}$.
+	\item \emph{K-Best Search}:
+	We use this approach to have a simple baseline for beam search.
+	We evaluate all $k \in \{1, \dots, |S|\}$.
 \end{itemize}
 
 \subsection{Prediction Approaches}

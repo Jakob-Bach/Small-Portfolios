@@ -1,6 +1,7 @@
 """Portfolio search
 
-Algorithms to search for k-portfolios.
+Algorithms to search for k-portfolios. All algorithms return a list of portfolios and objective
+values.
 """
 
 import itertools
@@ -61,4 +62,19 @@ def beam_search(runtimes: pd.DataFrame, k: int, w: int) -> List[Tuple[List[str],
         new_portfolios.sort(key=lambda x: x[1])  # sort by runtime
         old_portfolios = new_portfolios[:w]  # retain w best solutions
         results.extend(old_portfolios)
+    return results
+
+
+# Rank solvers by individual performance and create k-portfolio by taking top k solvers from this
+# list.
+# Idea from Nof, Y., & Strichman, O. (2020). Real-time solving of computationally hard problems
+# using optimal algorithm portfolios.
+# Implementation here is similar to our beam-search implementation, i.e., not only k-portfolios
+# are returned, but also all smaller portfolios (so solver ranking has only to be done once,
+# though effort for this is neglectable anyway).
+def kbest_search(runtimes: pd.DataFrame, k: int) -> List[Tuple[List[str], float]]:
+    results = []
+    sorted_solvers = runtimes.mean().sort_values().index.to_list()
+    for i in range(k):
+        results.append((sorted_solvers[:i], runtimes[sorted_solvers[:i]].min(axis='columns').mean()))
     return results

@@ -34,6 +34,8 @@ def define_experimental_design(problems: Dict[str, pd.DataFrame]) -> List[Dict[s
         for w in list(range(1, 11)) + list(range(20, 101, 10)):
             results.append({'problem': problem_name, 'func': 'beam_search',
                             'args': {'runtimes': problem_data, 'k': 48, 'w': w}})
+        results.append({'problem': problem_name, 'func': 'kbest_search',
+                        'args': {'runtimes': problem_data, 'k': 48}})
     for i, result in enumerate(results):
         result['settings_id'] = i
     return results
