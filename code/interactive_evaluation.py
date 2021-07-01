@@ -97,9 +97,8 @@ data = search_results[(search_results['algorithm'] == 'beam_search') & (search_r
 sns.boxplot(x='k', y='objective_value', data=data[data['problem'] == 'PAR2'])
 sns.boxplot(x='k', y='objective_value', data=data[data['problem'] == 'Unsolved'])
 
-# Objective of exhaustive search over k
-data = search_results[search_results['algorithm'] == 'exhaustive_search']
-print(data.groupby(['problem', 'k'])['objective_value'].describe().round(2))
+# Objective of random search over k
+data = search_results[search_results['algorithm'] == 'random_search']
 sns.boxplot(x='k', y='objective_value', data=data[data['problem'] == 'PAR2'])
 sns.boxplot(x='k', y='objective_value', data=data[data['problem'] == 'Unsolved'])
 
@@ -115,8 +114,8 @@ assert (data.groupby(['problem', 'w'])['search_time'].nunique() == 1).all()
 data = data.groupby(['problem', 'w'])['search_time'].first().reset_index()
 sns.lineplot(x='w', y='search_time', hue='problem', data=data)
 
-# Search time of exhaustive search over k
-data = search_results[search_results['algorithm'] == 'exhaustive_search']
+# Search time of random search over k
+data = search_results[search_results['algorithm'] == 'random_search']
 # One search yields multiple solutions for a particular k and problem, but search time is same:
 assert (data.groupby(['problem', 'k'])['settings_id'].nunique() == 1).all()
 assert (data.groupby(['problem', 'k'])['search_time'].nunique() == 1).all()
@@ -158,16 +157,14 @@ sns.lineplot(x='k', y='card_diff', hue='problem', data=data)
 
 # Count solver occurrence for a certain beam-search parametrization; can do this for any k, but for
 # very small and big k, there might not be w * |problems| unique portfolios; also, w should have a
-# certain size, or else there are not much portfolios to count over; alternatively, can also sort
-# results from exhaustive search by objective value and take top w
+# certain size, or else there are not much portfolios to count over
 print(data.groupby('k').size())
 w = search_results['w'].max()
 k = 4
 data = search_results[(search_results['algorithm'] == 'beam_search') & (search_results['w'] == w)].copy()
 plot_data = data.loc[data['k'] == k, ['problem', 'solvers']].explode('solvers').value_counts()
 # Need to take care of solvers which do not appear in any portfolio; add them to data by re-indexing:
-solver_names = search_results.loc[(search_results['algorithm'] == 'exhaustive_search') &
-                                  (search_results['k'] == 1), 'solvers'].explode().unique()
+solver_names = runtimes.columns
 new_index = pd.MultiIndex.from_product([data['problem'].unique(), solver_names], names=['problem', 'solvers'])
 plot_data = plot_data.reindex(new_index).reset_index().rename(columns={0: 'occurrence'}).fillna(0)
 plot_data['rank'] = plot_data.groupby('problem')['occurrence'].rank(ascending=False, method='first')
@@ -182,11 +179,11 @@ plot_data = plot_data[plot_data['problem'] == 'PAR2'].drop(columns='problem')
 plot_data = plot_data.pivot(index='k', columns='solvers', values='occurrence')
 sns.heatmap(plot_data, cmap='flare')
 
-# Relate solver occurence (no/yes) in portfolio to objective value for exhaustive-search data
+# Relate solver occurence (no/yes) in portfolio to objective value for random-search data
 k = 4  # pick any (valid) k
-data = search_results[(search_results['algorithm'] == 'exhaustive_search') &
+data = search_results[(search_results['algorithm'] == 'random_search') &
                       (search_results['k'] == k) & (search_results['problem'] == 'PAR2')].copy()
-solvers = search_results.loc[(search_results['algorithm'] == 'exhaustive_search') &
+solvers = search_results.loc[(search_results['algorithm'] == 'random_search') &
                              (search_results['k'] == 1) & (search_results['problem'] == 'PAR2'),
                              ['solvers', 'objective_value']].explode('solvers')
 solvers.rename(columns={'solvers': 'solver_name'}, inplace=True)
@@ -229,7 +226,7 @@ print(data.pivot(index=['k', 'model', 'n_estimators'], columns='problem', values
 data = prediction_results.loc[prediction_results['algorithm'] == 'mip_search']
 data = prediction_results.loc[(prediction_results['algorithm'] == 'beam_search') &
                               (prediction_results['w'] == 100)]
-data = prediction_results.loc[prediction_results['algorithm'] == 'exhaustive_search']
+data = prediction_results.loc[prediction_results['algorithm'] == 'random_search']
 # 2) Plot
 data = data.loc[data['k'] != 1, ['problem', 'k', 'model', 'n_estimators', 'train_mcc', 'test_mcc']]
 data = data.melt(id_vars=['problem', 'k', 'model', 'n_estimators'], value_vars=['train_mcc', 'test_mcc'],
@@ -260,7 +257,7 @@ for split in ['train', 'test']:
 # 2) Choose *one* search, e.g.
 data = data.loc[data['algorithm'] == 'mip_search']
 data = data.loc[(data['algorithm'] == 'beam_search') & (data['w'] == 100)]
-data = data.loc[data['algorithm'] == 'exhaustive_search']
+data = data.loc[data['algorithm'] == 'random_search']
 # 3) Choose *one* scenario, e.g.
 plot_vars = ['train_objective', 'test_objective']
 plot_vars = ['train_objective_ratio', 'test_objective_ratio']
@@ -284,7 +281,7 @@ data = prediction_results[
     (prediction_results['n_estimators'] == 1) & (prediction_results['problem'] == 'PAR2')].sort_values(
         by='test_vbs').reset_index()
 data = prediction_results[
-    (prediction_results['algorithm'] == 'exhaustive_search') & (prediction_results['k'] == 2) &
+    (prediction_results['algorithm'] == 'random_search') & (prediction_results['k'] == 2) &
     (prediction_results['model'] == 'Random forest') & (prediction_results['n_estimators'] == 1) &
     (prediction_results['problem'] == 'PAR2')].sort_values(by='test_vbs').reset_index().iloc[:1000]
 # 2) Plot

@@ -25,9 +25,9 @@ import search
 def define_experimental_design(problems: Dict[str, pd.DataFrame]) -> List[Dict[str, Any]]:
     results = []
     for problem_name, problem_data in problems.items():
-        for k in range(1, 5):
-            results.append({'problem': problem_name, 'func': 'exhaustive_search',
-                            'args': {'runtimes': problem_data, 'k': k}})
+        for k in range(1, 49):
+            results.append({'problem': problem_name, 'func': 'random_search',
+                            'args': {'runtimes': problem_data, 'k': k, 'w': 1000}})
         for k in range(1, 49):
             results.append({'problem': problem_name, 'func': 'mip_search',
                             'args': {'runtimes': problem_data, 'k': k}})

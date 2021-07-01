@@ -58,6 +58,7 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
 
     # --Exhaustive Search--
 
+    # TODO: DEPRECATED, needs to be replaced with random search
     print('Table 1: Objective value for exhaustive search:')
     data = search_results[search_results['algorithm'] == 'exhaustive_search']
     data = data.groupby(['problem', 'k'])['objective_value'].describe().round().astype(int)
@@ -145,8 +146,8 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
     print(data[data['k'] <= 20].groupby(['problem', 'k'])['occurrence'].max().round(3))
 
     k = 4
-    print(f'How is solver occurrence in {k=}-portfolio correlated to objective value?')
-    data = search_results[(search_results['algorithm'] == 'exhaustive_search') &
+    print(f'How is solver occurrence in random {k=}-portfolio correlated to objective value?')
+    data = search_results[(search_results['algorithm'] == 'random_search') &
                           (search_results['k'] == k)].copy()
     for solver_name in runtimes.columns:
         data[solver_name] = data['solvers'].apply(lambda x: solver_name in x)  # is solver in portfolio?

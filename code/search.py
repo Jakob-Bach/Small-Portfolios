@@ -6,6 +6,7 @@ values.
 
 import itertools
 from typing import List, Tuple
+import random
 
 import mip
 import pandas as pd
@@ -16,6 +17,16 @@ import z3
 def exhaustive_search(runtimes: pd.DataFrame, k: int) -> List[Tuple[List[str], float]]:
     return [(list(portfolio), runtimes[list(portfolio)].min(axis='columns').mean())
             for portfolio in itertools.combinations(runtimes.columns, k)]
+
+
+# Randomly sample k-portfolios. Repeat w times.
+def random_search(runtimes: pd.DataFrame, k: int, w: int) -> List[Tuple[List[str], float]]:
+    rng = random.Random(25)
+    results = []
+    for _ in range(w):
+        portfolio = rng.sample(list(runtimes.columns), k=k)
+        results.append((portfolio, runtimes[portfolio].min(axis='columns').mean()))
+    return results
 
 
 # Determine optimal k-portfolio by solving an integer problem exactly.

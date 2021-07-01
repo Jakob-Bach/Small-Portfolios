@@ -114,14 +114,16 @@ Thus, they focus on different instances and solvers than we, though the evaluati
 Similar to us, they vary the portfolio size $k$.
 They compare several classification methods in portfolios, besides adapting complex SAT portfolio approaches like SATzilla.
 In contrast, we focus on one simple classification model, vary its complexity, and analyze feature importance.
-Also, we analyze parametrization of beam search and compare all portfolios for small $k$ exhaustively.
+Also, we analyze parametrization of beam search.
+Further, we compare against random portfolios of size $k$.
 Finally, we solve the small-portfolio-problem exactly, while \cite{amadini2014empirical} only use heuristic search algorithms.
 
 \cite{nof2020real} formalizes the small-portfolio problem as maximization problem.
 They show submodularity and NP-completeness.
 Also, they provide an SMT encoding to exactly solve the problem.
 In their evaluation, they use beam search with a beam width of one.
-In contrast, we analyze parametrization of beam search and compare all portfolios for small $k$ exhaustively.
+In contrast, we analyze parametrization of beam search.
+Further, we compare against random portfolios of size $k$.
 Also, \cite{nof2020real} does not analyze portfolios with prediction models.
 For the exact solution, we provide an encoding as integer-problem.
 Finally, their domain is different than ours, as they focus on instances of an allocation problem whose solution is evaluated already after 0.1 s.
@@ -199,9 +201,10 @@ For each solver out of $S$, one needs to decide whether it becomes part of the p
 
 The simplest way to solve the \ref{eq:small-portfolio-problem} is by exhaustively searching all portfolios with at most $k$ solvers.
 Due to the use of a VBS, adding a solver to the portfolio cannot increase costs.
-Thus, it is sufficient to search over all portfolios with exactly $k$ solvers.
+Thus, it is sufficient to search over all portfolios with exactly $k$ solvers, ignoring smaller portfolios.
 Still, there are $\binom{n}{k}$ possible portfolios to search.
 This can become infeasible, given sufficiently large $n$ and $k \gg 1$ as well as $k \ll n$.
+For example, with $n=48$ solvers in our dataset, there are already 1128 portfolios for $k=2$, but roughly $6.54 * 10^9$ portfolios for $k=10$.
 
 \subsubsection{Exact Search: Integer Programming}
 
@@ -382,18 +385,18 @@ We analyze the \ref{eq:small-portfolio-problem} for two definitions of runtime i
 	\end{align*}
 \end{itemize}
 
-We employ the three solution approaches from Section~\ref{sec:approach:solution} to search for portfolios:
+We employ the four solution approaches from Section~\ref{sec:approach:solution} to search for portfolios:
 
 \begin{itemize}
-	\item \emph{Exhaustive}:
-	We use this approach to find and compare all portfolios of a given size $k$.
-	However, to keep the runtime under control, we limit our experiments to $k \in \{1, \dots, 4\}$.
+	\item \emph{Random search}:
+	Exhaustively evaluating all portfolios for all sizes $k$ is too expensive in our scenario, in particular, when training prediction models for each portfolio, as there are $2^{48}$ portfolios overall.
+	To still get an idea how the performance of arbitrary portfolios is distributed, we randomly sample 1000 portfolios for each $k$.
 	\item \emph{Exact search}:
 	We solve the \ref{eq:small-portfolio-integer-problem} to exactly determine the best portfolio for each $k \in \{1, \dots, |S|\}$.
-	\item \emph{Beam Search}:
+	\item \emph{Beam search}:
 	We use this approach to search for good portfolios heuristically.
 	We evaluate all $k \in \{1, \dots, |S|\}$ and also vary the beam width $w \in \{1, 2, \dots, 10, 20, \dots, 100\}$.
-	\item \emph{K-Best Search}:
+	\item \emph{K-best search}:
 	We use this approach to have a simple baseline for beam search.
 	We evaluate all $k \in \{1, \dots, |S|\}$.
 \end{itemize}
