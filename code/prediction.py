@@ -14,8 +14,7 @@ import sklearn.model_selection
 
 
 CV_FOLDS = 10
-MODELS = {'Random forest': sklearn.ensemble.RandomForestClassifier,
-          'Gradient boosting': sklearn.ensemble.GradientBoostingClassifier}
+MODELS = {'Random forest': sklearn.ensemble.RandomForestClassifier}
 N_ESTIMATORS = [1, 10, 100]
 
 
