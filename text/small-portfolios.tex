@@ -385,6 +385,9 @@ We analyze the \ref{eq:small-portfolio-problem} for two definitions of runtime i
 	\end{align*}
 \end{itemize}
 
+To test generalization of search and prediction approaches, we conduct five-fold cross-validation.
+I.e., we split the instances of each of the two problems five times into a training set and a set set.
+We search for portfolios and train prediction models only on the training sets.
 We employ the four solution approaches from Section~\ref{sec:approach:solution} to search for portfolios:
 
 \begin{itemize}
@@ -422,7 +425,6 @@ We evaluate prediction performance in two ways:
 	We use MCC instead of simpler metrics like accuracy, as the class labels might be imbalanced.
 	I.e., one solver might be the fastest for most of the instances, and always predicting that solver would already yield a high accuracy.
 	MCC has a range of $[-1,1]$, being zero for both random guessing and always guessing the same solver.
-	To test how well predictions generalize, we compute MCC in 10-fold stratified cross-validation.
 \end{itemize}
 
 \subsection{Dataset}

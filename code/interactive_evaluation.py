@@ -42,51 +42,46 @@ print(runtimes[(runtimes == prepare_dataset.PENALTY).sum(axis='columns') ==
                (runtimes.shape[1] - 1)].idxmin(axis='columns').value_counts())
 
 # Objective of MIP search (exact solution) over k
-# Create table with optimal VBS values, reproducing results from the paper "SAT Competition 2020";
-# need to account for instances not solved by any solver, which we excluded from our experiments
-data = search_results[(search_results['algorithm'] == 'mip_search') & (search_results['problem'] == 'PAR2')].copy()
-data['full_objective_value'] = data['objective_value'] + 10000 * 84 / 400
-print(data[['full_objective_value', 'k']].set_index('k').round(1))
 # Plot
 data = search_results[search_results['algorithm'] == 'mip_search'].copy()
-sns.lineplot(x='k', y='objective_value', data=data[data['problem'] == 'PAR2'])
-sns.lineplot(x='k', y='objective_value', data=data[data['problem'] == 'Unsolved'])
+sns.lineplot(x='k', y='train_objective', data=data[data['problem'] == 'PAR2'])
+sns.lineplot(x='k', y='train_objective', data=data[data['problem'] == 'Unsolved'])
 # Gain in objectve value over k
-data['objective_gain'] = data.groupby('problem')['objective_value'].transform(lambda x: (x.shift() - x) / x.shift())
+data['objective_gain'] = data.groupby('problem')['train_objective'].transform(lambda x: (x.shift() - x) / x.shift())
 data['objective_gain'] = data['objective_gain'].fillna(0)
 sns.lineplot(x='k', y='objective_gain', data=data[data['problem'] == 'PAR2'])
 sns.lineplot(x='k', y='objective_gain', data=data[data['problem'] == 'Unsolved'])
 
 # Correlation between objective value for the two problems
-data = search_results.loc[search_results['algorithm'] == 'mip_search', ['objective_value', 'problem', 'k']]
-print(data.pivot(index='k', columns='problem', values='objective_value').corr())
+data = search_results.loc[search_results['algorithm'] == 'mip_search', ['train_objective', 'problem', 'k']]
+print(data.pivot(index='k', columns='problem', values='train_objective').corr())
 
 # Objective of best beam-search solution over k and w, compared to exact solution
 # Extract best solution for each k and w first (instead of using all solutions per k and w):
 data = search_results[search_results['algorithm'] == 'beam_search'].groupby(
-    ['problem', 'algorithm', 'k', 'w'])['objective_value'].min().reset_index()
+    ['problem', 'algorithm', 'k', 'w'])['train_objective'].min().reset_index()
 mip_data = search_results.loc[search_results['algorithm'] == 'mip_search',
-                              ['problem', 'algorithm', 'k', 'w', 'objective_value']]
+                              ['problem', 'algorithm', 'k', 'w', 'train_objective']]
 bound_data = mip_data.copy()
 bound_data['algorithm'] = 'upper_bound'
 c_w = runtimes.max(axis='columns').mean()  # VWS performance
-bound_data.loc[bound_data['problem'] == 'PAR2', 'objective_value'] = c_w / math.e +\
-    (1 - 1 / math.e) * bound_data.loc[bound_data['problem'] == 'PAR2', 'objective_value']
+bound_data.loc[bound_data['problem'] == 'PAR2', 'train_objective'] = c_w / math.e +\
+    (1 - 1 / math.e) * bound_data.loc[bound_data['problem'] == 'PAR2', 'train_objective']
 c_w = (runtimes == prepare_dataset.PENALTY).astype(int).max(axis='columns').mean()
-bound_data.loc[bound_data['problem'] == 'Unsolved', 'objective_value'] = c_w / math.e +\
-    (1 - 1 / math.e) * bound_data.loc[bound_data['problem'] == 'Unsolved', 'objective_value']
+bound_data.loc[bound_data['problem'] == 'Unsolved', 'train_objective'] = c_w / math.e +\
+    (1 - 1 / math.e) * bound_data.loc[bound_data['problem'] == 'Unsolved', 'train_objective']
 data = pd.concat([data, mip_data, bound_data]).reset_index(drop=True)
-data['objective_frac'] = data.groupby(['problem', 'k'])['objective_value'].apply(lambda x: x / x.min())
-data['objective_diff'] = data.groupby(['problem', 'k'])['objective_value'].apply(lambda x: x - x.min())
+data['objective_frac'] = data.groupby(['problem', 'k'])['train_objective'].apply(lambda x: x / x.min())
+data['objective_diff'] = data.groupby(['problem', 'k'])['train_objective'].apply(lambda x: x - x.min())
 # Division might introduce NA or inf if objective is 0:
 data['objective_frac'] = data['objective_frac'].replace([float('nan'), float('inf')], 1)
 assert (data.loc[data['algorithm'] == 'mip_search', 'objective_frac'] == 1).all()
 print(data[data['algorithm'] == 'beam_search'].groupby(['problem', 'w'])['objective_frac'].describe(percentiles=[0.5]))
-sns.boxplot(x='k', y='objective_value', data=data[data['problem'] == 'PAR2'])
-sns.boxplot(x='k', y='objective_value', data=data[(data['problem'] == 'PAR2') &
+sns.boxplot(x='k', y='train_objective', data=data[data['problem'] == 'PAR2'])
+sns.boxplot(x='k', y='train_objective', data=data[(data['problem'] == 'PAR2') &
                                                   (data['algorithm'] != 'upper_bound')])
-sns.boxplot(x='k', y='objective_value', data=data[data['problem'] == 'Unsolved'])
-sns.boxplot(x='k', y='objective_value', data=data[(data['problem'] == 'Unsolved') &
+sns.boxplot(x='k', y='train_objective', data=data[data['problem'] == 'Unsolved'])
+sns.boxplot(x='k', y='train_objective', data=data[(data['problem'] == 'Unsolved') &
                                                   (data['algorithm'] != 'upper_bound')])
 sns.boxplot(x='w', y='objective_frac', data=data[data['problem'] == 'PAR2'])
 sns.boxplot(x='w', y='objective_diff', data=data[data['problem'] == 'Unsolved'])
@@ -94,13 +89,13 @@ sns.boxplot(x='w', y='objective_diff', data=data[data['problem'] == 'Unsolved'])
 # Objective of all beam-search solutions over k and w
 w = search_results['w'].max()  # makes sense to use a somewhat large w
 data = search_results[(search_results['algorithm'] == 'beam_search') & (search_results['w'] == w)]
-sns.boxplot(x='k', y='objective_value', data=data[data['problem'] == 'PAR2'])
-sns.boxplot(x='k', y='objective_value', data=data[data['problem'] == 'Unsolved'])
+sns.boxplot(x='k', y='train_objective', data=data[data['problem'] == 'PAR2'])
+sns.boxplot(x='k', y='train_objective', data=data[data['problem'] == 'Unsolved'])
 
 # Objective of random search over k
 data = search_results[search_results['algorithm'] == 'random_search']
-sns.boxplot(x='k', y='objective_value', data=data[data['problem'] == 'PAR2'])
-sns.boxplot(x='k', y='objective_value', data=data[data['problem'] == 'Unsolved'])
+sns.boxplot(x='k', y='train_objective', data=data[data['problem'] == 'PAR2'])
+sns.boxplot(x='k', y='train_objective', data=data[data['problem'] == 'Unsolved'])
 
 
 # ---Analyze search time---
@@ -183,20 +178,20 @@ sns.heatmap(plot_data, cmap='flare')
 k = 4  # pick any (valid) k
 data = search_results[(search_results['algorithm'] == 'random_search') &
                       (search_results['k'] == k) & (search_results['problem'] == 'PAR2')].copy()
-solvers = search_results.loc[(search_results['algorithm'] == 'random_search') &
+solvers = search_results.loc[(search_results['algorithm'] == 'beam_search') & (search_results['w'] == 100) &
                              (search_results['k'] == 1) & (search_results['problem'] == 'PAR2'),
-                             ['solvers', 'objective_value']].explode('solvers')
+                             ['solvers', 'train_objective']].explode('solvers')
 solvers.rename(columns={'solvers': 'solver_name'}, inplace=True)
-solvers['single_rank'] = solvers['objective_value'].rank()
+solvers['single_rank'] = solvers['train_objective'].rank()
 for solver_name in solvers['solver_name']:
     data[solver_name] = data['solvers'].apply(lambda x: solver_name in x)
 # Correlation
-print(data[solver_names].corrwith(data['objective_value'], method='spearman').describe().round(2))
+print(data[solver_names].corrwith(data['train_objective'], method='spearman').describe().round(2))
 # Average contribution (reduction in score) - might be slightly unfair, as we don't analyze what
 # happens when adding a solver, but compare all portfolios with solver to all without solver
 contributions = pd.DataFrame([{
     'solver_name': solver_name,
-    'avg_contribution': float(data[['objective_value', solver_name]].groupby(solver_name).mean(
+    'avg_contribution': float(data[['train_objective', solver_name]].groupby(solver_name).mean(
         ).sort_index(ascending=False).diff().iloc[1])} for solver_name in solvers['solver_name']])
 contributions = contributions.merge(solvers[['solver_name', 'single_rank']])
 print(contributions.sort_values(by='avg_contribution', ascending=False))
@@ -208,7 +203,7 @@ print(contributions.corr())
 
 data = prediction_results.loc[
     (prediction_results['problem'] == 'PAR2') & (prediction_results['algorithm'] == 'mip_search'),
-    ['train_mcc', 'test_mcc', 'train_objective', 'test_objective', 'train_vbs', 'test_vbs',
+    ['train_pred_mcc', 'test_pred_mcc', 'train_pred_objective', 'test_pred_objective', 'train_vbs', 'test_vbs',
      'train_vws', 'test_vws', 'prediction_time', 'search_time', 'k']].corr()
 sns.heatmap(data, vmin=-1, vmax=1, cmap='RdYlGn', annot=True, cbar=False, fmt='.2f')
 
@@ -218,8 +213,9 @@ sns.heatmap(data, vmin=-1, vmax=1, cmap='RdYlGn', annot=True, cbar=False, fmt='.
 
 # Correlation between prediction_performance of the two problems
 data = prediction_results.loc[prediction_results['algorithm'] == 'mip_search',
-                              ['problem', 'k', 'model', 'n_estimators', 'train_mcc', 'test_mcc']]
-print(data.pivot(index=['k', 'model', 'n_estimators'], columns='problem', values=['train_mcc', 'test_mcc']).corr())
+                              ['problem', 'k', 'model', 'n_estimators', 'train_pred_mcc', 'test_pred_mcc']]
+print(data.pivot(index=['k', 'model', 'n_estimators'], columns='problem',
+                 values=['train_pred_mcc', 'test_pred_mcc']).corr())
 
 # Prediction performance over k
 # 1) Choose *one* search, e.g.
@@ -228,8 +224,8 @@ data = prediction_results.loc[(prediction_results['algorithm'] == 'beam_search')
                               (prediction_results['w'] == 100)]
 data = prediction_results.loc[prediction_results['algorithm'] == 'random_search']
 # 2) Plot
-data = data.loc[data['k'] != 1, ['problem', 'k', 'model', 'n_estimators', 'train_mcc', 'test_mcc']]
-data = data.melt(id_vars=['problem', 'k', 'model', 'n_estimators'], value_vars=['train_mcc', 'test_mcc'],
+data = data.loc[data['k'] != 1, ['problem', 'k', 'model', 'n_estimators', 'train_pred_mcc', 'test_pred_mcc']]
+data = data.melt(id_vars=['problem', 'k', 'model', 'n_estimators'], value_vars=['train_pred_mcc', 'test_pred_mcc'],
                  var_name='split', value_name='mcc')
 # - If multiple performances per k:
 sns.boxplot(x='k', y='mcc', hue='split', data=data[data['problem'] == 'PAR2'])
@@ -250,18 +246,18 @@ sns.boxplot(x='n_estimators', y='mcc', hue='split', data=data[data['problem'] ==
 # 1) Prepare data, add normalized metrics
 data = prediction_results.drop(columns=[x for x in prediction_results.columns if x.startswith('imp.')])
 for split in ['train', 'test']:
-    data[f'{split}_objective_diff'] = data[f'{split}_objective'] - data[f'{split}_vbs']
-    data[f'{split}_objective_ratio'] = data[f'{split}_objective'] / data[f'{split}_vbs']
-    data[f'{split}_objective_norm'] = (data[f'{split}_objective'] - data[f'{split}_vbs']) /\
-        (data[f'{split}_vws'] - data[f'{split}_objective'])
+    data[f'{split}_pred_objective_diff'] = data[f'{split}_pred_objective'] - data[f'{split}_vbs']
+    data[f'{split}_pred_objective_ratio'] = data[f'{split}_pred_objective'] / data[f'{split}_vbs']
+    data[f'{split}_pred_objective_norm'] = (data[f'{split}_pred_objective'] - data[f'{split}_vbs']) /\
+        (data[f'{split}_vws'] - data[f'{split}_pred_objective'])
 # 2) Choose *one* search, e.g.
 data = data.loc[data['algorithm'] == 'mip_search']
 data = data.loc[(data['algorithm'] == 'beam_search') & (data['w'] == 100)]
 data = data.loc[data['algorithm'] == 'random_search']
 # 3) Choose *one* scenario, e.g.
-plot_vars = ['train_objective', 'test_objective']
-plot_vars = ['train_objective_ratio', 'test_objective_ratio']
-plot_vars = ['test_objective', 'test_vbs', 'test_vws']
+plot_vars = ['train_pred_objective', 'test_pred_objective']
+plot_vars = ['train_pred_objective_ratio', 'test_pred_objective_ratio']
+plot_vars = ['test_pred_objective', 'test_vbs', 'test_vws']
 # 4) Plot
 data = data.loc[data['k'] != 1, ['problem', 'k', 'model', 'n_estimators'] + plot_vars]
 data = data.melt(id_vars=['problem', 'k', 'model', 'n_estimators'], value_vars=plot_vars,
@@ -285,7 +281,7 @@ data = prediction_results[
     (prediction_results['model'] == 'Random forest') & (prediction_results['n_estimators'] == 1) &
     (prediction_results['problem'] == 'PAR2')].sort_values(by='test_vbs').reset_index().iloc[:1000]
 # 2) Plot
-data[['test_vbs', 'test_objective', 'test_vws']].plot.line()
+data[['test_vbs', 'test_pred_objective', 'test_vws']].plot.line()
 
 
 # ---Analyze feature importance in prediction---

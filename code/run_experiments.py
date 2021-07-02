@@ -9,10 +9,11 @@ import argparse
 import multiprocessing
 import pathlib
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
+import sklearn.model_selection
 import tqdm
 
 import prediction
@@ -20,57 +21,78 @@ import prepare_dataset
 import search
 
 
+CV_FOLDS = 5
+
+
 # Create a list of search algorithms and their parametrization.
-# "problems" should be a dict of problem names and the corresponding datasets (runtimes).
-def define_experimental_design(problems: Dict[str, pd.DataFrame]) -> List[Dict[str, Any]]:
+def define_experimental_design() -> List[Dict[str, Any]]:
     results = []
-    for problem_name, problem_data in problems.items():
-        for k in range(1, 49):
-            results.append({'problem': problem_name, 'func': 'random_search',
-                            'args': {'runtimes': problem_data, 'k': k, 'w': 1000}})
-        for k in range(1, 49):
-            results.append({'problem': problem_name, 'func': 'mip_search',
-                            'args': {'runtimes': problem_data, 'k': k}})
-        for w in list(range(1, 11)) + list(range(20, 101, 10)):
-            results.append({'problem': problem_name, 'func': 'beam_search',
-                            'args': {'runtimes': problem_data, 'k': 48, 'w': w}})
-        results.append({'problem': problem_name, 'func': 'kbest_search',
-                        'args': {'runtimes': problem_data, 'k': 48}})
+    for k in range(1, 49):
+        results.append({'func': 'random_search', 'args': {'k': k, 'w': 1000}})
+    for k in range(1, 49):
+        results.append({'func': 'mip_search', 'args': {'k': k}})
+    for w in list(range(1, 11)) + list(range(20, 101, 10)):
+        results.append({'func': 'beam_search', 'args': {'k': 48, 'w': w}})
+    results.append({'func': 'kbest_search', 'args': {'k': 48}})
     for i, result in enumerate(results):
         result['settings_id'] = i
     return results
 
 
-# Run one portfolio search, wrapped in some other stuff to improve results structure.
-# "settings" should contain the data for the search (algorithm, parametrization, solver runtimes).
-# Return evaluation portfolios and metrics.
-def run_search(settings: Dict[str, Any]) -> pd.DataFrame:
-    search_func = getattr(search, settings['func'])
-    start_time = time.process_time()
-    results = search_func(**settings['args'])  # returns list of tuples
-    end_time = time.process_time()
-    results = pd.DataFrame(results, columns=['solvers', 'objective_value'])
-    results['search_time'] = end_time - start_time
-    results['settings_id'] = settings['settings_id']
-    results['solution_id'] = np.arange(len(results))  # there might be multiple results per search
-    results['problem'] = settings['problem']
-    results['algorithm'] = settings['func']  # add algo's name and params to result
-    for key, value in settings['args'].items():
-        if key != 'runtimes':
-            results[key] = value
-    return results
-
-
-# Evaluate predictions for "runtimes" of one portfolio, using instance "features" for training.
-# Return evaluation metrics, adding "ids" as additional columns to identify the portfolio.
-def run_prediction(runtimes: pd.DataFrame, features: pd.DataFrame, ids: Dict[str, int]) -> pd.DataFrame:
-    start_time = time.process_time()
-    results = prediction.predict_and_evaluate(runtimes=runtimes, features=features)
-    end_time = time.process_time()
-    results['prediction_time'] = end_time - start_time
-    for id_key, id_value in ids.items():
-        results[id_key] = id_value
-    return results
+# Conduct one (actually, more than one, due to cross-validation) portfolio search for a particular
+# dataset (runtimes and instance features): search for portfolios, make predictions, and compute
+# evaluation metrics.
+# - "search_settings" should contain the search function and their arguments.
+# - "problem_name" should identify the dataset.
+# - "runtimes" and "features" are the dataset (with features only being necessary for predictions,
+# not for search).
+# Return two data frames, one with search results and one with prediction results (can be joined).
+def search_and_evaluate(problem_name: str, runtimes: pd.DataFrame, features: pd.DataFrame,
+                        search_settings: Dict[str, Any]) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    search_func = getattr(search, search_settings['func'])
+    splitter = sklearn.model_selection.KFold(n_splits=CV_FOLDS, shuffle=True, random_state=25)
+    search_results = []
+    prediction_results = []
+    for fold_id, (train_idx, test_idx) in enumerate(splitter.split(X=runtimes)):
+        runtimes_train = runtimes.iloc[train_idx]
+        runtimes_test = runtimes.iloc[test_idx]
+        search_args = search_settings['args'].copy()
+        search_args['runtimes'] = runtimes_train
+        start_time = time.process_time()
+        search_result = search_func(**search_args)  # returns list of tuples
+        end_time = time.process_time()
+        search_result = pd.DataFrame(search_result, columns=['solvers', 'train_objective'])
+        search_result['test_objective'] = search_result['solvers'].apply(
+            lambda x: runtimes_test[x].min(axis='columns').mean())
+        search_result['train_vbs'] = runtimes_train.min(axis='columns').mean()
+        search_result['test_vbs'] = runtimes_test.min(axis='columns').mean()
+        search_result['train_vws'] = runtimes_train.max(axis='columns').mean()
+        search_result['test_vws'] = runtimes_test.max(axis='columns').mean()
+        search_result['search_time'] = end_time - start_time
+        search_result['solution_id'] = np.arange(len(search_result))  # there might be multiple results per search
+        search_result['fold_id'] = fold_id
+        search_results.append(search_result)
+        for _, portfolio_result in search_result.iterrows():
+            start_time = time.process_time()
+            prediction_result = prediction.predict_and_evaluate(
+                runtimes_train=runtimes_train[portfolio_result['solvers']],
+                runtimes_test=runtimes_test[portfolio_result['solvers']],
+                features_train=features.iloc[train_idx], features_test=features.iloc[test_idx])
+            end_time = time.process_time()
+            prediction_result['pred_time'] = end_time - start_time
+            prediction_result['solution_id'] = portfolio_result['solution_id']
+            prediction_result['fold_id'] = portfolio_result['fold_id']
+            prediction_results.append(prediction_result)
+    search_results = pd.concat(search_results)
+    search_results['settings_id'] = search_settings['settings_id']
+    search_results['problem'] = problem_name
+    search_results['algorithm'] = search_settings['func']
+    for key, value in search_settings['args'].items():
+        search_results[key] = value
+    prediction_results = pd.concat(prediction_results)
+    prediction_results['settings_id'] = search_settings['settings_id']
+    prediction_results['problem'] = problem_name
+    return search_results, prediction_results
 
 
 # Run all experiments and save results.
@@ -85,27 +107,20 @@ def run_experiments(data_dir: pathlib.Path, results_dir: pathlib.Path, n_process
     runtimes, features = prepare_dataset.load_dataset(data_dir=data_dir)
     solved_states = (runtimes == prepare_dataset.PENALTY).astype(int)  # discretized runtimes
     problems = {'PAR2': runtimes, 'Unsolved': solved_states}
-    settings_list = define_experimental_design(problems=problems)
-    print('Running search ...')
-    progress_bar = tqdm.tqdm(total=len(settings_list))
+    settings_list = define_experimental_design()
+    print('Running evaluation...')
+    progress_bar = tqdm.tqdm(total=len(settings_list) * len(problems))
     process_pool = multiprocessing.Pool(processes=n_processes)
-    search_results = [process_pool.apply_async(run_search, kwds={'settings': settings},
-                                               callback=lambda x: progress_bar.update())
-                      for settings in settings_list]
-    search_results = pd.concat([x.get() for x in search_results]).reset_index(drop=True)
-    progress_bar.close()
-    search_results.to_csv(results_dir / 'search_results.csv', index=False)
-    print('Running prediction ...')
-    progress_bar = tqdm.tqdm(total=len(search_results))
-    prediction_results = [process_pool.apply_async(run_prediction, kwds={
-        'runtimes': problems[search_result['problem']][search_result['solvers']],
-        'features': features, 'ids': search_result[['settings_id', 'solution_id']]},
-        callback=lambda x: progress_bar.update())
-        for _, search_result in search_results.iterrows()]
+    results = [process_pool.apply_async(search_and_evaluate, kwds={
+        'problem_name': problem_name, 'runtimes': runtime_data, 'features': features,
+        'search_settings': settings}, callback=lambda x: progress_bar.update())
+        for problem_name, runtime_data in problems.items() for settings in settings_list]
     process_pool.close()
     process_pool.join()
     progress_bar.close()
-    prediction_results = pd.concat([x.get() for x in prediction_results])
+    search_results = pd.concat([x.get()[0] for x in results])
+    prediction_results = pd.concat([x.get()[1] for x in results])
+    search_results.to_csv(results_dir / 'search_results.csv', index=False)
     prediction_results.to_csv(results_dir / 'prediction_results.csv', index=False)
 
 

@@ -61,38 +61,38 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
     # TODO: DEPRECATED, needs to be replaced with random search
     print('Table 1: Objective value for exhaustive search:')
     data = search_results[search_results['algorithm'] == 'exhaustive_search']
-    data = data.groupby(['problem', 'k'])['objective_value'].describe().round().astype(int)
+    data = data.groupby(['problem', 'k'])['train_objective'].describe().round().astype(int)
     print(data[['min', 'mean', 'max', 'std']].to_latex())
 
     # --Exact Search and Beam Search--
 
     # Figure 1: exact search, beam search with w=1, and submodularity bounds
     beam_data = search_results.loc[(search_results['algorithm'] == 'beam_search') & (search_results['w'] == 1),
-                                   ['problem', 'algorithm', 'k', 'objective_value']]
+                                   ['problem', 'algorithm', 'k', 'train_objective']]
     mip_data = search_results.loc[search_results['algorithm'] == 'mip_search',
-                                  ['problem', 'algorithm', 'k', 'objective_value']]
+                                  ['problem', 'algorithm', 'k', 'train_objective']]
     bound_data = mip_data.copy()
     bound_data['algorithm'] = 'upper_bound'
     c_w = runtimes.max(axis='columns').mean()  # VWS performance for PAR2
-    bound_data.loc[bound_data['problem'] == 'PAR2', 'objective_value'] = c_w / math.e +\
-        (1 - 1 / math.e) * bound_data.loc[bound_data['problem'] == 'PAR2', 'objective_value']
+    bound_data.loc[bound_data['problem'] == 'PAR2', 'train_objective'] = c_w / math.e +\
+        (1 - 1 / math.e) * bound_data.loc[bound_data['problem'] == 'PAR2', 'train_objective']
     c_w = (runtimes == prepare_dataset.PENALTY).astype(int).max(axis='columns').mean()  # for Unsolved
-    bound_data.loc[bound_data['problem'] == 'Unsolved', 'objective_value'] = c_w / math.e +\
-        (1 - 1 / math.e) * bound_data.loc[bound_data['problem'] == 'Unsolved', 'objective_value']
+    bound_data.loc[bound_data['problem'] == 'Unsolved', 'train_objective'] = c_w / math.e +\
+        (1 - 1 / math.e) * bound_data.loc[bound_data['problem'] == 'Unsolved', 'train_objective']
     data = pd.concat([beam_data, mip_data, bound_data]).reset_index(drop=True)
-    data['k_objective_frac'] = data.groupby(['problem', 'k'])['objective_value'].apply(lambda x: x / x.min())
-    data['k_objective_diff'] = data.groupby(['problem', 'k'])['objective_value'].apply(lambda x: x - x.min())
-    data['objective_frac'] = data.groupby('problem')['objective_value'].apply(lambda x: x / x.min())
-    data['objective_diff'] = data.groupby('problem')['objective_value'].apply(lambda x: x - x.min())
+    data['k_objective_frac'] = data.groupby(['problem', 'k'])['train_objective'].apply(lambda x: x / x.min())
+    data['k_objective_diff'] = data.groupby(['problem', 'k'])['train_objective'].apply(lambda x: x - x.min())
+    data['objective_frac'] = data.groupby('problem')['train_objective'].apply(lambda x: x / x.min())
+    data['objective_diff'] = data.groupby('problem')['train_objective'].apply(lambda x: x - x.min())
     # Division might introduce NA or inf if objective is 0 (happens if all instances solved):
     data['k_objective_frac'] = data['k_objective_frac'].replace([float('nan'), float('inf')], 1)
     data['objective_frac'] = data['objective_frac'].replace([float('nan'), float('inf')], 1)
     plt.figure(figsize=(4, 3))
-    sns.lineplot(x='k', y='objective_value', hue='algorithm', data=data[data['problem'] == 'PAR2'])
+    sns.lineplot(x='k', y='train_objective', hue='algorithm', data=data[data['problem'] == 'PAR2'])
     plt.tight_layout()
     plt.savefig(plot_dir / 'objective-PAR2.pdf')
     plt.figure(figsize=(4, 3))
-    sns.lineplot(x='k', y='objective_value', hue='algorithm', data=data[data['problem'] == 'Unsolved'])
+    sns.lineplot(x='k', y='train_objective', hue='algorithm', data=data[data['problem'] == 'Unsolved'])
     plt.tight_layout()
     plt.savefig(plot_dir / 'objective-unsolved.pdf')
 
@@ -101,7 +101,7 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
                    ['k', 'objective_frac']].round(2))
     print('How many instances remain unsolved in best k-portfolio??')
     print(data.loc[(data['problem'] == 'Unsolved') & (data['algorithm'] == 'mip_search'),
-                   ['k', 'objective_value']])
+                   ['k', 'train_objective']])
     print('Ratio of PAR2 value between best greedy-search-portfolio and exact solution:')
     print(data.loc[(data['problem'] == 'PAR2') & (data['algorithm'] == 'beam_search'),
                    ['k', 'k_objective_frac']].round(3))
@@ -112,8 +112,8 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
     w = 10
     beam_data = search_results[(search_results['algorithm'] == 'beam_search') & (search_results['w'] == w)]
     data = pd.concat([beam_data, mip_data]).reset_index(drop=True)
-    data['k_objective_frac'] = data.groupby(['problem', 'k'])['objective_value'].apply(lambda x: x / x.min())
-    data['k_objective_diff'] = data.groupby(['problem', 'k'])['objective_value'].apply(lambda x: x - x.min())
+    data['k_objective_frac'] = data.groupby(['problem', 'k'])['train_objective'].apply(lambda x: x / x.min())
+    data['k_objective_diff'] = data.groupby(['problem', 'k'])['train_objective'].apply(lambda x: x - x.min())
     # Division might introduce NA or inf if objective is 0 (happens if all instances solved):
     data['k_objective_frac'] = data['k_objective_frac'].replace([float('nan'), float('inf')], 1)
     print(f'Ratio of PAR2 value between best {w=} beam-search-portfolio and exact solution:')
@@ -121,7 +121,7 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
     print(f'Difference in unsolved instances between best {w=} greedy-search-portfolio and exact solution:')
     print(data.loc[(data['problem'] == 'Unsolved') & (data['algorithm'] == 'beam_search')].groupby('k')['k_objective_diff'].min().round(3))
     print(f'Objective value of top {w=} portfolios in beam search')
-    print(data[data['k'] <= 10].groupby(['problem', 'k'])['objective_value'].describe().round().fillna(0).astype(int))
+    print(data[data['k'] <= 10].groupby(['problem', 'k'])['train_objective'].describe().round().fillna(0).astype(int))
 
     # ----Solvers in Portfolio----
 
@@ -154,7 +154,7 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
     for problem in ['PAR2', 'Unsolved']:
         print(f'- {problem}:')
         print(data.loc[data['problem'] == problem, runtimes.columns].corrwith(
-            data.loc[data['problem'] == problem, 'objective_value'], method='spearman').describe().round(2))
+            data.loc[data['problem'] == problem, 'train_objective'], method='spearman').describe().round(2))
 
     # ------Prediction Results------
 
@@ -165,17 +165,17 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
     data = prediction_results.loc[(prediction_results['algorithm'] == 'beam_search') &
                                   (prediction_results['w'] == w)]
     data = data.loc[(data['k'] > 1) & (data['k'] <= 20) & (data['model'] == 'Random forest') &
-                    (data['n_estimators'] == 1), ['problem', 'k', 'test_mcc']]
+                    (data['n_estimators'] == 1), ['problem', 'k', 'test_pred_mcc']]
     plt.figure(figsize=(4, 3))
-    sns.boxplot(x='k', y='test_mcc', hue='problem', fliersize=0, data=data)
+    sns.boxplot(x='k', y='test_pred_mcc', hue='problem', fliersize=0, data=data)
     plt.tight_layout()
     plt.savefig(plot_dir / 'mcc.pdf')
 
     print('Median MCC per model and number of estimators, using all prediction results:')
-    print(prediction_results.groupby(['problem', 'model', 'n_estimators'])[['train_mcc', 'test_mcc']].median().round(2))
-    data = prediction_results[['problem', 'model', 'n_estimators', 'train_mcc', 'test_mcc']].copy()
+    print(prediction_results.groupby(['problem', 'model', 'n_estimators'])[['train_pred_mcc', 'test_pred_mcc']].median().round(2))
+    data = prediction_results[['problem', 'model', 'n_estimators', 'train_pred_mcc', 'test_pred_mcc']].copy()
     print('Train-test MCC difference per model and number of estimators, using all prediction results:')
-    data['train_test_diff'] = data['train_mcc'] - data['test_mcc']
+    data['train_test_diff'] = data['train_pred_mcc'] - data['test_pred_mcc']
     print(data.groupby(['problem', 'model', 'n_estimators'])['train_test_diff'].describe().round(2))
 
     # ----Objective Value----
@@ -184,7 +184,7 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
     w = search_results['w'].max()
     data = prediction_results.loc[(prediction_results['algorithm'] == 'beam_search') &
                                   (prediction_results['w'] == w)]
-    plot_vars = ['test_objective', 'test_vbs', 'test_vws']
+    plot_vars = ['test_pred_objective', 'test_vbs', 'test_vws']
     data = data.loc[(data['k'] != 1) & (data['k'] <= 10) & (data['model'] == 'Random forest') &
                     (data['n_estimators'] == 1), ['problem', 'k'] + plot_vars]
     data = data.melt(id_vars=['problem', 'k'], value_vars=plot_vars,
