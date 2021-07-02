@@ -108,6 +108,6 @@ def beam_search(runtimes: pd.DataFrame, k: int, w: int) -> List[Tuple[List[str],
 def kbest_search(runtimes: pd.DataFrame, k: int) -> List[Tuple[List[str], float]]:
     results = []
     sorted_solvers = runtimes.mean().sort_values().index.to_list()
-    for i in range(k):
+    for i in range(1, k + 1):
         results.append((sorted_solvers[:i], runtimes[sorted_solvers[:i]].min(axis='columns').mean()))
     return results
