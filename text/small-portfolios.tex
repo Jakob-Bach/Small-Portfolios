@@ -65,7 +65,6 @@ Within a portfolio, usually one or more prediction models help to decide which s
 Additional components of a portfolio can be pre-solvers, which are only run for a short time to solve easy instances, or a backup-solver, which is responsible for instances where computing features for the prediction models takes too long.
 Overall, portfolio approaches can become quite complex and it becomes unclear which parts of the portfolio solution are really necessary to achieve a good performance.
 
-
 \paragraph{Problem Statement}
 
 In this paper, we study small portfolios of SAT solvers.
@@ -76,29 +75,28 @@ In particular, we want to find out whether small portfolios are already sufficie
 
 \paragraph{Contributions}
 
-We empirically analyze the performance of small portfolios on runtime data from the SAT~Competition~2020.
-In particular, our data comprise 48 solvers and 316 instances from the main track of the competition.
-To find small portfolios, we apply beam search, a heuristic method, as well as an exact search.
-For the latter, we encode the small-portfolio problem as an integer problem.
-In our experiments, we analyze all possible portfolio sizes $k \in \{1, \dots, 48\}$.
-Also, we systematically vary the only hyper-parameter of beam search, the beam width.
-We analyze two variants of the small-portfolio problems, one using penalized solver runtimes and the other one using the number of unsolved instances.
-For evaluation, we consider both the theoretically optimal performance of portfolios as well as the performance if a prediction model makes instance-specific solver recommendations.
+We empirically analyze the performance of small portfolios on runtime data from the SAT~Competition~2020. 
+In particular, our data comprise 48 solvers and 400 instances from the Main track of the competition. 
+To find small portfolios, we apply beam search, a heuristic method, as well as an exact search. 
+For the latter, we encode the small-portfolio problem as an integer optimization problem. 
+In our experiments, we analyze all possible portfolio sizes $k \in \{1, \dots, 48\}$. 
+Also, we systematically vary the only hyper-parameter of beam search, the beam width. 
+We analyze two variants of the small-portfolio problems, one using penalized solver runtimes and the other one using the number of unsolved instances. 
+For evaluation, we consider both the theoretically optimal performance of portfolios as well as the performance if a prediction model makes instance-specific solver recommendations. 
 
 \paragraph{Results}
 
-We observe that adding solvers has diminishing returns, i.e. portfolio performance improves most when adding the first few solvers.
-Additionally, the portfolios found heuristically by beam search have very similar performance as the optimal solution.
-Unfortunately, we find that the prediction models exhibit a rather low prediction performance in our experiments.
-Thus, actual portfolio performance cannot benefit from the theoretical improvement over $k$.
+We observe that adding solvers has diminishing returns, i.e., portfolio performance improves most when adding the first few solvers. 
+Additionally, the portfolios found heuristically by beam search have very similar performance as the optimal solution. 
+Unfortunately, we find that the prediction models exhibit a rather low prediction performance in our experiments. 
+Thus, actual portfolio performance cannot benefit from the theoretical improvement over $k$. 
 
 \paragraph{Outline}
 
-Section~\ref{sec:related-work} reviews related work.
-Section~\ref{sec:approach} introduces the small-portfolio problem and multiple solution approaches for it.
-Section~\ref{sec:experimental-design} describes our experimental design.
-Section~\ref{sec:evaluation} presents experimental results.
-Section~\ref{sec:conclusion} concludes.
+In Section~\ref{sec:related-work}, we review related work. 
+In Section~\ref{sec:approach}, we introduce the small-portfolio problem and multiple solution approaches for it. 
+We describe the experimental design in Section~\ref{sec:experimental-design} and present the experimental results in Section~\ref{sec:evaluation}. 
+We conclude with Section~\ref{sec:conclusion}. 
 
 \section{Related Work}
 \label{sec:related-work}
