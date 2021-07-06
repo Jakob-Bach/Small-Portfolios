@@ -11,8 +11,6 @@
 \usepackage{hyperref} % links and URLs
 %\addbibresource{references.bib}
 
-\newtheorem{definition}{Definition}
-
 \begin{document}
 
 \title{Analysis of Optimal Small Portfolios}
@@ -37,7 +35,7 @@ markus.iser@kit.edu}
 Successful approaches that tackle hard combinatorial problems such as propositional satisfiability are often in some sense complementary, i.e., each approach is only the best on some problem instances. 
 Parallel portfolios and instance-specific algorithm selection take advantage of this. 
 In this paper, we present a systematic analysis of solver portfolios using runtime measurements from the SAT~Competition~2020. 
-First, we present and compare search approaches to find theoretically optimal portfolios of limited size. 
+First, we present and compare search approaches to find good portfolios of limited size.
 Second, we use prediction models to make instance-specific solver recommendations within the portfolios and evaluate this approach as well.
 \end{abstract}
 
@@ -69,7 +67,7 @@ Overall, portfolio approaches can become quite complex and it becomes unclear wh
 \paragraph{Problem Statement}
 
 In this paper, we study small portfolios of SAT solvers.
-\emph{Small} primarily refers to the number of solvers in the portfolio, which we limit to certain values $k$.
+\emph{Small} refers to the number of solvers in the portfolio, which we limit to certain values $k$.
 Also, we strive to keep the overall approach simple by only using one prediction model per portfolio, and no further portfolio components. 
 Instead, we analyze the impact of the portfolio size $k$. 
 In particular, we want to find out whether small portfolios are already sufficient to achieve a good solving performance. 
@@ -77,18 +75,19 @@ In particular, we want to find out whether small portfolios are already sufficie
 \paragraph{Contributions}
 
 We empirically analyze the performance of small portfolios on runtime data from the SAT~Competition~2020. 
-In particular, our data comprise 48 solvers and 400 instances from the Main track of the competition. 
+In particular, our dataset comprises 48 solvers and 316 instances from the Main track of the competition.
 To find small portfolios, we apply beam search, a heuristic method, as well as an exact search. 
 For the latter, we encode the small-portfolio problem as an integer optimization problem. 
+Also, we include two baselines, one employing random sampling and the other one ranking by individual solvers' performances.
 In our experiments, we analyze all possible portfolio sizes $k \in \{1, \dots, 48\}$. 
-Also, we systematically vary the only hyper-parameter of beam search, the beam width. 
+Also, we systematically vary the only hyper-parameter of beam search, the beam width $w$.
 We analyze two variants of the small-portfolio problems, one using penalized solver runtimes and the other one using the number of unsolved instances. 
 For evaluation, we consider both the theoretically optimal performance of portfolios as well as the performance if a prediction model makes instance-specific solver recommendations. 
 
 \paragraph{Results}
 
 We observe that adding solvers has diminishing returns, i.e., portfolio performance improves most when adding the first few solvers. 
-Additionally, the portfolios found heuristically by beam search have very similar performance as the optimal solution. 
+Additionally, the portfolios found heuristically by beam search have very similar performance as the optimal solution, even for minimal beam width $w=1$.
 Unfortunately, we find that the prediction models exhibit a rather low prediction performance in our experiments. 
 Thus, actual portfolio performance cannot benefit from the theoretical improvement over $k$. 
 
@@ -118,27 +117,29 @@ Besides complex portfolio approaches, there are also simple ones, e.g., selectin
 \cite{amadini2014empirical, amadini2016extensive} analyze portfolios of CSP solvers in terms of average runtime and solved instances.
 Thus, they focus on different instances and solvers than we, though the evaluation procedure has some similarities.
 Similar to us, they vary the portfolio size $k$.
-They compare several classification methods in portfolios, besides adapting complex SAT portfolio approaches like SATzilla.
-In contrast, we focus on one simple classification model, vary its complexity, and analyze feature importance.
-Also, we analyze parametrization of beam search.
-Further, we compare against random portfolios of size $k$.
+They compare several classification methods within portfolios, besides adapting complex SAT portfolio approaches like SATzilla.
+Our evaluation is less broad in terms of classification models, but instead we analyze feature importances to find out what drives the models' predictions.
+Also, we evaluate additional search strategies for portfolios.
+For example, we systematically analyze parametrization of beam search.
+Further, we compare against random portfolios of size $k$ as a baseline.
 Finally, we solve the small-portfolio-problem exactly, while \cite{amadini2014empirical} only use heuristic search algorithms.
 
 \cite{nof2020real} formalizes the small-portfolio problem as maximization problem.
-They show submodularity and NP-completeness.
-Also, they provide an SMT encoding to exactly solve the problem.
+They show submodularity and NP-completeness of the problem.
+While we can build on the theoretical results of \cite{nof2020real}, our evaluation is different.
 In their evaluation, they use beam search with a beam width of one.
 In contrast, we analyze parametrization of beam search.
-Further, we compare against random portfolios of size $k$.
-Also, \cite{nof2020real} does not analyze portfolios with prediction models.
+Further, we compare against random portfolios of size $k$ as a baseline.
+Also, \cite{nof2020real} does not analyze portfolios with prediction models, but only the optimization problem.
 For the exact solution, we provide an encoding as integer-problem.
-Finally, their domain is different than ours, as they focus on instances of an allocation problem whose solution is evaluated already after 0.1 s.
-In comparison, we allows 5000 s for solvers on our SAT instances.
+In comparison, \cite{nof2020real} provides an SMT encoding to exactly solve the problem.
+Finally, their domain is different than ours, as they focus on instances of an allocation problem whose solution is evaluated already after 0.1~s.
+In comparison, solvers in our dataset have a much larger timeout of 5000~s.
 
 \section{Approach}
 \label{sec:approach}
 
-First, we introduce the small-portfolio problem.
+First, we describe the small-portfolio problem.
 Next, we present multiple approaches to solve it.
 
 \subsection{Small-Portfolio Problem}
@@ -280,25 +281,14 @@ The beam-width $w$ is an input parameter.
 For $w=1$, only one portfolio remains at the end of each iteration.
 For maximal $w$, all portfolios remain.
 
-The algorithm is a heuristic that does not necessarily find the optimal solution to the \ref{eq:small-portfolio-problem}.
+The algorithm is a greedy heuristic that does not necessarily find the optimal solution to the \ref{eq:small-portfolio-problem}.
 In return, its only needs to check $O(n \cdot w)$ portfolios per iteration, yielding a runtime advantage compared to exhaustive search.
-Additionally, we can provide a bound for the costs of a portfolio found by beam search with $w=1$.
-To this end, we use a result from \cite{nemhauser1978analysis} for greedy algorithms on non-negative monotone submodular set functions.
-In the following, we show that a slightly transformed version of the objective function in the \ref{eq:small-portfolio-problem} fulfills the requirements for the bound.
-We start with the following definitions~\cite{krause2014submodular}:
-
-\begin{definition}[Submodular set function]
-	A function $f : 2^V \rightarrow \mathbb{R}$ is submodular if for every $A, B \subseteq V$, $f(A \cap B) + f(A \cup B) \leq f(A) + f(B)$.
-	\label{def:submodular}
-\end{definition}
-
-\begin{definition}[Monotone set function]
-	A function $f : 2^V \rightarrow \mathbb{R}$ is monotone if for every $A \subseteq B \subseteq V$, $f(A) \leq f(B)$.
-	\label{def:monotone}
-\end{definition}
-
-Our cost function $c_{T}: 2^S \rightarrow \mathbb{N}$ is a set function, but it is non-increasing instead of non-decreasing (monotone).
-Thus, we define the following transformed version:
+Additionally, there is a bound on the costs of a portfolio found by beam search with $w=1$.
+To this end, one can use a result from \cite{nemhauser1978analysis}, which applies to greedy algorithms on non-negative monotone submodular set functions.
+\cite{nof2020real} shows that their \emph{K-Algorithms Max-Sum Problem} for portfolios is submodular and thus a bound on greedy algorithms holds.
+We can easily transform the \ref{eq:small-portfolio-problem}, which is a minimization problem, into the \emph{K-Algorithms Max-Sum Problem}, which is a maximization problem.
+Thus, we can build on the submodularity proof of \cite{nof2020real}.
+We only need to replace the costs with utilities:
 
 \begin{align*}
 	u_{T} &: 2^S \rightarrow \mathbb{N}\\
@@ -314,44 +304,7 @@ with the cost of the virtual-worst solver defined as:
 	c_W := \frac{1}{|I|} * \sum_{i \in I}{\max_{s \in S}{r_T(s,i)}} \tag*{Virtual Worst Solver}
 \end{align*}
 
-Our definition of portfolio utility is non-negative, as $c_{T}(P) \leq c_W$.
-Additionally, $u_{T}(P)$ is monotone.
-In general, for $A \subseteq B \subseteq \mathbb{R}$, it holds that $\min(A) \geq \min(B)$.
-For $A \subseteq B \subseteq S$, we obtain $\frac{1}{|I|} * \sum_{i \in I}{\min_{s \in A}{r_T(s,i)}} \geq \frac{1}{|I|} * \sum_{i \in I}{\min_{s \in B}{r_T(s,i)}}$.
-Thus, $c_{T}(A) \geq c_{T}(B)$ and therefore $u_{T}(A) \leq u_{T}(B)$. \hfill$\square$
-
-Next, we show that $u_{T}(P)$ is submodular.
-Let $A,B \subseteq S$, $A,B \neq \emptyset$ be two portfolios.
-For our proof, we split the set of instances $I$ in two subsets.
-$I_A := \{i \in I \mid \min_{s \in A}{r_T(s,i)} < \min_{s \in B}{r_T(s,i)} \}$ contains the instances where portfolio A is faster.
-$I_B := I \setminus I_A$ contains the remaining instances.
-We now show that Definition~\ref{def:submodular} holds:
-
-%TODO Make width narrower and define multi-line format in a way that permits page breaks
-%TODO if this is not removed anyway, "\frac{1}{|I|} *" has to be added a lot of times (since we normalized the objective)
-\begin{align*}
-	& u_{T}(A) + u_{T}(B) - u_{T}(A \cap B) - u_{T}(A \cup B)\\
-	= & c_W - c_{T}(A) + c_W - c_{T}(B) - c_W + c_{T}(A \cap B) - c_W + c_{T}(A \cup B)\\
-	= & - \sum_{i \in I}{\min_{s \in A}{r_T(s,i)}} - \sum_{i \in I}{\min_{s \in B}{r_T(s,i)}} + \sum_{i \in I}{\min_{s \in A \cap B}{r_T(s,i)}} + \sum_{i \in I}{\min_{s \in A \cup B}{r_T(s,i)}}\\
-	= & - \sum_{i \in I_A}{\min_{s \in A}{r_T(s,i)}} - \sum_{i \in I_B}{\min_{s \in A}{r_T(s,i)}} - \sum_{i \in I_A}{\min_{s \in B}{r_T(s,i)}} - \sum_{i \in I_B}{\min_{s \in B}{r_T(s,i)}}\\
-	& + \sum_{i \in I_A}{\min_{s \in A \cap B}{r_T(s,i)}} + \sum_{i \in I_B}{\min_{s \in A \cap B}{r_T(s,i)}} + \sum_{i \in I_A}{\min_{s \in A \cup B}{r_T(s,i)}} + \sum_{i \in I_B}{\min_{s \in A \cup B}{r_T(s,i)}}\\
-	= & - \sum_{i \in I_B}{\min_{s \in A}{r_T(s,i)}} - \sum_{i \in I_A}{\min_{s \in B}{r_T(s,i)}} + \sum_{i \in I_A}{\min_{s \in A \cap B}{r_T(s,i)}} + \sum_{i \in I_B}{\min_{s \in A \cap B}{r_T(s,i)}}\\
-	\geq & 0 \Leftrightarrow u_{T}(A \cap B) + u_{T}(A \cup B) \leq u_{T}(A) + u_{T}(B)
-\end{align*}\hfill$\square$
-
-We made use of the fact that $\sum_{i \in I_A}{\min_{s \in A}{r_T(s,i)}} = \sum_{i \in I_A}{\min_{s \in A \cup B}{r_T(s,i)}}$ and $\sum_{i \in I_B}{\min_{s \in B}{r_T(s,i)}} = \sum_{i \in I_B}{\min_{s \in A \cup B}{r_T(s,i)}}$.
-Also, $\sum_{i \in I_A}{\min_{s \in A \cap B}{r_T(s,i)}} \geq \sum_{i \in I_A}{\min_{s \in B}{r_T(s,i)}}$ and $\sum_{i \in I_B}{\min_{s \in A \cap B}{r_T(s,i)}} \geq \sum_{i \in I_B}{\min_{s \in A}{r_T(s,i)}}$, since $A \subseteq A \cap B$ and $B \subseteq A \cap B$.
-Note the we stated $A,B \neq \emptyset$.
-However, in these cases, the inequality simply holds with equality.
-E.g., let $B = \emptyset$:
-
-\begin{align*}
-	& u_{T}(A) + u_{T}(B) - u_{T}(A \cap B) - u_{T}(A \cup B)\\
-	= & u_{T}(A) + u_{T}(\emptyset) - u_{T}(\emptyset) - u_{T}(A)\\
-	= & 0
-\end{align*}
-
-Having shown that $u_{T}(P)$ is non-negative, monotone and submodular, we can give the following bound on a beam-search result $P_{beam}^k$ with $w=1$~\cite{nemhauser1978analysis, krause2014submodular}:
+As $u_{T}(P)$ is non-negative, monotone and submodular, we get the following bound on a beam-search result $P_{beam}^k$ with $w=1$~\cite{nemhauser1978analysis, krause2014submodular}:
 
 \begin{equation}
 	u_{T}(P_{beam}^k) \geq (1 - \frac{1}{e}) * \max_{|P| \leq k}{u_{T}(P)}
@@ -373,6 +326,9 @@ Thus, opposed to beam search, it does not consider how solvers within a portfoli
 
 \section{Experimental Design}
 \label{sec:experimental-design}
+
+The experimental design comprises optimization approaches, prediction approaches, and the dataset.
+We will combine all optimization approaches with all prediction approaches.
 
 \subsection{Optimization Approaches}
 
@@ -446,10 +402,9 @@ The dataset has $|S| = 48$ solvers and $|I| = 316$ instances.
 We take the instances from the main track of the SAT Competition 2020\footnote{\url{https://satcompetition.github.io/2020/}}~\cite{balyo2020proceedings}, but discard the instances where no solver finished in time.
 For predictions, we make use of 143 features to characterize instances:
 138 from SATzilla~\cite{xu2008satzilla, xu2012satzilla2012} and five from a gate-recognition approach~\cite{iser2020recognition}.
-We replace missing values of features with their training-set mean.
 %TODO @Markus from which SATzilla version exactly?
 %TODO @Markus vielleicht hast du noch eine bessere Referenz, ich habe erst mal deine Diss genommen
-
+We replace missing values of features with their training-set mean.
 
 \subsection{Implementation}
 
@@ -461,6 +416,9 @@ To solve the small portfolio-problem exactly, we use the package \emph{mip}~\cit
 \section{Evaluation}
 \label{sec:evaluation}
 % TODO make consistent to adaptations of pipeline after 93f7a2513e
+
+First, we evaluate the \ref{eq:small-portfolio-problem} as optimization problem based on VBS-performance, i.e., assuming that an oracle always chooses the best solver out of the portfolio for each instance.
+Second, we analyze portfolio performance if actual prediction models are used to make instance-specific solver recommendations.
 
 \subsection{Optimization Results}
 
