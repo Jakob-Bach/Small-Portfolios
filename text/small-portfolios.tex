@@ -1,13 +1,13 @@
 \documentclass[conference]{IEEEtran}
 
 %\usepackage[style=ieee, backend=bibtex]{biblatex}
-\usepackage[ruled,linesnumbered,vlined]{algorithm2e} % pseudo-code
+\usepackage[linesnumbered,vlined]{algorithm2e} % pseudo-code; use of package discouraged by IEEE, but hacked in in a (hopefully acceptable) way
 \usepackage{amsmath} % mathematical symbols
 \usepackage{amssymb} % mathematical symbols
+\usepackage{balance} % balance columns on the last page
 \usepackage{booktabs} % nicely formatted tables
-\usepackage{enumitem} % nicely formatted enumerations
 \usepackage{graphicx} % plots
-\usepackage{subcaption} % figures with multiple sub-figures and sub-captions
+\usepackage[caption=false,font=footnotesize]{subfig} % figures with multiple sub-figures and sub-captions; use of (newer) package "subcaption" discouraged by IEEE
 \usepackage{hyperref} % links and URLs
 %\addbibresource{references.bib}
 
@@ -16,6 +16,7 @@
 \begin{document}
 
 \title{Analysis of Optimal Small Portfolios}
+%TODO change title, as we do no only analyze optimal portfolios
 
 \author{\IEEEauthorblockN{Jakob Bach}
 \IEEEauthorblockA{\textit{KIT Department of Informatics} \\
@@ -41,7 +42,7 @@ Second, we use prediction models to make instance-specific solver recommendation
 \end{abstract}
 
 \begin{IEEEkeywords}
-Propositional Satisfiability, Solver Portfolios, Runtime Prediction Models
+Propositional Satisfiability, Solver Portfolios, Runtime Prediction Models, Machine Learning
 \end{IEEEkeywords}
 
 \section{Introduction}
@@ -242,9 +243,14 @@ Second, a solver can only be chosen for an instance if it is part of the portfol
 \subsubsection{Beam Search}
 
 Beam search is a greedy algorithm that finds portfolios in an iterative manner.
-Algorithm~\ref{al:beam-search} describes the approach:
+Figure~\ref{al:beam-search} shows the approach:
 
-\begin{algorithm}[htb]
+% IEEE wants algorithms as figures, not separate floats (as "algorithm2e" does), so we need some hacking: https://tex.stackexchange.com/questions/147598/how-to-use-the-algorithm2e-package-with-ieeetran-class
+\begin{figure}[t]
+\makeatletter
+\let\@latex@error\@gobble
+\makeatother
+\begin{algorithm}[H]
 	\KwIn{Penalized runtimes $r_T(s,i)$, portfolio size $k$, beam width $w$}
 	\KwOut{Portfolio $P$ with $|P|=k$}
 	$\mathbb{P}^0$ $\leftarrow$ \{$\emptyset$\}\tcp*[r]{portfolios of size 0}
@@ -261,9 +267,10 @@ Algorithm~\ref{al:beam-search} describes the approach:
 		$\mathbb{P}^i \leftarrow \{\mathbb{P}_j^i \in \mathbb{P}^i \mid j \leq w \}$\tcp*[r]{best $w$ portfolios of size $i$}
 	}
 	\Return $\underset{P \in \mathbb{P}^k}{\arg\min}~c_{T}(P)$\;
-	\caption{Beam Search}
-	\label{al:beam-search}
 \end{algorithm}
+\caption{Beam search.}
+\label{al:beam-search}
+\end{figure}
 
 The algorithm starts with an empty portfolio.
 In each iteration, the algorithm creates all combinations of portfolios from the previous iteration and individual solvers which are not part of these portfolios.
@@ -474,7 +481,7 @@ As expected, objective value gets better with larger portfolio size $k$.
 Also, the standard deviation becomes smaller, i.e., portfolios become more similar with increasing $k$.
 Thus, choosing an appropriate portfolio-search strategy matters the most for small values of $k$.
 
-\begin{table}[htb]
+\begin{table}[t]
 	\centering
 	\caption{Statistics of objective value for exhaustive search over $k$.}
 	\label{tab:objective-exhaustive}
@@ -497,21 +504,17 @@ Thus, choosing an appropriate portfolio-search strategy matters the most for sma
 
 \paragraph{Exact Search and Beam Search}
 
-\begin{figure*}[htb]
+\begin{figure*}[t]
 	\centering
-	\begin{subfigure}{0.98\columnwidth}
-		\centering
-		\includegraphics[width=\columnwidth]{plots/objective-PAR2.pdf}
-		\caption{\emph{PAR2} objective function.}
+	\subfloat[\emph{PAR2} objective function.]{
+		\includegraphics[width=0.98\columnwidth]{plots/objective-PAR2.pdf}
 		\label{fig:objective-PAR2}
-	\end{subfigure}
-	\hfill
-	\begin{subfigure}{0.98\columnwidth}
-		\centering
-		\includegraphics[width=\columnwidth]{plots/objective-solved.pdf}
-		\caption{\emph{Unsolved} objective function.}
+	}
+	\hfil
+	\subfloat[\emph{Unsolved} objective function.]{
+		\includegraphics[width=0.98\columnwidth]{plots/objective-solved.pdf}
 		\label{fig:objective-unsolved}
-	\end{subfigure}
+	}
 	\caption{Comparison of different solution approaches.}
 	\label{fig:objective}
 \end{figure*}
@@ -561,7 +564,7 @@ This means one needs a combination of solvers to clearly influence the objective
 
 \subsubsection{MCC}
 
-\begin{figure}[htb]
+\begin{figure}[t]
 	\centering
 	\includegraphics[width=\columnwidth]{plots/mcc.pdf}
 	\caption{Test-set MCC for beam-search portfolios with $w=100$. Decision trees of unlimited depth.}
@@ -583,21 +586,17 @@ Thus, decreasing tree depth does not improve generalization capabilities of the 
 
 \subsubsection{Objective Value}
 
-\begin{figure*}[htb]
+\begin{figure*}[t]
 	\centering
-	\begin{subfigure}{0.98\columnwidth}
-		\centering
-		\includegraphics[width=\columnwidth]{plots/objective-prediction-PAR2.pdf}
-		\caption{\emph{PAR2} objective function.}
+	\subfloat[\emph{PAR2} objective function.]{
+		\includegraphics[width=0.98\columnwidth]{plots/objective-prediction-PAR2.pdf}
 		\label{fig:objective-prediction-PAR2}
-	\end{subfigure}
-	\hfill
-	\begin{subfigure}{0.98\columnwidth}
-		\centering
-		\includegraphics[width=\columnwidth]{plots/objective-prediction-solved.pdf}
-		\caption{\emph{Unsolved} objective function.}
+	}
+	\hfil
+	\subfloat[\emph{Unsolved} objective function.]{
+		\includegraphics[width=0.98\columnwidth]{plots/objective-prediction-solved.pdf}
 		\label{fig:objective-prediction-unsolved}
-	\end{subfigure}
+	}
 	\caption{Objective value for beam-search-portfolios with $w=100$. Decision trees of unlimited depth.}
 	\label{fig:objective-prediction}
 \end{figure*}
@@ -641,6 +640,12 @@ However, these models performed rather poorly on the given dataset, such that th
 
 In future work, we want to improve prediction performance, in particular, by adapting the set of instance features.
 Also, we want to integrate our portfolio-search functionality into the Python package~\emph{gbd-tools}, so it can be directly used in queries to the database GBD.
+
+\section*{Acknowledgments}
+
+%TODO check if Jakob and/or Markus need to add stuff here
+
+\balance % according to documentation, command might not work if issued to late in document, so hopefully placing it here suffices
 
 \bibliographystyle{IEEEtran}
 \bibliography{IEEEabrv,references}
