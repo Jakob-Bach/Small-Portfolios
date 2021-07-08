@@ -81,7 +81,7 @@ For the latter, we encode the small-portfolio problem as an integer optimization
 Also, we include two baselines, one employing random sampling and the other one ranking by individual solvers' performances.
 In our experiments, we analyze all possible portfolio sizes $k \in \{1, \dots, 48\}$. 
 Also, we systematically vary the only hyper-parameter of beam search, the beam width $w$.
-We analyze two variants of the small-portfolio problems, one using penalized solver runtimes and the other one using the number of unsolved instances. 
+We analyze three variants of the small-portfolio problem, based on different transformations of solver runtimes.
 For evaluation, we consider both the theoretically optimal performance of portfolios as well as the performance if a prediction model makes instance-specific solver recommendations. 
 
 \paragraph{Results}
@@ -125,18 +125,17 @@ For example, we systematically analyze parametrization of beam search.
 Further, we compare against random portfolios of size $k$ as a baseline.
 Finally, we solve the small-portfolio-problem exactly, while \cite{amadini2014empirical} only use heuristic search algorithms.
 
-Nof and Strichman formalize the small-portfolio problem as a maximization problem~\cite{nof2020real}. 
-They show submodularity and NP-completeness of the problem.
+Nof and Strichman formalize the small-portfolio problem in the form of two maximization problems with different objective functions~\cite{nof2020real}.
+They show submodularity and NP-completeness of the problems.
 While we can build on the theoretical results of \cite{nof2020real}, our evaluation is different.
 In their evaluation, they use beam search with a beam width of one.
 In contrast, we analyze parametrization of beam search.
 Further, we compare against random portfolios of size $k$ as a baseline.
-Also, \cite{nof2020real} does not analyze portfolios with prediction models, but only the optimization problem.
+Also, \cite{nof2020real} does not analyze portfolios with prediction models, but only the optimization problems.
 For the exact solution, we provide an encoding as integer-problem.
-In comparison, \cite{nof2020real} provides an SMT encoding to exactly solve the problem.
+In comparison, \cite{nof2020real} provides an SMT encoding.
 Finally, their domain is different than ours, as they focus on instances of an allocation problem whose solution is evaluated already after 0.1~s.
 In comparison, solvers in our dataset have a much larger timeout of 5000~s.
-
 
 \section{Approach}
 \label{sec:approach}
@@ -334,7 +333,7 @@ We will combine all optimization approaches with all prediction approaches.
 
 \subsection{Optimization Approaches}
 
-We analyze the \ref{eq:small-portfolio-problem} for two definitions of runtime in the objective function:
+We analyze the \ref{eq:small-portfolio-problem} for three definitions of runtime in the objective function:
 
 \begin{itemize}
 	\item \emph{PAR2}:
@@ -343,6 +342,15 @@ We analyze the \ref{eq:small-portfolio-problem} for two definitions of runtime i
 		r_T(s,i) &:= \begin{cases}
 			2*T & \text{if }r(s,i) = \bot\\
 			r(s,i) & \text{otherwise}
+		\end{cases}
+	\end{align*}
+	\item \emph{PAR2\_norm}:
+	The penalized runtimes, but normalized to $[0,1]$ per instance.
+	This counterbalances variations in instance hardness, i.e., that some instances are easier to solve than others.
+	\begin{align*}
+		r_T(s,i) &:= \begin{cases}
+			1 & \text{if }r(s,i) = \bot\\
+			\frac{r(s,i) - \min_{s' \in S}{r(s',i)}}{\max_{s' \in S}{r(s',i)} - \min_{s' \in S}{r(s',i)}} & \text{otherwise}
 		\end{cases}
 	\end{align*}
 	\item \emph{Unsolved}:
@@ -356,7 +364,7 @@ We analyze the \ref{eq:small-portfolio-problem} for two definitions of runtime i
 \end{itemize}
 
 To test generalization of search and prediction approaches, we conduct five-fold cross-validation.
-I.e., we split the instances of each of the two problems five times into a training set and a set set.
+I.e., we split the instances of each of the three problems five times into a training set and a set set.
 We search for portfolios and train prediction models only on the training sets.
 We employ the four solution approaches from Section~\ref{sec:approach:solution} to search for portfolios:
 
@@ -387,7 +395,7 @@ We evaluate prediction performance in two ways:
 
 \begin{itemize}
 	\item \emph{Objective value}:
-	We take the solvers recommended by the prediction model and average their costs, i.e., penalized runtimes or how many instances remain unsolved.
+	We take the solvers recommended by the prediction model and average their costs.
 	The resulting objective value cannot be better than for the VBS, but also cannot be worse than for the VWS; see Section~\ref{sec:approach:problem:target}.
 	\item \emph{MCC}:
 	We evaluate the predictions directly with Matthews correlation coefficient~\cite{matthews1975comparison, gorodkin2004comparing}.

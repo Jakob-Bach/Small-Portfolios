@@ -24,6 +24,14 @@ import search
 CV_FOLDS = 5
 
 
+# Define the different optimization problems. Though the overall objective function and cardinality
+# constraint are the same, the definition of runtimes r_T(s,i) varies.
+def define_problems(runtimes: pd.DataFrame) -> Dict[str, pd.DataFrame]:
+    is_unsolved = (runtimes == prepare_dataset.PENALTY).astype(int)
+    runtimes_norm = runtimes.transform(lambda x: (x - x.min()) / (x.max() - x.min()), axis='columns')
+    return {'PAR2': runtimes, 'PAR2_norm': runtimes_norm, 'Unsolved': is_unsolved}
+
+
 # Create a list of search algorithms and their parametrization.
 def define_experimental_design() -> List[Dict[str, Any]]:
     results = []
@@ -105,8 +113,7 @@ def run_experiments(data_dir: pathlib.Path, results_dir: pathlib.Path, n_process
     if any(results_dir.iterdir()):
         print('Results directory is not empty. Files might be overwritten, but not deleted.')
     runtimes, features = prepare_dataset.load_dataset(data_dir=data_dir)
-    solved_states = (runtimes == prepare_dataset.PENALTY).astype(int)  # discretized runtimes
-    problems = {'PAR2': runtimes, 'Unsolved': solved_states}
+    problems = define_problems(runtimes=runtimes)
     settings_list = define_experimental_design()
     print('Running evaluation...')
     progress_bar = tqdm.tqdm(total=len(settings_list) * len(problems))
