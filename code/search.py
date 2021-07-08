@@ -73,6 +73,60 @@ def smt_search(runtimes: pd.DataFrame, k: int) -> List[Tuple[List[str], float]]:
     return [(best_solution, objective_value)]
 
 
+# Determine optimal k-portfolio by solving an SMT problem exactly.
+# Problem formulation should be very similar to the output of the tool "nchoosek"
+# (C++ implementation, creates an SMT-LIB file; code: https://doi.org/10.5281/zenodo.3841422 ) for
+# the paper Nof, Y., & Strichman, O. (2020). Real-time solving of computationally hard problems
+# using optimal algorithm portfolios.
+# "cardinality_encoding" enables a special encoding for cardinality constraints, which is used in
+# "nchoosek", but which might be slower than using Z3's native AtMost constraint.
+def smt_search_nof(runtimes: pd.DataFrame, k: int, cardinality_encoding: bool = True) -> List[Tuple[List[str], float]]:
+    instance_vars = [z3.Real(f'v{i}') for i in range(runtimes.shape[0])]
+    solver_vars = [z3.Bool(f'e{j}') for j in range(runtimes.shape[1])]
+    optimizer = z3.Optimize()
+    objective = optimizer.minimize(z3.Sum(instance_vars) / runtimes.shape[0])  # just sum in "nchoosek"
+    constraints = []
+    for i in range(runtimes.shape[0]):
+        unique_runtimes = runtimes.iloc[i].unique()
+        # Value-choice constraint:
+        constraints.append(z3.Or([instance_vars[i] == value for value in unique_runtimes]))
+        # Implied-algorithm constraints:
+        for value in unique_runtimes:
+            affected_solvers = [solver for solver, runtime in zip(solver_vars, runtimes.iloc[i])
+                                if runtime == value]
+            constraints.append(z3.Implies(instance_vars[i] == value, z3.Or(affected_solvers)))
+    optimizer.add(z3.And(constraints))
+    if cardinality_encoding:
+        # Cardinality constraint with cardinality encoding from Sinz, C. (2005, October). Towards
+        # an optimal CNF encoding of boolean cardinality constraints. (see page 2)
+        constraints = []
+        solver_choice_vars = [[z3.Bool(f's{j+1}_{s+1}') for s in range(k)]
+                              for j in range(runtimes.shape[1])]
+        constraints.append(z3.Or(z3.Not(solver_vars[0]), solver_choice_vars[0][0]))
+        for s in range(1, k):
+            constraints.append(z3.Not(solver_choice_vars[0][s]))
+        for j in range(1, runtimes.shape[1] - 1):
+            constraints.append(z3.Or(z3.Not(solver_vars[j]), solver_choice_vars[j][0]))
+            constraints.append(z3.Or(z3.Not(solver_choice_vars[j-1][0]), solver_choice_vars[j][0]))
+            for s in range(1, k):
+                constraints.append(z3.Or(z3.Not(solver_vars[j]), z3.Not(solver_choice_vars[j-1][s-1]),
+                                         solver_choice_vars[j][s]))
+                constraints.append(z3.Or(z3.Not(solver_choice_vars[j-1][s]), solver_choice_vars[j][s]))
+            constraints.append(z3.Or(z3.Not(solver_vars[j]), z3.Not(solver_choice_vars[j-1][k-1])))
+        # Following statement is part of previous loop in "nchoosek", but outside in Sinz' paper:
+        constraints.append(z3.Or(z3.Not(solver_vars[-1]), z3.Not(solver_choice_vars[-2][k-1])))
+        optimizer.add(z3.And(constraints))
+    else:
+        optimizer.add(z3.AtMost(*solver_vars, k))
+    optimizer.check()
+    best_solution = [col for var, col in zip(solver_vars, runtimes.columns) if bool(optimizer.model()[var])]
+    if objective.value().is_real():  # Z3 uses representation as fraction
+        objective_value = objective.value().numerator_as_long() / objective.value().denominator_as_long()
+    else:
+        objective_value = objective.value().as_long()
+    return [(best_solution, objective_value)]
+
+
 # Greedy forward search (starting with portfolio of size 0 and iteratively adding solvers) up
 # to k, retaining the w best solutions each iteration. Returns not only best w portfolios for
 # final k, but also the intermediate solutions.
