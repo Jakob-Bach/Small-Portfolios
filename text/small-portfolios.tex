@@ -280,11 +280,12 @@ I.e., the algorithm expands existing portfolios by adding single solvers.
 Before going to the next iteration, only the $w$ portfolios with the lowest cost are retained.
 The beam-width $w$ is an input parameter.
 For $w=1$, only one portfolio remains at the end of each iteration.
+We refer to this special case as \emph{greedy search}.
 For maximal $w$, all portfolios remain.
 
 The algorithm is a greedy heuristic that does not necessarily find the optimal solution to the \ref{eq:small-portfolio-problem}.
 In return, its only needs to check $O(n \cdot w)$ portfolios per iteration, yielding a runtime advantage compared to exhaustive search.
-Additionally, there is a bound on the costs of a portfolio found by beam search with $w=1$.
+Additionally, there is a bound on the costs of a portfolio found by greedy search.
 To this end, one can use a result from \cite{nemhauser1978analysis}, which applies to greedy algorithms on non-negative monotone submodular set functions.
 \cite{nof2020real} shows that their \emph{K-Algorithms Max-Sum Problem} for portfolios is submodular and thus a bound on greedy algorithms holds.
 We can easily transform the \ref{eq:small-portfolio-problem}, which is a minimization problem, into the \emph{K-Algorithms Max-Sum Problem}, which is a maximization problem.
@@ -305,17 +306,17 @@ with the cost of the virtual-worst solver defined as:
 	c_W := \frac{1}{|I|} * \sum_{i \in I}{\max_{s \in S}{r_T(s,i)}} \tag*{Virtual Worst Solver}
 \end{align*}
 
-As $u_{T}(P)$ is non-negative, monotone and submodular, we get the following bound on a beam-search result $P_{beam}^k$ with $w=1$~\cite{nemhauser1978analysis, krause2014submodular}:
+As $u_{T}(P)$ is non-negative, monotone and submodular, we get the following bound on a greedy-search result $P_{greedy}^k$~\cite{nemhauser1978analysis, krause2014submodular}:
 
 \begin{equation}
-	u_{T}(P_{beam}^k) \geq (1 - \frac{1}{e}) * \max_{|P| \leq k}{u_{T}(P)}
+	u_{T}(P_{greedy}^k) \geq (1 - \frac{1}{e}) * \max_{|P| \leq k}{u_{T}(P)}
 \end{equation}
 
-I.e., there is a lower bound on the utility of a portfolio found by beam search.
-With a minor transformation, this is an upper bound on the cost of a portfolio found by beam search:
+I.e., there is a lower bound on the utility of a portfolio found by greedy search.
+With a minor transformation, this is an upper bound on the cost of a portfolio found by greedy search:
 
 \begin{equation}
-	c_{T}(P_{beam}^k) \leq (1 - \frac{1}{e}) * \min_{|P| \leq k}{c_{T}(P)} + \frac{1}{e} * c_W
+	c_{T}(P_{greedy}^k) \leq (1 - \frac{1}{e}) * \min_{|P| \leq k}{c_{T}(P)} + \frac{1}{e} * c_W
 	\label{eq:upper-bound}
 \end{equation}
 
@@ -363,7 +364,7 @@ We analyze the \ref{eq:small-portfolio-problem} for three definitions of runtime
 	\end{align*}
 \end{itemize}
 
-To test generalization of search and prediction approaches, we conduct five-fold cross-validation.
+To test generalization of search and prediction approaches, we conduct five-fold cross-validation, and average evaluation metrics over the folds.
 I.e., we split the instances of each of the three problems five times into a training set and a set set.
 We search for portfolios and train prediction models only on the training sets.
 We employ the four solution approaches from Section~\ref{sec:approach:solution} to search for portfolios:
@@ -425,7 +426,6 @@ To solve the small portfolio-problem exactly, we use the package \emph{mip}~\cit
 
 \section{Evaluation}
 \label{sec:evaluation}
-% TODO make consistent to adaptations of pipeline after 93f7a2513e
 
 First, we evaluate the \ref{eq:small-portfolio-problem} as optimization problem based on VBS-performance, i.e., assuming that an oracle always chooses the best solver out of the portfolio for each instance.
 Second, we analyze portfolio performance if actual prediction models are used to make instance-specific solver recommendations.
@@ -435,98 +435,89 @@ Second, we analyze portfolio performance if actual prediction models are used to
 \subsubsection{Performance of Single Solvers}
 
 The dataset seems promising for portfolios.
-Regarding PAR2 score, here is no single solver which is fastest for all or even a majority of the 316 instances.
+Regarding PAR2 score, there is no single solver which is fastest for all or even a majority of the 316 instances.
 Instead, the top three solvers in terms of being fastest (\emph{kissat\_unsat}, \emph{kissat\_sat}, and \emph{kissat}) `win' on only 46, 38, and 26 instances respectively.
 This indicates that combing solvers in portfolios can improve overall runtime.
-Also, the three best single solvers (\emph{kissat\_sat}, \emph{kissat}, and \emph{relaxed\_newtech}) leave 52, 55, and 61 instances unsolved.
+Also, regarding the number of solved instances, the three best single solvers (\emph{kissat\_sat}, \emph{kissat}, and \emph{relaxed\_newtech}) still leave 52, 55, and 61 instances unsolved.
 
 \subsubsection{Objective Value of Portfolios}
 
-\paragraph{Exhaustive Search}
-
-Table~\ref{tab:objective-exhaustive} displays statistics for the objective value in exhaustive search over $k$.
-As expected, objective value gets better with larger portfolio size $k$.
-Also, the standard deviation becomes smaller, i.e., portfolios become more similar with increasing $k$.
-Thus, choosing an appropriate portfolio-search strategy matters the most for small values of $k$.
-
-\begin{table}[t]
-	\centering
-	\caption{Statistics of objective value for exhaustive search over $k$.}
-	\label{tab:objective-exhaustive}
-	\begin{tabular}{llrrrr}
-		\toprule
-		&   &     min &     mean &      max &     std \\
-		problem & k &         &          &          &         \\
-		\midrule
-		PAR2 & 1 &  730476 &  1328323 &  2947616 &  408661 \\
-		& 2 &  424187 &   952274 &  1968568 &  266017 \\
-		& 3 &  354575 &   771100 &  1968273 &  223589 \\
-		& 4 &  297029 &   656233 &  1922964 &  193872 \\
-		unsolved & 1 &      52 &      110 &      292 &      43 \\
-		& 2 &      23 &       73 &      178 &      26 \\
-		& 3 &      15 &       56 &      178 &      22 \\
-		& 4 &       9 &       45 &      173 &      19 \\
-		\bottomrule
-	\end{tabular}
-\end{table}
-
-\paragraph{Exact Search and Beam Search}
-
 \begin{figure*}[t]
 	\centering
-	\subfloat[\emph{PAR2} objective function.]{
-		\includegraphics[width=0.98\columnwidth]{plots/objective-PAR2.pdf}
-		\label{fig:objective-PAR2}
+	\subfloat[Training data.]{
+		\includegraphics[width=0.98\columnwidth]{plots/search-train-objective-PAR2.pdf}
+		\label{fig:search-train-objective-PAR2}
 	}
 	\hfil
-	\subfloat[\emph{Unsolved} objective function.]{
-		\includegraphics[width=0.98\columnwidth]{plots/objective-solved.pdf}
-		\label{fig:objective-unsolved}
+	\subfloat[Test data.]{
+		\includegraphics[width=0.98\columnwidth]{plots/search-test-objective-PAR2.pdf}
+		\label{fig:search-test-objective-PAR2}
 	}
-	\caption{Comparison of different solution approaches.}
-	\label{fig:objective}
+	\caption{Comparison of different solution approaches for objective \emph{PAR2}.}
+	\label{fig:search-train-objective}
 \end{figure*}
 
-Figure~\ref{fig:objective} shows the objective value of the exact solution, beam search with $w=1$, and the upper bound from Equation~\ref{eq:upper-bound}.
-For all approaches, objective value improves rapidly for the first few $k$, but marginal gains become smaller with increasing $k$.
-For the objective function \emph{PAR2}, the best $k=1$-portfolio has a penalized runtime 5.51 times as high as the best
-$k=48$-portfolio.
-This ratio reduces to 1.98 for $k=5$ and 1.30 for $k=10$.
-For the objective function \emph{Unsolved}, a portfolio of ten solvers suffices to solve all instances, while the best $k=5$-portfolio leaves seven instances unsolved and the best $k=1$ leaves 52 instances unsolved.
+Figure~\ref{fig:search-train-objective} shows the objective value of different solution approaches over $k$.
+We display only objective function \emph{PAR2} here, as the objective functions \emph{PAR2\_norm} and \emph{Unsolved} follow a similar pattern.
+For beam search, we display results for the smallest beam width, $w=1$, i.e., greedy search.
+For random search, we average over the repetitions of random sampling.
+If we report numbers in the following, we refer to the training data, where the optimization problems are solved.
 
-As Figure~\ref{fig:objective} shows, the objective value of beam search is very close to the exact solution.
-In contrast, the theoretical, submodularity-based upper bound for beam search is clearly higher and therefore too loose to give a good estimate.
-For the objective function \emph{PAR2}, the best beam-search portfolio for $k=2$ has a 15.4\% higher penalized runtime than the exact solution.
-For all other $k$, the best beam-search portfolio has at most a 4\% higher penalized runtime than the exact solution.
-For the objective function \emph{Unsolved}, the best beam-search portfolio for $k=2$ solves only seven instances less than the exact solution, and this difference decreases further with $k$.
-These results are particularly impressive considering that the runtime of beam search is linear in $k$ as well as the number of instances $n$, while the underlying problem is NP-complete.
+For all approaches, objective value improves rapidly for the first few $k$, but marginal gains become smaller with increasing $k$.
+For the objective function \emph{PAR2}, the best $k=1$-portfolio has a penalized runtime 5.51 times as high as the best $k=48$-portfolio.
+This ratio reduces to 1.89 for $k=5$ and 1.25 for $k=10$.
+For the objective function \emph{Unsolved}, a portfolio of ten solvers suffices to solve all instances, while the best $k=5$-portfolio leaves 1.7\% of instances unsolved and the best $k=1$-portfolio leaves 16.4\% of instances unsolved.
+
+As Figure~\ref{fig:search-train-objective-PAR2} also shows, the objective value of greedy search is very close to the exact solution.
+These results are particularly impressive considering that the runtime of greedy search is linear in $k$ as well as the number of instances $n$, while the underlying problem is NP-complete.
+In contrast, the theoretical, submodularity-based upper bound for greedy search from Equation~\ref{eq:upper-bound} is clearly higher and therefore too loose to give a good estimate.
+The baseline k-best search is worse than greedy search on the training data, but still clearly better than random search.
+As Figure~\ref{fig:search-test-objective-PAR2} shows, beam search, k-best search, and the exact solution perform even more similar on the test data.
+In particular, there is no clear winner any more, the exact solution might be worse than the heuristics.
+This is because optimization is run on the training instances only, and the best portfolio there might not exactly be the best on the test data.
+Still, training and test performances are rather similar.
+
+On the training data and for the objective function \emph{PAR2}, the greedy-search portfolio for $k=2$ has a 14.7\% higher penalized runtime than the exact solution, while k-best search is 28.4\% higher than the exact solution.
+For all other $k$, the greedy-search portfolio has less than 4\% higher penalized runtime than the exact solution.
+In contrast, the performance gap of k-best portfolios to the exact solution widens for the first few $k$, before becoming smaller gain later.
+For $k=8$, where the relative performance gap is the largest, the k-best portfolio has a 51.1\% higher penalized runtime than the exact solution.
+For the objective function \emph{Unsolved}, the greedy-search portfolio for $k=2$ solves only 1.9\% out of all instances less than the exact solution, and this difference decreases further with $k$.
+K-best search solves up to 4.3\% of all instances less than the exact solution.
 
 To bring the beam-search solution even closer to the exact solution, one can increase $w$.
-E.g., for $w=10$, the PAR2 score is never 1\% higher than the best exact solution and the number of solved instances is the same as for the exact solution for all $k$.
-Regarding the set of $w$ portfolios $\mathbb{P}^i$ within each iteration of beam search, a similar phenomenon as for exhaustive search occurs:
+E.g., for $w=10$ and for all $k$, the PAR2 score is never 2\% higher than the best exact solution and the difference in unsolved instances is never more than 0.1\% of all instances.
+Regarding the set of $w$ portfolios $\mathbb{P}^i$ within each iteration of beam search, there is a convergence with $k$:
 While portfolios in $\mathbb{P}^i$ show a larger variation in objective value for small $k$, this variation becomes smaller in latter iterations, i.e., the top $w$ portfolios become more similar.
+A similar phenomenon also occurs for randomly sampled portfolios:
+With increasing $k$, the standard deviation of the objective value in a sample of portfolios increases.
+At the same time, the expected objective value converges towards the objective value of the optimal k-portfolio.
+This is clearly visible in Figure~\ref{fig:search-train-objective}.
+Thus, the benefit of searching for good portfolios is the greatest for small $k$.
 
 \subsubsection{Solvers in Portfolios}
 
 While beam search iteratively adds solvers, the exact solution might differ in more than one solver from $k-1$ to $k$, i.e., existing solvers from the portfolio can be replaced.
 Indeed, we observe this phenomenon frequently in our results.
-For example, the best $k=2$-portfolio does not contain the best $k=1$-portfolio for both objective functions.
-However, as seen above, beam search still yields close-to-optimal objective value.
+For example, the best $k=2$-portfolio usually do not contain the best $k=1$-portfolio in our experiments.
+However, despite this non-monotonous behavior of the exact solution, beam search still yields close-to-optimal objective value.
 This indicates that there are several good solver combinations, so solvers can substitute each other in portfolios to some extent.
 
 This substitution effect seems to be particularly present for large $k$, as we can observe for beam search with $w=100$:
 For the objective function \emph{PAR2}, one solver appears in 19\% of the $w$ portfolios for $k=2$.
 However, for $k=10$, no solver appears in more than 10\% of the portfolios and for $k=20$, no solver appears in more than 5\% of the portfolios.
-A similar effect shows for the objective function \emph{Unsolved}.
+A similar effect shows for the objective functions \emph{PAR2\_norm} and \emph{Unsolved}.
 This shows that a few solvers might be crucial for good objective value for small $k$, but there is more flexibility in building a good portfolio for large $k$.
 
-A correlation analysis on $k=4$-exhaustive-search results also underlines the interaction between solvers.
+A correlation analysis on random-search results, of which we have 1000 portfolios for each $k$, also underlines the interaction between solvers.
 First, we encode the absence or presence of each solver in a portfolio with 0 or 1 respectively.
 Next, we compute the Spearman rank correlation between this occurrence vector with the objective value.
-For the objective function \emph{PAR2}, all correlations are between -0.38 und 0.15.
-For the objective function \emph{Unsolved}, all correlations are between -0.38 und 0.14.
-Thus, the presence of all individual solvers is at most weakly correlated to the objective value.
-This means one needs a combination of solvers to clearly influence the objective value in either direction.
+For $k=5$, all correlations are in $[-0.40,0.17]$ for objective function \emph{PAR2}, $[-0.42,0.17]$ for \emph{PAR2\_norm}, and $[-0.41,0.15]$ for \emph{Unsolved}.
+The mean correlation is zero for all objective functions.
+Similar correlation behavior occurs for other $k$.
+These results mean that only the presence of some solvers has a moderately negative correlation to the objective value of the whole portfolio.
+I.e., only some solvers can clearly improve the portfolio performance of our minimization problem on their own.
+The positive correlations are even weaker, i.e., there are no solvers which influence portfolio performance in a strongly negative manner.
+Overall, his means one needs a combination of solvers to clearly influence the objective value in either direction.
 
 \subsection{Prediction Results}
 
@@ -534,64 +525,58 @@ This means one needs a combination of solvers to clearly influence the objective
 
 \begin{figure}[t]
 	\centering
-	\includegraphics[width=\columnwidth]{plots/mcc.pdf}
-	\caption{Test-set MCC for beam-search portfolios with $w=100$. Decision trees of unlimited depth.}
-	\label{fig:mcc}
+	\includegraphics[width=\columnwidth]{plots/prediction-test-mcc.pdf}
+	\caption{Test-set MCC for random-search portfolios. Random forests with 100 trees.}
+	\label{fig:prediction-test-mcc}
 \end{figure}
 
-Figure~\ref{fig:mcc} shows test-set classification performance with decision trees of unlimited depth, using the portfolios from beam-search with $w=100$.
-We focus on these search results instead of exact search to have multiple portfolios for each $k$.
-We do not show training-set performance, since it always is 1.0.
-Test-set prediction performance is rather low for all $k$.
-This could cause a bad objective value for these model-based portfolios, as we will analyze latter.
-For low $k$, the prediction performance varies strongly between portfolios, while for larger $k$, the variation becomes smaller.
-
+Figure~\ref{fig:prediction-test-mcc} shows test-set classification performance of random forests with 100 trees, using the portfolios from random search.
+Classification performance with less trees is worse, on training set as well as test set.
+We use random-search results here, but classification results are similar for beam search with $w=100$.
+We do not display training-set performance, since it always is 1.0.
+As Figure~\ref{fig:prediction-test-mcc} shows, test-set prediction performance is rather low for all $k$.
+It is clearly higher than random guessing, which would yield an MCC of 0.0, but clearly lower than the optimal MCC of 1.0.
 With a perfect training-set performance, but a low test set performance, the model seems to be overfitting to the training set.
-As a counter-measure, one can limit the model size, i.e., decrease the depth of the decision trees.
-This indeed decreases the gap between training-set performance and test-set performance.
-However, the decrease mainly results from a decrease in training-set performance, while average test-set performance is rather similar for all tree depths apart from a depth of two.
-Thus, decreasing tree depth does not improve generalization capabilities of the models.
+This could cause a bad objective value for model-based portfolios, as we will analyze latter.
+For low $k$, the prediction performance varies stronger between portfolios than for larger $k$.
 
 \subsubsection{Objective Value}
 
 \begin{figure*}[t]
 	\centering
 	\subfloat[\emph{PAR2} objective function.]{
-		\includegraphics[width=0.98\columnwidth]{plots/objective-prediction-PAR2.pdf}
-		\label{fig:objective-prediction-PAR2}
+		\includegraphics[width=0.98\columnwidth]{plots/prediction-test-objective-PAR2.pdf}
+		\label{fig:prediction-test-objective-PAR2}
 	}
 	\hfil
 	\subfloat[\emph{Unsolved} objective function.]{
-		\includegraphics[width=0.98\columnwidth]{plots/objective-prediction-solved.pdf}
-		\label{fig:objective-prediction-unsolved}
+		\includegraphics[width=0.98\columnwidth]{plots/prediction-test-objective-unsolved.pdf}
+		\label{fig:prediction-test-objective-unsolved}
 	}
-	\caption{Objective value for beam-search-portfolios with $w=100$. Decision trees of unlimited depth.}
-	\label{fig:objective-prediction}
+	\caption{Objective value for beam-search-portfolios with $w=100$. Random forests with 100 trees.}
+	\label{fig:prediction-test-objective}
 \end{figure*}
 
-Figure~\ref{fig:objective-prediction} shows test-set objective value with decision trees of unlimited depth, using the portfolios from beam-search with $w=100$.
-For comparison, we also displays VBS and VWS score for the same portfolios.
-As shown before, VBS score decreases with $k$.
-This also allows portfolios with prediction model to potentially improve their performance.
-In contrast, VWS score increases with $k$.
-This is because larger portfolios contain more solvers which are only good on some instances, instead of being good on average.
-If a prediction model mainly predicts these solvers, objective value can become a lot worse.
-Overall, the range of the potential objective value of a portfolio with prediction model grows with $k$.
-Depending on the prediction quality, objective value can develop in either direction.
-In our case, objective value remains rather stable with $k$.
+Figure~\ref{fig:prediction-test-objective} shows test-set objective value for portfolios from beam-search with $w=100$.
+The plot compares the objective value of portfolios with an oracle, the VBS, to the objective value of portfolios with random forests with 100 trees
+As discussed before, VBS score decreases with $k$.
+In theory, this also allows portfolios with prediction model to potentially improve their performance.
+However, in our case, the objective value of model-based portfolios remains rather stable with $k$.
 This implies that the prediction model cannot help to leverage the larger amount of solvers in the portfolio.
-Given the low prediction performance in terms of MCC, this is expected.
+Given the low prediction performance in terms of MCC, as previously seen in Figure~\ref{fig:prediction-test-mcc}, this is expected.
 As a consequence, the gap between VBS and the predicted solver grows with $k$.
+Also, the objective value of model-based portfolios varies more than that of VBS-portfolios.
+This probably is related to the considerably variance in prediction performance, which is shown in Figure~\ref{fig:prediction-test-mcc}.
 
 \subsubsection{Feature Importance}
 
-Averaging importance over all trained models, the most important feature has an importance of 5.69\%, the least important feature has an importance of 0\%.
-To reach an cumulated average importance of 50\%, one needs 29 out of 143 features.
-This indicates that not just a small set of features is important, but many features can contribute towards predictions.
-Indeed, prediction models use 47 features on average.
-Note that this figure includes decision trees of all depths, i.e., also shallow trees that are not even able to include that many features.
-If we limit our analysis to decision trees of unlimited depth, the models use 116 features on average.
-The large number of features used by the models could also be a sign that our current feature set is not suitable to discriminate between solvers.
+Averaging importance over all trained models, the most important feature has an importance of roughly 2\%, the least important feature has an importance of 0\%.
+To reach an cumulated average importance of 50\%, one needs 49 out of 143 features.
+On average prediction models use 106 features.
+Note that this figure includes random forests fo all sizes, i.e., even the largest ones with 100 tree.
+If we limit our analysis to random forests with just one tree, the models still use 52 features on average.
+In conclusion, no single feature or even small sets of features drives prediction performance.
+Considering the low prediction performance, this indicates that our dataset lacks discriminating features which are suitable to decide which solver should be used on an instance.
 
 \section{Conclusions and Future Work}
 \label{sec:conclusion}

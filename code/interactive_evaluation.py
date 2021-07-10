@@ -41,6 +41,20 @@ print((runtimes != prepare_dataset.PENALTY).sum(axis='rows').sort_values(ascendi
 print(runtimes[(runtimes == prepare_dataset.PENALTY).sum(axis='columns') ==
                (runtimes.shape[1] - 1)].idxmin(axis='columns').value_counts())
 
+# Diagnostics: check (coefficient of) variation in objective value over folds
+data = search_results.groupby(['problem', 'settings_id', 'solution_id'])[
+    ['train_objective', 'test_objective', 'train_vbs', 'test_vbs', 'train_vws', 'test_vws']]
+print((data.std() / data.mean()).groupby('problem').describe().round(2).transpose())
+# Diagnostics: check train-test diff
+data = search_results[['problem', 'train_objective', 'test_objective', 'train_vbs', 'test_vbs',
+                       'train_vws', 'test_vws']].copy()
+for metric in ['objective', 'vbs', 'vws']:
+    data[f'{metric}_diff'] = data[f'train_{metric}'] - data[f'test_{metric}']
+    data[f'{metric}_diff_norm'] = data[f'{metric}_diff'] / data[f'train_{metric}']
+data = data.fillna(0)
+print(data.groupby('problem').mean().round(4).transpose())
+print(data.groupby('problem')['objective_diff_norm'].describe().round(2).transpose())
+
 # Objective of MIP search (exact solution) over k
 # Plot
 data = search_results[search_results['algorithm'] == 'mip_search'].copy()
