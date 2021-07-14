@@ -14,7 +14,8 @@
 \begin{document}
 
 \title{Analysis of Optimal Small Portfolios}
-%TODO change title, as we do no only analyze optimal portfolios
+%TODO change title, as we do no only analyze optimal portfolios; mabye "Analyzing Small Portfolios of SAT Solvers"
+%TODO might even drop "small" in favor of the more technical "k-" (if we did that, we needed to adapt the remaining text, which consistently uses "small portfolio" at the moment)
 
 \author{\IEEEauthorblockN{Jakob Bach}
 \IEEEauthorblockA{\textit{KIT Department of Informatics} \\
@@ -52,14 +53,15 @@ SAT solving is the archetypal NP-complete problem and has lots of practical appl
 Today, SAT solvers are not only used to solve hard combinatorial problems in industry but also to solve previously open problems in mathematics~\cite{Heule:2016:Pyth,Heule:2018:Schur}. 
 
 We can observe continuous progress in SAT solving methods, heuristics, and their implementations in SAT solvers. 
-The SAT Competition series, which is organized yearly as in international open event, aims to support and provide further incentives for maintaining this progress~\cite{balyo2020proceedings}. 
+The SAT Competition series, which is organized yearly as an international open event, aims to support and provide further incentives for maintaining this progress~\cite{balyo2020proceedings}.
 
-Solvers are usually evaluated based on compilations of benchmark instances representing diverse interesting applications scenarios of SAT solvers. 
+Solvers are usually evaluated based on compilations of benchmark instances representing diverse interesting application scenarios of SAT solvers.
 As it is also common in other areas of computer science, no SAT solving method is the best on all SAT instances. 
 In order to create an additional incentive for developing methods that target specific applications, SAT~Competition~2020 introduced an application track where SAT solvers are evaluated on instances stemming from one specific application. 
 In~2020, that was the Planning track, and this was followed in~2021 by the Crypto track~\cite{SC2020:AIJ}. 
+% JB: I would remove the previous two sentences (as it was before 219d873fb2), as they don't really fit into the portfolio story and there is quite a gap to the following paragraph
 
-Another promising approach to decrease runtime is combing solvers to portfolios for instance-specific algorithm selection, as in SATzilla~\cite{xu2008satzilla, xu2012satzilla2012}. 
+Another promising approach to decrease runtime is combining solvers to portfolios for instance-specific algorithm selection, as in SATzilla~\cite{xu2008satzilla, xu2012satzilla2012}.
 Within a portfolio, usually one or more prediction models help to decide which solver to use for a particular SAT instance. 
 Additional components of a portfolio can be pre-solvers, which are only run for a short time to solve easy instances, or a backup-solver, which is responsible for instances where computing features for the prediction models takes too long.
 Overall, portfolio approaches can become quite complex and it becomes unclear which parts of the portfolio solution are really necessary to achieve a good performance.
@@ -75,7 +77,7 @@ In particular, we want to find out whether small portfolios are already sufficie
 \paragraph{Contributions}
 
 We empirically analyze the performance of small portfolios on runtime data from the SAT~Competition~2020. 
-In particular, our dataset comprises 48 solvers and 316 instances from the Main track of the competition.
+In particular, our dataset comprises 48 solvers and 400 instances from the Main track of the competition.
 To find small portfolios, we apply beam search, a heuristic method, as well as an exact search. 
 For the latter, we encode the small-portfolio problem as an integer optimization problem. 
 Also, we include two baselines, one employing random sampling and the other one ranking by individual solvers' performances.
@@ -103,9 +105,10 @@ We conclude with Section~\ref{sec:conclusion}.
 
 %TODO conduct deeper literature research
 %TODO expand a bit, if necessary; currently, description of references is rather short
-%TODO add "SAT Competition 2020" paper, which does a lot of analysis on single solvers and some analysis on portfolios; might also cite it in section "Dataset" below
+%TODO describe "SAT Competition 2020" paper (if published), which does a lot of analysis on single solvers and some analysis on portfolios; citation already exists: \cite{SC2020:AIJ}
+%TODO some references have very long booktitles at the moment; if space is neeed, can use short conference/workshop name instead
 
-A recent survey on algorithm selection approaches is provided by Kerschke et al.~\cite{kerschke2019automated}. 
+A recent survey on algorithm-selection approaches is provided by Kerschke et al.~\cite{kerschke2019automated}.
 Portfolios of SAT solvers are a sub-category of this. 
 Many portfolio approaches have several stages and configuration options, which makes configuring and selecting the best portfolio approach difficult.
 To this end, Autofolio by Lindauer et al. provides an automatic configurator~\cite{lindauer2015autofolio}.
@@ -123,7 +126,7 @@ Our evaluation is less broad in terms of classification models, but instead we a
 Also, we evaluate additional search strategies for portfolios.
 For example, we systematically analyze parametrization of beam search.
 Further, we compare against random portfolios of size $k$ as a baseline.
-Finally, we solve the small-portfolio-problem exactly, while \cite{amadini2014empirical} only use heuristic search algorithms.
+Finally, we solve the small-portfolio-problem exactly, while \cite{amadini2014empirical} only uses heuristic search algorithms.
 
 Nof and Strichman formalize the small-portfolio problem in the form of two maximization problems with different objective functions~\cite{nof2020real}.
 They show submodularity and NP-completeness of the problems.
@@ -132,7 +135,7 @@ In their evaluation, they use beam search with a beam width of one.
 In contrast, we analyze parametrization of beam search.
 Further, we compare against random portfolios of size $k$ as a baseline.
 Also, \cite{nof2020real} does not analyze portfolios with prediction models, but only the optimization problems.
-For the exact solution, we provide an encoding as integer-problem.
+For the exact solution, we provide an encoding as integer optimization problem.
 In comparison, \cite{nof2020real} provides an SMT encoding.
 Finally, their domain is different than ours, as they focus on instances of an allocation problem whose solution is evaluated already after 0.1~s.
 In comparison, solvers in our dataset have a much larger timeout of 5000~s.
@@ -286,10 +289,10 @@ For maximal $w$, all portfolios remain.
 The algorithm is a greedy heuristic that does not necessarily find the optimal solution to the \ref{eq:small-portfolio-problem}.
 In return, its only needs to check $O(n \cdot w)$ portfolios per iteration, yielding a runtime advantage compared to exhaustive search.
 Additionally, there is a bound on the costs of a portfolio found by greedy search.
-To this end, one can use a result from \cite{nemhauser1978analysis}, which applies to greedy algorithms on non-negative monotone submodular set functions.
-\cite{nof2020real} shows that their \emph{K-Algorithms Max-Sum Problem} for portfolios is submodular and thus a bound on greedy algorithms holds.
+To this end, one can use a result from~\cite{nemhauser1978analysis}, which applies to greedy algorithms on non-negative monotone submodular set functions.
+\cite{nof2020real}~shows that their \emph{K-Algorithms Max-Sum Problem} for portfolios is submodular and thus a bound on greedy algorithms holds.
 We can easily transform the \ref{eq:small-portfolio-problem}, which is a minimization problem, into the \emph{K-Algorithms Max-Sum Problem}, which is a maximization problem.
-Thus, we can build on the submodularity proof of \cite{nof2020real}.
+Thus, we can build on the submodularity proof of~\cite{nof2020real}.
 We only need to replace the costs with utilities:
 
 \begin{align*}
@@ -390,7 +393,8 @@ We also analyze the more realistic scenario of using a prediction model to recom
 To this end, we take the portfolios found by the solution approaches and train a prediction model.
 For each instance, the prediction target is the best solver out of the portfolio.
 As models, we use random forests~\cite{breiman2001random}, which are ensembles of decision trees.
-Preliminary experiments with single decision trees~\cite{breiman1984classification} of different depths yielded unsatisfactory prediction performance.
+Preliminary experiments with single decision trees~\cite{breiman1984classification} of different depths yielded worse prediction performance.
+Random forests are also used in the well-known portfolio approach SATzilla2012~\cite{xu2012satzilla2012}.
 To analyze if prediction performance improves due to ensembling, we train models with one, ten, and 100 trees.
 We evaluate prediction performance in two ways:
 
@@ -410,11 +414,11 @@ We evaluate prediction performance in two ways:
 
 We obtain a dataset from the \emph{Global Benchmark Database}~\cite{iser2020collaborative}.
 The dataset has $|S| = 48$ solvers and $|I| = 316$ instances.
-We take the instances from the main track of the SAT Competition 2020\footnote{\url{https://satcompetition.github.io/2020/}}~\cite{balyo2020proceedings}, but discard the instances where no solver finished in time.
+We take the 400 instances from the Main track of the SAT Competition 2020\footnote{\url{https://satcompetition.github.io/2020/}}~\cite{balyo2020proceedings, SC2020:AIJ}, but discard the instances where no solver finished in time.
 For predictions, we make use of 143 features to characterize instances:
 138 from SATzilla~\cite{xu2008satzilla, xu2012satzilla2012} and five from a gate-recognition approach~\cite{iser2020recognition}.
 %TODO @Markus from which SATzilla version exactly?
-%TODO @Markus vielleicht hast du noch eine bessere Referenz, ich habe erst mal deine Diss genommen
+%TODO @Markus vielleicht hast du noch eine bessere Referenz für gate recognition, ich habe erst mal deine Diss genommen
 We replace missing values of features with their training-set mean.
 
 \subsection{Implementation}
@@ -585,7 +589,7 @@ SAT solvers are often complementary, i.e, they are particularly good on some ins
 Thus, one combines several solvers into portfolios.
 We analyzed such portfolios with runtime data from the SAT~Competition~2020.
 In particular, we focused on portfolios with a limited number of solvers, so-called \emph{small portfolios}.
-We presented an integer-problem to find small portfolios exactly as well as a beam-search approach to find small portfolios fast.
+We analyzed an integer optimization problem to find small portfolios exactly as well as a beam-search approach to find small portfolios fast.
 Regarding portfolio size, we saw a strong improvement in objective value for adding solvers to small portfolios, but a small impact once the portfolio reaches a certain size.
 Regarding the solution approach, we found that beam-search yields close-to-optimal solutions.
 After determining portfolios, we combined them with prediction models that made instance-specific solver recommendations.
