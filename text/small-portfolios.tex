@@ -4,12 +4,21 @@
 \usepackage[linesnumbered,vlined]{algorithm2e} % pseudo-code; use of package discouraged by IEEE, but hacked in in a (hopefully acceptable) way
 \usepackage{amsmath} % mathematical symbols
 \usepackage{amssymb} % mathematical symbols
+\usepackage{amsthm}
 \usepackage{balance} % balance columns on the last page
 \usepackage{booktabs} % nicely formatted tables
 \usepackage{graphicx} % plots
 \usepackage[caption=false,font=footnotesize]{subfig} % figures with multiple sub-figures and sub-captions; use of (newer) package "subcaption" discouraged by IEEE
 \usepackage{hyperref} % links and URLs
 %\addbibresource{references.bib}
+\usepackage{xcolor}
+
+\newtheorem{definition}{Definition}
+
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+
+\newcommand{\todo}[1]{{\color{red}TODO: #1}}
 
 \begin{document}
 
@@ -140,194 +149,166 @@ In comparison, \cite{nof2020real} provides an SMT encoding.
 Finally, their domain is different than ours, as they focus on instances of an allocation problem whose solution is evaluated already after 0.1~s.
 In comparison, solvers in our dataset have a much larger timeout of 5000~s.
 
-\section{Approach}
+
+\section{Preliminiaries}
+\label{sec:preliminaries}
+
+Given is a set of solvers $S = \{s_1, \dots, s_n\}$, a set of SAT instances $I = \{i_1, \dots, i_m\}$ and discrete solver runtimes $r~:~S \times I \rightarrow [0, \dots, T]$ with a fixed timeout $T$. 
+A scoring function $c_T : S \rightarrow \mathbb{N}$ is used to estimate solver performance. 
+To score a solver, we use the frequently used penalized average runtime with a penalization factor of two (PAR-2 Score) which is defined as follows.%
+\begin{align}
+r_T(s,i) &:= \begin{cases}
+	2 \cdot T & \text{if }r(s,i) = T\\
+	r(s,i) & \text{otherwise}
+\end{cases} \tag*{Penalized Runtimes}\\[.5em]
+c_T(s) &:= \frac{1}{|I|} \sum_{i \in I}{r_T(s,i)} \tag*{PAR-2 Score}
+\end{align}
+
+A portfolio $P \subseteq S$ is a \emph{non-empty} set of solvers.
+To score a solver portfolio $P$, we assume to have an oracle that always selects the fastest solver for each instance. 
+This construction is commonly referred to as the virtual best solver (VBS) for $P$. 
+Accordingly, we extend the scoring function as follows.%
+\begin{align*}
+	c_{T}(P) &:= \frac{1}{|I|} \sum\limits_{i \in I}{\min\{r_T(s,i) \mid s \in P\}}
+\end{align*}%
+%
+In the following, we will refer to $c_{T}(P)$ as the \emph{cost} of $P$. 
+
+In reality, one may train a prediction model $m : I \rightarrow P$ for a solver portfolio $P \subseteq S$ which recommends a solver for each instance. 
+The \emph{cost} of such a prediction model for solvers $P$ is given by the following function.%
+\begin{align*}
+	c_{T}'(P) &:= \frac{1}{|I|} \sum\limits_{i \in I}{r_T(m(i),i)}
+\end{align*}%
+%Such prediction models use feature records $r(I)$ of the SAT instances to make its recommendations. 
+
+Clearly, the portfolio cost $c_{T}(P)$ serves as a lower bound for the actual cost of a portfolio $P$ which uses a prediction model.
+
+%In the worst case, the prediction model always recommends the slowest solver out of $P$ for each instance.
+%This serves as an upper bound for the actual portfolio score, which we will refer to as the \emph{virtual worst solver} (VWS) for $P$.
+
+
+\section{Optimal $k$-Portfolios}
 \label{sec:approach}
 
-First, we describe the small-portfolio problem.
-Next, we present multiple approaches to solve it.
-
-\subsection{Small-Portfolio Problem}
-
-\subsubsection{Given Data}
-\label{sec:approach:problem:data}
-
+The $k$-Portfolio Problem is to find a portfolio $P$ with minimum costs that contains at most $k$ solvers.%
+%For each solver out of $S$, one needs to decide whether it becomes part of the portfolio $P$ or not.
 \begin{align*}
-	S &= \{s_1, \dots, s_n\} \tag*{Solvers}\\
-	I &= \{i_1, \dots, i_m\} \tag*{Instances}\\
-	r &: S \times I \rightarrow \mathbb{N} \cup \{\bot\} \tag*{Runtimes (censored)}\\
-	T &\in \mathbb{N} \tag*{Timeout}\\
-	r_T(s,i) &:= \begin{cases}
-		2*T & \text{if }r(s,i) = \bot\\
-		r(s,i) & \text{otherwise}
-	\end{cases} \tag*{Penalized Runtimes}
-\end{align*}
+\argmin\limits_{P \subseteq S, |P| = k} c_{T}(P)
+\end{align*}%
+%
+In the following, we outline four approaches for either \emph{exact} or \emph{approximate} determination of solutions to that function. 
 
-Let $S$ be a set of solvers and $I$ be a set of SAT instances.
-Let $r(s,i)$ be the runtimes of the solvers on the instances.
-If a solver encounters an error, e.g., runs out of memory, or takes longer than time $T$ on an instance, the runtime is set to $\bot$ first.
-Next, we penalize these missing runtimes with the double timeout, i.e., we use a PAR2 score.
-We use these penalized runtimes $r_T(s,i)$ to score the solvers.
 
-\subsubsection{Target Function}
-\label{sec:approach:problem:target}
+\subsection{Exhaustive Search (exact)}
 
-\begin{align*}
-	c_{T} &: 2^S \rightarrow \mathbb{N}\\
-	c_{T}(P) &:= \begin{cases}
-		2*T & \text{if }P=\emptyset\\
-		\frac{1}{|I|} * \sum_{i \in I}{\min\{r_T(s,i) \mid s \in P\}} & \text{otherwise}
-	\end{cases} \tag*{Portfolio Cost}
-\end{align*}
+The simplest way to solve the $k$-Portfolio Problem is by exhaustively searching all portfolios with at most $k$ solvers. 
+%Due to the use of a VBS, adding a solver to the portfolio cannot increase costs.
+%Thus, it is sufficient to search over all portfolios with exactly $k$ solvers, ignoring smaller portfolios.
+Since there are $\binom{n}{k}$ possible portfolios to search, this becomes infeasible for sufficiently large $n$ and $k \gg 1$ as well as $k \ll n$.
+For example, with the $n=48$ solvers in our dataset, there are $1128$ portfolios for $k=2$, but roughly $6.54 * 10^9$ portfolios for $k=10$.
 
-The cost of a solver equals its penalized runtime, averaged over all instances.
-A portfolio $P \subseteq S$ is a set of solvers.
-To compute the cost of a portfolio $c_{T}(P)$, we assume to have an oracle that always chooses the fastest solver for each instance.
-This is the \emph{virtual-best solver} (VBS).
+\subsection{Integer Programming (exact)}
 
-In reality, one may train a prediction model that recommends a solver for each instance.
-Such a prediction model uses features of the SAT instances to make its recommendations.
-Only if the prediction model always recommends the fastest solver out of $P$ for each instance, the portfolio has the same costs as the VBS for $P$.
-Else, the costs are higher, i.e., $c_{T}(P)$ is a lower bound for the actual portfolio costs.
-In the worst case, the prediction model always recommends the slowest solver out of $P$ for each instance.
-This serves as an upper bound for actual portfolio costs and it the \emph{virtual worst solver} (VWS).
-
-\subsubsection{Optimization Problem}
-
-\begin{equation}
-	\label{eq:small-portfolio-problem}
-	\begin{aligned}
-		\min_P \quad & c_{T}(P)\\
-		s.t. \quad & |P| \leq k
-	\end{aligned}
-   \tag{Small-Portfolio Problem}
-\end{equation}
-
-The \ref{eq:small-portfolio-problem} is to find a portfolio with minimum costs that contains at most $k$ solvers.
-For each solver out of $S$, one needs to decide whether it becomes part of the portfolio $P$ or not.
-
-\subsection{Solution Approaches}
-\label{sec:approach:solution}
-
-\subsubsection{Exhaustive Search}
-
-The simplest way to solve the \ref{eq:small-portfolio-problem} is by exhaustively searching all portfolios with at most $k$ solvers.
-Due to the use of a VBS, adding a solver to the portfolio cannot increase costs.
-Thus, it is sufficient to search over all portfolios with exactly $k$ solvers, ignoring smaller portfolios.
-Still, there are $\binom{n}{k}$ possible portfolios to search.
-This can become infeasible, given sufficiently large $n$ and $k \gg 1$ as well as $k \ll n$.
-For example, with $n=48$ solvers in our dataset, there are already 1128 portfolios for $k=2$, but roughly $6.54 * 10^9$ portfolios for $k=10$.
-
-\subsubsection{Exact Search: Integer Programming}
-
-The \ref{eq:small-portfolio-problem} is not linear due to the use of the $\min$ function.
+The $k$-Portfolio Problem is not linear due to the use of the $\min$ function.
 However, one can make it an integer linear problem by introducing additional variables.
-This allows to obtain an exact solution for the problem with a standard integer-programming solver.
+This allows to obtain an exact solution for the problem with an off-the-shelf integer-programming solver.
 
-\begin{equation}
-	\label{eq:small-portfolio-integer-problem}
-	\begin{aligned}
-		\min_{x,y} \quad & \frac{1}{|I|} * \sum_{i \in I} \sum_{s \in S} r_T(s,i) * x_{s,i} \\
-		s.t. \quad & \begin{aligned}
-			\forall_{i\in I} \sum_{s \in S} x_{s,i} &= 1\\
-			\forall_{s \in S} \sum_{i \in I} x_{s,i} &\leq |I| * y_s\\
-			\sum_{s \in S} y_s &\leq k\\
-			\forall_{i\in I} \forall_{s \in S}~x_{s,i} &\in \{0, 1\}\\
-			\forall_{s \in S}~y_s &\in \{0,1\}
-		\end{aligned}
-	\end{aligned}
-	\tag{Small-Portfolio Integer Problem}
-\end{equation}
+We introduce two sets of binary decision variables. 
+The variables $y_s$ denote whether a solver $s \in S$ is in the portfolio, and 
+variables $x_{s,i}$ denotes whether solver $s \in S$ is selected for instance $i \in I$. 
+Equation~\ref{eq:ip1} specifies the cardinality constraint on the number of solvers. 
+Equation~\ref{eq:ip2} stipulates that exactly one solver is chosen for each instance. 
+Equation~\ref{eq:ip3} ensures that a solver can only be chosen for an instance if it is part of the portfolio. 
+Ultimately, the optimization target is specified by Equation~\ref{eq:ip4}. 
 
-There are two sets of decision variables.
-$x_{s,i}$ denotes whether solver $s$ is used for instance $i$.
-$y_s$ denotes whether a solver is in the portfolio.
-Besides the cardinality constraint on the number of solvers, there are two additional constraints.
-First, exactly one solver is chosen for each instance.
-Second, a solver can only be chosen for an instance if it is part of the portfolio.
+\begin{align}
+%	\forall_{s \in S}~y_s &\in \{0,1\}\\
+%	\forall_{i\in I} \forall_{s \in S}~x_{s,i} &\in \{0, 1\}\\
+	\sum_{s \in S} y_s &\leq k \label{eq:ip1}\\
+	\forall_{i\in I} \sum_{s \in S} x_{s,i} &= 1 \label{eq:ip2}\\
+	\forall_{s \in S} \sum_{i \in I} x_{s,i} &\leq |I| \cdot y_s \label{eq:ip3}\\
+	\min_{x,y} \quad & \frac{1}{|I|} \cdot \sum_{i \in I} \sum_{s \in S} r_T(s,i) \cdot x_{s,i} \label{eq:ip4}
+%\label{eq:small-portfolio-integer-problem}
+\end{align}
 
-\subsubsection{Beam Search}
 
-Beam search is a greedy algorithm that finds portfolios in an iterative manner.
-Figure~\ref{al:beam-search} shows the approach:
+\subsection{Beam Search (approximate)}
 
 % IEEE wants algorithms as figures, not separate floats (as "algorithm2e" does), so we need some hacking: https://tex.stackexchange.com/questions/147598/how-to-use-the-algorithm2e-package-with-ieeetran-class
-\begin{figure}[t]
+\begin{figure}[b]
 \makeatletter
 \let\@latex@error\@gobble
 \makeatother
 \begin{algorithm}[H]
-	\KwIn{Penalized runtimes $r_T(s,i)$, portfolio size $k$, beam width $w$}
+\DontPrintSemicolon
+	\KwIn{Solvers $S$, Portfolio Size $k$, Portfolio Cost $c_T$}
+	\KwIn{Beam Width $w$}
 	\KwOut{Portfolio $P$ with $|P|=k$}
-	$\mathbb{P}^0$ $\leftarrow$ \{$\emptyset$\}\tcp*[r]{portfolios of size 0}
+	\KwData{Sets of $i$-Portfolios $T_i$}
+	\BlankLine
+	$T_0 \leftarrow \{\emptyset\}$\;
 	\For{$i \leftarrow 1$ \KwTo $k$}{
-		$\mathbb{P}^i \leftarrow \emptyset$\tcp*[r]{portfolios of size $i$}
-		\ForEach{$P \in \mathbb{P}^{i-1}$}{
-			\ForEach{$s \in S$}{
-				\If{$s \notin P$}{
-					$\mathbb{P}^i \leftarrow \mathbb{P}^i \cup \{ P \cup \{ s \} \}$\tcp*[r]{add new portfolio}
-				}
+		\tcp{Candidate $i$-portfolios:}
+		$U \leftarrow \emptyset$\;
+		\ForEach{$P \in T_{i-1}$}{
+			\ForEach{$s \in S \setminus P$}{
+				$U \leftarrow U \cup \{ P \cup \{ s \} \}$\;
 			}
 		}
-		$\mathbb{P}^i \leftarrow$ sort($\mathbb{P}_i$, $r_T$)\tcp*[r]{sort portfolios by costs}
-		$\mathbb{P}^i \leftarrow \{\mathbb{P}_j^i \in \mathbb{P}^i \mid j \leq w \}$\tcp*[r]{best $w$ portfolios of size $i$}
+		\tcp{Select $w$ best $i$-portfolios:}
+		$T_i \leftarrow \emptyset$\;
+		\For{$j \leftarrow 1$ \KwTo $w$}{
+			$T_i \leftarrow T_i \cup \{\argmin\limits_{P \in U \setminus T_i}{c_T(P)}\}$\;
+		}
+		%$T_i \leftarrow \mathsf{sort}(U, P_0 < P_1 \leftrightarrow c_T(P_0) < c_T(P_1))$\;
+		%$T_i \leftarrow \{P_j \in U \mid j \leq w \}$\;
 	}
-	\Return $\underset{P \in \mathbb{P}^k}{\arg\min}~c_{T}(P)$\;
+	\Return $\argmin\limits_{P \in T_k}{c_{T}(P)}$\;
 \end{algorithm}
-\caption{Beam search.}
+\caption{Beam Search Algorithm}
 \label{al:beam-search}
 \end{figure}
 
-The algorithm starts with an empty portfolio.
-In each iteration, the algorithm creates all combinations of portfolios from the previous iteration and individual solvers which are not part of these portfolios.
-I.e., the algorithm expands existing portfolios by adding single solvers.
+Beam search is a greedy algorithm that finds portfolios in an iterative manner.
+Figure~\ref{al:beam-search} depicts the approach. 
+In each iteration, the algorithm combines the portfolios from the previous iteration with individual solvers which are not part of these portfolios. 
+I.e., the algorithm expands existing portfolios by adding single solvers. 
 Before going to the next iteration, only the $w$ portfolios with the lowest cost are retained.
 The beam-width $w$ is an input parameter.
 For $w=1$, only one portfolio remains at the end of each iteration.
 We refer to this special case as \emph{greedy search}.
-For maximal $w$, all portfolios remain.
+For $w = |S|$, the algorithm degrades to exhaustive search. 
+For $w << |S|$, it yields a runtime advantage compared to exhaustive search, as it only evaluates $O(|S| \cdot w)$ portfolios per iteration. 
+Note that selection of $w$ best portfolios in Lines~7-9 can be implemented with sorting. 
 
-The algorithm is a greedy heuristic that does not necessarily find the optimal solution to the \ref{eq:small-portfolio-problem}.
-In return, its only needs to check $O(n \cdot w)$ portfolios per iteration, yielding a runtime advantage compared to exhaustive search.
-Additionally, there is a bound on the costs of a portfolio found by greedy search.
+The algorithm is a greedy heuristic that does not necessarily find the optimal solution to the $k$-Portfolio Problem. 
+But there is a bound on the costs of a portfolio found by greedy search. 
 To this end, one can use a result from~\cite{nemhauser1978analysis}, which applies to greedy algorithms on non-negative monotone submodular set functions.
-\cite{nof2020real}~shows that their \emph{K-Algorithms Max-Sum Problem} for portfolios is submodular and thus a bound on greedy algorithms holds.
-We can easily transform the \ref{eq:small-portfolio-problem}, which is a minimization problem, into the \emph{K-Algorithms Max-Sum Problem}, which is a maximization problem.
-Thus, we can build on the submodularity proof of~\cite{nof2020real}.
-We only need to replace the costs with utilities:
-
-\begin{align*}
-	u_{T} &: 2^S \rightarrow \mathbb{N}\\
-	u_{T}(P) &:= \begin{cases}
-		0 & \text{if }P=\emptyset\\
-		c_W - c_{T}(P) & \text{otherwise}
-	\end{cases} \tag*{Portfolio Utility}
-\end{align*}
-
-with the cost of the virtual-worst solver defined as:
-
-\begin{align*}
-	c_W := \frac{1}{|I|} * \sum_{i \in I}{\max_{s \in S}{r_T(s,i)}} \tag*{Virtual Worst Solver}
-\end{align*}
-
-As $u_{T}(P)$ is non-negative, monotone and submodular, we get the following bound on a greedy-search result $P_{greedy}^k$~\cite{nemhauser1978analysis, krause2014submodular}:
-
-\begin{equation}
-	u_{T}(P_{greedy}^k) \geq (1 - \frac{1}{e}) * \max_{|P| \leq k}{u_{T}(P)}
-\end{equation}
-
+Nof and Strichman show that their \emph{K-Algorithms Max-Sum Problem} for portfolios is submodular and thus a bound on greedy algorithms holds~\cite{nof2020real}. 
+We can transform the $k$-Portfolio Problem (minimization) into the \emph{K-Algorithms Max-Sum Problem} (maximization) by replacing the costs with utilities as follows.%
+$$
+u_{T}(P) := c_W - c_{T}(P)
+$$
+In this transformation $c_W$ denotes an upper bound on portolio performance, the virtual worst solver.%
+$$
+c_W := \frac{1}{|I|} \sum_{i \in I}{\max\{{r_T(s,i) \mid s \in S}}\}
+$$
+As $u_{T}(P)$ is non-negative, monotone and submodular, we get the following bound on a greedy-search result $P_{greedy}^k$~\cite{nemhauser1978analysis, krause2014submodular}.%
+$$
+	u_{T}(P_{greedy}^k) \geq (1 - \frac{1}{e}) \cdot \max_{|P| \leq k}{u_{T}(P)}
+$$
 I.e., there is a lower bound on the utility of a portfolio found by greedy search.
-With a minor transformation, this is an upper bound on the cost of a portfolio found by greedy search:
+This can be transformed into an upper bound on the cost of a portfolio found by greedy search.%
+$$
+	c_{T}(P_{greedy}^k) \leq (1 - \frac{1}{e}) \cdot \min_{|P| \leq k}{c_{T}(P)} + \frac{1}{e} \cdot c_W
+$$
 
-\begin{equation}
-	c_{T}(P_{greedy}^k) \leq (1 - \frac{1}{e}) * \min_{|P| \leq k}{c_{T}(P)} + \frac{1}{e} * c_W
-	\label{eq:upper-bound}
-\end{equation}
-
-\subsubsection{K-Best Search}
+\subsection{K-Best Search (approximate)}
 
 This is a baseline used in~\cite{nof2020real}.
 It sorts all solvers by their individual performance and then picks the top $k$ from this list.
 Thus, opposed to beam search, it does not consider how solvers within a portfolio interact, e.g., if they complement each other.
+
 
 \section{Experimental Design}
 \label{sec:experimental-design}
@@ -457,7 +438,7 @@ Also, regarding the number of solved instances, the three best single solvers (\
 		\includegraphics[width=0.98\columnwidth]{plots/search-test-objective-PAR2.pdf}
 		\label{fig:search-test-objective-PAR2}
 	}
-	\caption{Comparison of different solution approaches for objective \emph{PAR2}.}
+	\caption{Comparison of different solution approaches for objective \emph{PAR2}. Portfolio VBS Performance for different k and search algorithms. Optimized on Training (left), Evaluated on Test (right), five-fold cross-validation (avg). todo: log-scale(y)}
 	\label{fig:search-train-objective}
 \end{figure*}
 
@@ -530,7 +511,7 @@ Overall, his means one needs a combination of solvers to clearly influence the o
 \begin{figure}[t]
 	\centering
 	\includegraphics[width=\columnwidth]{plots/prediction-test-mcc.pdf}
-	\caption{Test-set MCC for random-search portfolios. Random forests with 100 trees.}
+	\caption{Test-set MCC for random-search portfolios. Random forests with 100 trees. (mcc: 0 - random/constant, 1 - perfect prediction)}
 	\label{fig:prediction-test-mcc}
 \end{figure}
 
@@ -557,7 +538,7 @@ For low $k$, the prediction performance varies stronger between portfolios than 
 		\includegraphics[width=0.98\columnwidth]{plots/prediction-test-objective-unsolved.pdf}
 		\label{fig:prediction-test-objective-unsolved}
 	}
-	\caption{Objective value for beam-search-portfolios with $w=100$. Random forests with 100 trees.}
+	\caption{Objective value for beam-search-portfolios with $w=100$. Random forests with 100 trees. Portfolio performance for test set vbs (orange) and prediction model (blue)}
 	\label{fig:prediction-test-objective}
 \end{figure*}
 
