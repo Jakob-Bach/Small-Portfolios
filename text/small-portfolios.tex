@@ -123,7 +123,7 @@ To this end, Autofolio by Lindauer et al. provides an automatic configurator~\ci
 Also, one can analyze the impact of configuration options, e.g., with the tool CAVE~\cite{biedenkapp2018cave}. 
 
 One of the most well-known complex portfolio approaches is SATzilla, of which multiple versions exist~\cite{xu2008satzilla, xu2012satzilla2012}. 
-Additional components of SATzilla are so-called \emph{pre-solvers}, which are only run for a short time to solve easy instances, or a backup-solver, which is responsible for instances where computing features for the prediction models takes too long. 
+Additional components of SATzilla are so-called \emph{pre-solvers}, which are only run for a short time to solve easy instances, or a \emph{backup-solver}, which is responsible for instances where computing features for the prediction models takes too long. 
 Overall, portfolio approaches can become quite complex and it becomes unclear which parts of the portfolio solution are really necessary to achieve a good performance.
 Besides complex portfolio approaches, there are also simple ones, e.g., selecting a solver nearest-neighbor-based, without training a prediction model~\cite{malitsky2011non, nikolic2013simple, samulowitz2013snappy}.
 
@@ -155,7 +155,9 @@ In comparison, solvers in our dataset have a much larger timeout of 5000~s.
 
 Given is a set of solvers $S = \{s_1, \dots, s_n\}$, a set of SAT instances $I = \{i_1, \dots, i_m\}$ and discrete solver runtimes $r~:~S \times I \rightarrow [0, \dots, T]$ with a fixed timeout $T$. 
 A scoring function $c_T : S \rightarrow \mathbb{N}$ is used to estimate solver performance. 
-To score a solver, we use the frequently used penalized average runtime with a penalization factor of two (PAR-2 Score) which is defined as follows.%
+To score a solver, we use the frequently used penalized average runtime with a penalization factor of two (PAR-2 Score). 
+That score yields a tradoff between pace and the number of solved instances. 
+It is defined as follows.%
 \begin{align}
 r_T(s,i) &:= \begin{cases}
 	2 \cdot T & \text{if }r(s,i) = T\\
@@ -381,7 +383,7 @@ In our experiments, we use a dataset of $|S| = 48$ solvers and $|I| = 400$ insta
 We filtered out those instances where no solver finished in time, resulting in a dataset of $316$ instances. 
 
 For predictions, we make use of 143 features to characterize instances, of which 
-$138$ features stem from the feature extractor of SATzilla~2012~\cite{xu2008satzilla, xu2012satzilla2012} and five features stem from a gate-recognition approach~\cite{iser2020recognition}. 
+$138$ features stem from the feature extractor of SATzilla~2012~\cite{xu2008satzilla, xu2012satzilla2012} and five features stem from a gate-recognition approach~\cite{Iser:2015:GateRecognition}. 
 Feature values which are missing due to the feature extractor having exceeded time- or memory limits are replaced with their training-set mean. 
 
 \subsection{Implementation}
