@@ -517,7 +517,10 @@ Overall, this means one needs a combination of solvers to clearly influence the 
 
 \subsection{Prediction Results}
 
-\subsubsection{MCC}
+In this section, we evaluate the prediction performance for the previously determined portfolios. 
+We also evaluate the actual performance of the resulting portfolios in terms of their penalized average runtimes. 
+
+\subsubsection{Mathew's Correlation Coefficient}
 
 \begin{figure}[t]
 	\centering
@@ -536,7 +539,7 @@ With a perfect training-set performance, but a low test set performance, the mod
 This could cause a bad objective value for model-based portfolios, as we will analyze latter.
 For low $k$, the prediction performance varies stronger between portfolios than for larger $k$.
 
-\subsubsection{Objective Value}
+\subsubsection{Portfolio Performance}
 
 \begin{figure*}[t]
 	\centering
@@ -557,7 +560,8 @@ Figure~\ref{fig:prediction-test-objective} shows test-set objective value for po
 The plot compares the objective value of portfolios with an oracle, the VBS, to the objective value of portfolios with random forests with 100 trees
 As discussed before, VBS score decreases with $k$.
 In theory, this also allows portfolios with prediction model to potentially improve their performance.
-However, in our case, the objective value of model-based portfolios remains rather stable with $k$.
+
+However, in our case, the objective value of model-based portfolios remains rather stable with increasing values of $k$.
 This implies that the prediction model cannot help to leverage the larger amount of solvers in the portfolio.
 Given the low prediction performance in terms of MCC, as previously seen in Figure~\ref{fig:prediction-test-mcc}, this is expected.
 As a consequence, the gap between VBS and the predicted solver grows with $k$.
@@ -569,10 +573,15 @@ This probably is related to the considerably variance in prediction performance,
 Averaging importance over all trained models, the most important feature has an importance of roughly 2\%, the least important feature has an importance of 0\%.
 To reach an cumulated average importance of 50\%, one needs 49 out of 143 features.
 On average prediction models use 106 features.
-Note that this figure includes random forests fo all sizes, i.e., even the largest ones with 100 tree.
+%Note that these figures includes random forests of all sizes, i.e., even the largest ones with 100 trees.
 If we limit our analysis to random forests with just one tree, the models still use 52 features on average.
 In conclusion, no single feature or even small sets of features drives prediction performance.
 Considering the low prediction performance, this indicates that our dataset lacks discriminating features which are suitable to decide which solver should be used on an instance.
+
+\todo{result for k=3 is best}
+
+\todo{get rid of alternate objective functions (PAR-2 Norm and Unsolved) as in this context we cannot learn anything more from them}
+
 
 \section{Conclusions and Future Work}
 \label{sec:conclusion}
