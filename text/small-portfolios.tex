@@ -424,7 +424,6 @@ This indicates that combing solvers in portfolios can improve overall runtime.
 	\caption{Comparison of different solution approaches for objective \emph{PAR2}. Portfolio VBS Performance for different k and search algorithms. Optimized on Training (left), Evaluated on Test (right), five-fold cross-validation. 
 \todo{use log-scale for y-axis}
 \todo{rename k-best search to k-best, it's not \emph{search}}
-\todo{remove upper-bound}
 \todo{rename mip-search to optimal solution}
 \todo{add beam search results for w=100}
 \todo{rename random search to random sampling}}
@@ -435,7 +434,8 @@ Figure~\ref{fig:search-train-objective} displays the cost in terms of the \emph{
 The performance of the optimal solution is given by \emph{MIP search}. 
 \emph{Beam search} denotes the performance of the best portfolios found by a \emph{greedy search} algorithm, i.e., executing the \emph{beam search} algorithm with the smallest beam width $w=1$. 
 The approach \emph{k-best} displays the performance of portfolios which are comprised by the top $k$ single-best solvers. 
-In \emph{random\_search}, we average over the repetitions of random sampling.
+In \emph{random search}, we average over the repetitions of random sampling.
+The displayed \emph{upper bound} is calculated based on the runtimes of the worst performing $k$-portfolio. 
 If we report numbers in the following, we refer to the training dataset for which the optimization problems are solved.
 
 For all approaches, the objective value improves rapidly for the first few $k$, but marginal gains become smaller with increasing $k$.
@@ -445,7 +445,6 @@ This ratio reduces to $1.89$ for the best $5$-portfolio and $1.25$ for the best 
 As Figure~\ref{fig:search-train-objective-PAR2} also shows, the cost of the best $k$-portfolios found by \emph{greedy search} is very close to that of the exact solutions.
 These results are particularly impressive considering that the runtime of \emph{greedy search} is linear in $k$ as well as the number of instances $n$, while the finding the exact solution is NP-complete.
 In contrast, the theoretical, submodularity-based upper bound for \emph{greedy search} is clearly higher and therefore too loose to give a good estimate. 
-\todo{reference upper bound again}
 
 The baseline \emph{k-best} is worse than \emph{greedy search} on the training data, but still clearly better than \emph{random search}.
 As Figure~\ref{fig:search-test-objective-PAR2} shows, \emph{beam search}, \emph{k-best}, and \emph{MIP search} show similar performance on the test dataset.
