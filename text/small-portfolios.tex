@@ -430,7 +430,7 @@ This indicates that combing solvers in portfolios can improve overall runtime.
 \todo{rename k-best search to k-best, it's not \emph{search}}
 \todo{remove upper-bound}
 \todo{rename mip-search to optimal solution}
-\todo{add beam for w=100, or some width that is used in the text}
+\todo{add beam search results for w=100}
 \todo{rename random search to random sampling}}
 \label{fig:search-train-objective}
 \end{figure*}
@@ -582,6 +582,8 @@ Considering the low prediction performance, this indicates that our dataset lack
 
 \todo{get rid of alternate objective functions (PAR-2 Norm and Unsolved) as in this context we cannot learn anything more from them}
 
+\todo{evaluate prediction performance also for the optimal k-portfolios}
+
 
 \section{Conclusions and Future Work}
 \label{sec:conclusion}
@@ -590,13 +592,18 @@ SAT solvers are often complementary, i.e, they are particularly good on some ins
 Thus, one combines several solvers into portfolios.
 We analyzed such portfolios with runtime data from the SAT~Competition~2020.
 In particular, we focused on portfolios with a limited number of solvers, so-called \emph{small portfolios}.
+
 We analyzed an integer optimization problem to find small portfolios exactly as well as a beam-search approach to find small portfolios fast.
 Regarding portfolio size, we saw a strong improvement in objective value for adding solvers to small portfolios, but a small impact once the portfolio reaches a certain size.
+
 Regarding the solution approach, we found that beam-search yields close-to-optimal solutions.
 After determining portfolios, we combined them with prediction models that made instance-specific solver recommendations.
 However, these models performed rather poorly on the given dataset, such that the objective value of portfolios with predictions did not improve with the portfolio size.
+We found, that prediction performance does not improve beyond portfolio sizes of $k=3$. 
 
 In future work, we want to improve prediction performance, in particular, by adapting the set of instance features.
+Recent results in the empirical anaylsis of solver portfolios indicate that features which describe the community structure of graph representations of SAT instances correlate well with solver performance. 
+Among those are features describing their hierarchical community structure, such as community leaf size, community degree, and the number of inter-community edges~\cite{Li:2021:HCS}. 
 Also, we want to integrate our portfolio-search functionality into the Python package~\emph{gbd-tools}, so it can be directly used in queries to the database GBD.
 
 \section*{Acknowledgments}
