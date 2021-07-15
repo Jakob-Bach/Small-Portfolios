@@ -84,20 +84,19 @@ In particular, we want to find out whether small portfolios are already sufficie
 
 \paragraph{Contributions}
 
-We empirically analyze the performance of small portfolios on runtime data from the SAT~Competition~2020. 
-In particular, our dataset comprises 48 solvers and 400 instances from the Main track of the competition.
-To find small portfolios, we apply beam search, a heuristic method, as well as an exact search. 
-For the latter, we encode the small-portfolio problem as an integer optimization problem. 
-Also, we include two baselines, one employing random sampling and the other one ranking by individual solvers' performances.
-In our experiments, we analyze all possible portfolio sizes $k \in \{1, \dots, 48\}$. 
-Also, we systematically vary the only hyper-parameter of beam search, the beam width $w$.
-We analyze three variants of the small-portfolio problem, based on different transformations of solver runtimes.
+We empirically analyze the performance of small portfolios on runtime data for 48 solvers and 400 instances from the SAT~Competition~2020. 
+In our experiments, we compare possible portfolio sizes $k \in \{1, \dots, 48\}$. 
+For approximate deterimination of optimal portfolios if size $k$, we apply \emph{beam search} with varying beam widths. 
+We compare the quality of such approximations to the results of an exact search, for which we encode the $k$-portfolio problem as an integer optimization problem. 
+
+Moreover, we include two baselines, one employing random sampling and the other one ranking by individual solvers' performances. 
+We analyze three variants of the $k$-portfolio problem, based on different transformations of solver runtimes.
 For evaluation, we consider both the theoretically optimal performance of portfolios as well as the performance if a prediction model makes instance-specific solver recommendations. 
 
 \paragraph{Results}
 
-We observe that adding solvers has diminishing returns, i.e., portfolio performance improves most when adding the first few solvers. 
-Additionally, the portfolios found heuristically by beam search have very similar performance as the optimal solution, even for minimal beam width $w=1$.
+We observe that adding solvers to a portfolio has diminishing returns, i.e., portfolio performance improves most when adding the first few solvers. 
+Additionally, the portfolios found heuristically by \emph{beam search} have very similar performance to the optimal solution, even for minimal beam width $w=1$.
 Unfortunately, we find that the prediction models exhibit a rather low prediction performance in our experiments. 
 Thus, actual portfolio performance cannot benefit from the theoretical improvement over $k$. 
 
@@ -142,8 +141,8 @@ Finally, we solve the small-portfolio-problem exactly, while \cite{amadini2014em
 Nof and Strichman formalize the small-portfolio problem in the form of two maximization problems with different objective functions~\cite{nof2020real}.
 They show submodularity and NP-completeness of the problems.
 While we can build on the theoretical results of \cite{nof2020real}, our evaluation is different.
-In their evaluation, they use beam search with a beam width of one.
-In contrast, we analyze parametrization of beam search.
+In their evaluation, they use \emph{beam search} with a beam width of one.
+In contrast, we analyze parametrization of \emph{beam search}.
 Further, we compare against random portfolios of size $k$ as a baseline.
 Also, \cite{nof2020real} does not analyze portfolios with prediction models, but only the optimization problems.
 For the exact solution, we provide an encoding as integer optimization problem.
@@ -268,7 +267,7 @@ Ultimately, the optimization target is specified by Equation~\ref{eq:ip4}.
 \label{al:beam-search}
 \end{figure}
 
-Beam search is a greedy algorithm that finds portfolios in an iterative manner.
+\emph{Beam search} is a greedy algorithm that finds portfolios in an iterative manner.
 Figure~\ref{al:beam-search} depicts the approach. 
 In each iteration, the algorithm combines the portfolios from the previous iteration with individual solvers which are not part of these portfolios. 
 I.e., the algorithm expands existing portfolios by adding single solvers. 
@@ -281,7 +280,7 @@ For $w << |S|$, it yields a runtime advantage compared to exhaustive search, as 
 %Note that selection of $w$ best portfolios in Lines~7-9 can be implemented with sorting. 
 
 The algorithm is a greedy heuristic that does not necessarily find the optimal solution to the $k$-Portfolio Problem. 
-But there is a bound on the costs of a portfolio found by greedy search. 
+But there is a bound on the costs of a portfolio found by \emph{greedy search}. 
 To this end, one can use a result from~\cite{nemhauser1978analysis}, which applies to greedy algorithms on non-negative monotone submodular set functions.
 Nof and Strichman show that their \emph{K-Algorithms Max-Sum Problem} for portfolios is submodular and thus a bound on greedy algorithms holds~\cite{nof2020real}. 
 We can transform the $k$-Portfolio Problem (minimization) into the \emph{K-Algorithms Max-Sum Problem} (maximization) by replacing the costs with utilities as follows.%
@@ -296,17 +295,17 @@ As $u_{T}(P)$ is non-negative, monotone and submodular, we get the following bou
 $$
 	u_{T}(P_{greedy}^k) \geq (1 - \frac{1}{e}) \cdot \max_{|P| \leq k}{u_{T}(P)}
 $$
-I.e., there is a lower bound on the utility of a portfolio found by greedy search.
-This can be transformed into an upper bound on the cost of a portfolio found by greedy search.%
+I.e., there is a lower bound on the utility of a portfolio found by \emph{greedy search}.
+This can be transformed into an upper bound on the cost of a portfolio found by \emph{greedy search}.%
 $$
 	c_{T}(P_{greedy}^k) \leq (1 - \frac{1}{e}) \cdot \min_{|P| \leq k}{c_{T}(P)} + \frac{1}{e} \cdot c_W
 $$
 
-\subsection{K-Best Search (approximate)}
+\subsection{K-Best (approximate)}
 
 This is a baseline used in~\cite{nof2020real}.
 It sorts all solvers by their individual performance and then picks the top $k$ from this list.
-Thus, opposed to beam search, it does not consider how solvers within a portfolio interact, e.g., if they complement each other.
+Thus, opposed to \emph{beam search}, it does not consider how solvers within a portfolio interact, e.g., if they complement each other.
 
 \section{Experimental Design}
 \label{sec:experimental-design}
@@ -348,8 +347,8 @@ We employ the four solution approaches from Section~\ref{sec:approach} to search
 	\item \emph{Beam search}: 
 	We use this approach to search for good portfolios heuristically.
 	We evaluate all $k \in \{1, \dots, |S|\}$ and also vary the beam width $w \in \{1, 2, \dots, 10, 20, \dots, 100\}$.
-	\item \emph{K-best search}:
-	We use this approach to have a simple baseline for beam search.
+	\item \emph{K-best}:
+	We use this approach to have a simple baseline for \emph{beam search}.
 	We evaluate all $k \in \{1, \dots, |S|\}$.
 \end{itemize}
 
@@ -431,9 +430,8 @@ This indicates that combing solvers in portfolios can improve overall runtime.
 \end{figure*}
 
 Figure~\ref{fig:search-train-objective} displays the cost in terms of the \emph{PAR-2} function of the best $k$-portfolios for $1 \leq k \leq 48$ as they are found by different solution approaches. 
-The performance of the optimal solution is given by \emph{mip\_search}. 
-\emph{Beam\_search} denotes the performance of the best portfolios found by a greedy search algorithm, i.e., executing the beam search algorithm with the smallest beam width $w=1$. 
-\todo{Harmonize names of approaches; sometimes they have a space, sometimes an underscore, sometimes a hyphen; also, sometimes italic, sometimes not}
+The performance of the optimal solution is given by \emph{MIP search}. 
+\emph{Beam search} denotes the performance of the best portfolios found by a \emph{greedy search} algorithm, i.e., executing the \emph{beam search} algorithm with the smallest beam width $w=1$. 
 The approach \emph{k-best} displays the performance of portfolios which are comprised by the top $k$ single-best solvers. 
 In \emph{random\_search}, we average over the repetitions of random sampling.
 If we report numbers in the following, we refer to the training dataset for which the optimization problems are solved.
@@ -442,22 +440,22 @@ For all approaches, the objective value improves rapidly for the first few $k$, 
 For the optimal solution, the best $1$-portfolio has a penalized runtime $5.51$ times as high as the $48$-portfolio. 
 This ratio reduces to $1.89$ for the best $5$-portfolio and $1.25$ for the best $10$-portfolio. 
 
-As Figure~\ref{fig:search-train-objective-PAR2} also shows, the cost of the best $k$-portfolios found by \emph{greedy-search} is very close to that of the exact solutions.
-These results are particularly impressive considering that the runtime of greedy search is linear in $k$ as well as the number of instances $n$, while the finding the exact solution is NP-complete.
-In contrast, the theoretical, submodularity-based upper bound for greedy search is clearly higher and therefore too loose to give a good estimate. 
+As Figure~\ref{fig:search-train-objective-PAR2} also shows, the cost of the best $k$-portfolios found by \emph{greedy search} is very close to that of the exact solutions.
+These results are particularly impressive considering that the runtime of \emph{greedy search} is linear in $k$ as well as the number of instances $n$, while the finding the exact solution is NP-complete.
+In contrast, the theoretical, submodularity-based upper bound for \emph{greedy search} is clearly higher and therefore too loose to give a good estimate. 
 \todo{reference upper bound again}
 
 The baseline \emph{k-best} is worse than \emph{greedy search} on the training data, but still clearly better than \emph{random search}.
-As Figure~\ref{fig:search-test-objective-PAR2} shows, \emph{beam search}, \emph{k-best}, and \emph{mip-search} show similar performance on the test dataset.
+As Figure~\ref{fig:search-test-objective-PAR2} shows, \emph{beam search}, \emph{k-best}, and \emph{MIP search} show similar performance on the test dataset.
 In particular, there is no clear winner, and the exact solution can even perform worse than those found by the approximate approaches. 
 This is because optimization is run on the training instances only, and the best portfolio on the training data is not necessarily the best portfolio on the test data.
 Still, training and test performances are rather similar.
 
-On the training data, the best $2$-portfolio found by \emph{greedy-search} has a $14.7\%$ higher cost than that found by \emph{mip-search}, while the $2$-portfolio of \emph{k-best} has a $28.4\%$ higher cost than that found by \emph{mip-search}. 
+On the training data, the best $2$-portfolio found by \emph{greedy search} has a $14.7\%$ higher cost than that found by \emph{MIP search}, while the $2$-portfolio of \emph{k-best} has a $28.4\%$ higher cost than that found by \emph{MIP search}. 
 For all other $k$, the greedy-search portfolio has less than $4\%$ higher penalized runtime than the exact solution. 
 
 In contrast, the performance gap of \emph{k-best} portfolios to the exact solution widens for the first few $k$, before becoming smaller again later.
-For $k=8$, where the relative performance gap is the largest, the k-best portfolio has a 51.1\% higher penalized runtime than the exact solution.
+For $k=8$, where the relative performance gap is the largest, the \emph{k-best} portfolio has a 51.1\% higher penalized runtime than the exact solution.
 
 \subsubsection{Alternative Objective Functions}
 
@@ -469,9 +467,9 @@ For the objective function \emph{Unsolved}, the greedy-search portfolio for $k=2
 
 \subsubsection{Beam Search Width}
 
-To bring the beam-search solution even closer to the exact solution, one can increase $w$.
+To bring the \emph{beam search} solution even closer to the exact solution, one can increase $w$.
 E.g., for $w=10$ and for all $k$, the PAR-2 score is never more than $2\%$ higher than the best exact solution and the difference in unsolved instances is never more than $0.1\%$ of all instances.
-Regarding the set of the $w$ best portfolios within each iteration of beam search, we observe convergence with increasing $k$. 
+Regarding the set of the $w$ best portfolios within each iteration of \emph{beam search}, we observe convergence with increasing $k$. 
 We observe a large variance in the PAR-2 score of portfolios in the beam for small $k$, and this variance becomes smaller in later iterations, i.e., the top $w$ portfolios become more similar. 
 
 A similar phenomenon also occurs for randomly sampled portfolios. 
@@ -482,13 +480,13 @@ Thus, the benefit of searching for good portfolios is the greatest for small $k$
 
 \subsubsection{Monotonicity of $k$-Portfolios}
 
-While beam search iteratively adds solvers, the exact solution might differ in more than one solver from $k-1$ to $k$, i.e., existing solvers from the portfolio can be replaced.
+While \emph{beam search} iteratively adds solvers, the exact solution might differ in more than one solver from $k-1$ to $k$, i.e., existing solvers from the portfolio can be replaced.
 Indeed, we observe this phenomenon frequently in our results.
 For example, the best $2$-portfolios usually do not contain the best $1$-portfolio in our experiments.
-However, despite this non-monotonous behavior of the exact solution, beam search still yields a close-to-optimal objective value.
+However, despite this non-monotonous behavior of the exact solution, \emph{beam search} still yields a close-to-optimal objective value.
 This indicates that there are several good solver combinations, so solvers can substitute each other in portfolios to some extent.
 
-This substitution effect seems to be particularly present for large $k$, as we can observe for beam search with $w=100$. 
+This substitution effect seems to be particularly present for large $k$, as we can observe for \emph{beam search} with $w=100$. 
 For the objective function \emph{PAR-2}, one solver appears in 19\% of the beam of $2$-portfolios.\todo{how? there are only two iterations}
 However, for $k=10$, no solver appears in more than 10\% of the portfolios and for $k=20$, no solver appears in more than 5\% of the portfolios.
 A similar effect shows for the objective functions \emph{PAR2\_norm} and \emph{Unsolved}.
@@ -521,9 +519,9 @@ We also evaluate the actual performance of the resulting portfolios in terms of 
 	\label{fig:prediction-test-mcc}
 \end{figure}
 
-Figure~\ref{fig:prediction-test-mcc} shows test-set classification performance of random forests with 100 trees, using the portfolios from random search.
+Figure~\ref{fig:prediction-test-mcc} shows test-set classification performance of random forests with 100 trees, using the portfolios from \emph{random search}.
 Classification performance with less trees is worse, on training set as well as test set.
-We use random-search results here, but classification results are similar for beam search with $w=100$.
+We use random-search results here, but classification results are similar for \emph{beam search} with $w=100$.
 We do not display training-set performance, since it always is 1.0.
 As Figure~\ref{fig:prediction-test-mcc} shows, test-set prediction performance is rather low for all $k$.
 It is clearly higher than random guessing, which would yield an MCC of 0.0, but clearly lower than the optimal MCC of 1.0.
@@ -544,11 +542,11 @@ For low $k$, the prediction performance varies stronger between portfolios than 
 		\includegraphics[width=0.98\columnwidth]{plots/prediction-test-objective-unsolved.pdf}
 		\label{fig:prediction-test-objective-unsolved}
 	}
-	\caption{Objective value for beam-search-portfolios with $w=100$. Random forests with 100 trees. Portfolio performance for test set vbs (orange) and prediction model (blue)}
+	\caption{Objective value for \emph{beam search} portfolios with $w=100$. Random forests with 100 trees. Portfolio performance for test set vbs (orange) and prediction model (blue)}
 	\label{fig:prediction-test-objective}
 \end{figure*}
 
-Figure~\ref{fig:prediction-test-objective} shows test-set objective value for portfolios from beam-search with $w=100$.
+Figure~\ref{fig:prediction-test-objective} shows test-set objective value for portfolios from \emph{beam search} with $w=100$.
 The plot compares the objective value of portfolios with an oracle, the VBS, to the objective value of portfolios with random forests with 100 trees
 As discussed before, VBS score decreases with $k$.
 In theory, this also allows portfolios with prediction model to potentially improve their performance.
@@ -584,10 +582,10 @@ Thus, one combines several solvers into portfolios.
 We analyzed such portfolios with runtime data from the SAT~Competition~2020.
 In particular, we focused on portfolios with a limited number of solvers, so-called \emph{small portfolios}.
 
-We analyzed an integer optimization problem to find small portfolios exactly as well as a beam-search approach to find small portfolios fast.
+We analyzed an integer optimization problem to find small portfolios exactly as well as a \emph{beam search} approach to find small portfolios fast.
 Regarding portfolio size, we saw a strong improvement in objective value for adding solvers to small portfolios, but a small impact once the portfolio reaches a certain size.
 
-Regarding the solution approach, we found that beam-search yields close-to-optimal solutions.
+Regarding the solution approach, we found that \emph{beam search} yields close-to-optimal solutions.
 After determining portfolios, we combined them with prediction models that made instance-specific solver recommendations.
 However, these models performed rather poorly on the given dataset, such that the objective value of portfolios with predictions did not improve with the portfolio size.
 We found, that prediction performance does not improve beyond portfolio sizes of $k=3$. 
