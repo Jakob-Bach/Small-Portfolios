@@ -64,21 +64,22 @@ Today, SAT solvers are not only used to solve hard combinatorial problems in ind
 We can observe continuous progress in SAT solving methods, heuristics, and their implementations in SAT solvers. 
 The SAT Competition series, which is organized yearly as an international open event, aims to support and provide further incentives for maintaining this progress~\cite{balyo2020proceedings}.
 
-Solvers are usually evaluated based on compilations of benchmark instances representing diverse interesting application scenarios of SAT solvers.
-As it is also common in other areas of computer science, no SAT solving method is the best on all SAT instances. 
-In order to create an additional incentive for developing methods that target specific applications, SAT~Competition~2020 introduced an application track where SAT solvers are evaluated on instances stemming from one specific application. 
-In~2020, that was the Planning track, and this was followed in~2021 by the Crypto track~\cite{SC2020:AIJ}. 
-% JB: I would remove the previous two sentences (as it was before 219d873fb2), as they don't really fit into the portfolio story and there is quite a gap to the following paragraph
+Solvers are usually evaluated based on compilations of benchmark instances representing diverse interesting application scenarios of SAT solvers. 
+Researchers who implement SAT solvers usually strive for so-called \emph{stable} SAT solvers with a good overall performance on many types of instances. 
+Still, we regularly observe the emergence of new heuristics and methods which contribute to the performance on only a specific subsets of instances. 
+Such insular improvements can subsequently serve as the subject for research on improvements for stable solvers. 
 
-Another promising approach to decrease runtime is combining solvers to portfolios for instance-specific algorithm selection, as in SATzilla~\cite{xu2008satzilla, xu2012satzilla2012}.
-Within a portfolio, usually one or more prediction models help to decide which solver to use for a particular SAT instance. 
+In order to also highlight such insular developments, recent SAT Competitions introduced \emph{application tracks}, where SAT solvers are evaluated on instances which stem only from a specific application. 
+In SAT Competition 2021, for the first time a special innovation price was given to a solver based on its contributions to the best portfolio.\footnote{\url{https://satcompetition.github.io/2021/}} 
+
+Solvers portfolios can also be used in combination with runtime prediction models for instance-specific algorithm selection (cf. SATzilla~\cite{xu2008satzilla, xu2012satzilla2012}). 
 Additional components of a portfolio can be pre-solvers, which are only run for a short time to solve easy instances, or a backup-solver, which is responsible for instances where computing features for the prediction models takes too long.
 Overall, portfolio approaches can become quite complex and it becomes unclear which parts of the portfolio solution are really necessary to achieve a good performance.
 
 \paragraph{Problem Statement}
 
 In this paper, we study small portfolios of SAT solvers.
-\emph{Small} refers to the number of solvers in the portfolio, which we limit to certain values $k$.
+\emph{Small} refers to the number of solvers in the portfolio, which we limit to certain values~$k$.
 Also, we strive to keep the overall approach simple by only using one prediction model per portfolio, and no further portfolio components. 
 Instead, we analyze the impact of the portfolio size $k$. 
 In particular, we want to find out whether small portfolios are already sufficient to achieve a good solving performance. 
