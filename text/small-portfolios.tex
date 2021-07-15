@@ -71,9 +71,8 @@ Such insular improvements can subsequently serve as the subject for research on 
 In order to also highlight such insular developments, recent SAT Competitions introduced \emph{application tracks}, where SAT solvers are evaluated on instances which stem only from a specific application. 
 In SAT Competition 2021, for the first time a special innovation price was given to a solver based on its contributions to the best portfolio.\footnote{\url{https://satcompetition.github.io/2021/}} 
 
-Solvers portfolios can also be used in combination with runtime prediction models for instance-specific algorithm selection (cf. SATzilla~\cite{xu2008satzilla, xu2012satzilla2012}). 
-Additional components of a portfolio can be pre-solvers, which are only run for a short time to solve easy instances, or a backup-solver, which is responsible for instances where computing features for the prediction models takes too long.
-Overall, portfolio approaches can become quite complex and it becomes unclear which parts of the portfolio solution are really necessary to achieve a good performance.
+Solvers portfolios can also be used in combination with runtime prediction models for instance-specific algorithm selection. 
+It has been shown in the past, that such approaches can improve performance of SAT solvers.~\cite{xu2008satzilla}
 
 \paragraph{Problem Statement}
 
@@ -125,6 +124,8 @@ To this end, Autofolio by Lindauer et al. provides an automatic configurator~\ci
 Also, one can analyze the impact of configuration options, e.g., with the tool CAVE~\cite{biedenkapp2018cave}. 
 
 One of the most well-known complex portfolio approaches is SATzilla, of which multiple versions exist~\cite{xu2008satzilla, xu2012satzilla2012}. 
+Additional components of SATzilla are so-called \emph{pre-solvers}, which are only run for a short time to solve easy instances, or a backup-solver, which is responsible for instances where computing features for the prediction models takes too long. 
+Overall, portfolio approaches can become quite complex and it becomes unclear which parts of the portfolio solution are really necessary to achieve a good performance.
 Besides complex portfolio approaches, there are also simple ones, e.g., selecting a solver nearest-neighbor-based, without training a prediction model~\cite{malitsky2011non, nikolic2013simple, samulowitz2013snappy}.
 
 Adamini et al. analyze portfolios of CSP solvers in terms of average runtime and solved instances~\cite{amadini2014empirical, amadini2016extensive}. 
