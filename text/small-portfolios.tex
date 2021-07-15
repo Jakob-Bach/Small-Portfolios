@@ -249,14 +249,14 @@ Ultimately, the optimization target is specified by Equation~\ref{eq:ip4}.
 	\BlankLine
 	$T_0 \leftarrow \{\emptyset\}$\;
 	\For{$i \leftarrow 1$ \KwTo $k$}{
-		\tcp{Candidate $i$-portfolios:}
+		\tcp{Candidate $i$-Portfolios:}
 		$U \leftarrow \emptyset$\;
 		\ForEach{$P \in T_{i-1}$}{
 			\ForEach{$s \in S \setminus P$}{
 				$U \leftarrow U \cup \{ P \cup \{ s \} \}$\;
 			}
 		}
-		\tcp{Select $w$ best $i$-portfolios:}
+		\tcp{Select $w$ best $i$-Portfolios:}
 		$T_i \leftarrow \emptyset$\;
 		\For{$j \leftarrow 1$ \KwTo $w$}{
 			$T_i \leftarrow T_i \cup \{\argmin\limits_{P \in U \setminus T_i}{c_T(P)}\}$\;
@@ -280,7 +280,7 @@ For $w=1$, only one portfolio remains at the end of each iteration.
 We refer to this special case as \emph{greedy search}.
 For $w = |S|$, the algorithm degrades to exhaustive search. 
 For $w << |S|$, it yields a runtime advantage compared to exhaustive search, as it only evaluates $O(|S| \cdot w)$ portfolios per iteration. 
-Note that selection of $w$ best portfolios in Lines~7-9 can be implemented with sorting. 
+%Note that selection of $w$ best portfolios in Lines~7-9 can be implemented with sorting. 
 
 The algorithm is a greedy heuristic that does not necessarily find the optimal solution to the $k$-Portfolio Problem. 
 But there is a bound on the costs of a portfolio found by greedy search. 
@@ -314,53 +314,41 @@ Thus, opposed to beam search, it does not consider how solvers within a portfoli
 \section{Experimental Design}
 \label{sec:experimental-design}
 
-The experimental design comprises optimization approaches, prediction approaches, and the dataset.
-We will combine all optimization approaches with all prediction approaches.
+In our experiments, we evaluate the presented optimization approaches, and analyze their relation to prediction approaches for $k$-Porfolios. 
+In particular, we are interested in the achievable performance improvements with increasing values for the parameter $k$. 
 
 \subsection{Optimization Approaches}
 
-We analyze the \ref{eq:small-portfolio-problem} for three definitions of runtime in the objective function:
+We analyze the $k$-Portfolio Problem for three definitions cost-functions in the objective function .
 
 \begin{itemize}
-	\item \emph{PAR2}:
-	The penalized runtimes as described in Section~\ref{sec:approach:problem:data}, with a penalty of $2*T$ for runtimes over the timeout $T$:
+	\item \emph{PAR-2}: The penalized runtimes $r_T$ as described in Section~\ref{sec:preliminaries}.
+	\item \emph{PAR2\_norm}: The penalized runtimes, but normalized to $[0,1]$ per instance. This counterbalances variations in instance hardness, i.e., that some instances are easier to solve than others.
 	\begin{align*}
-		r_T(s,i) &:= \begin{cases}
-			2*T & \text{if }r(s,i) = \bot\\
-			r(s,i) & \text{otherwise}
-		\end{cases}
+		\overline{r_T}(s,i) := \frac{r_T(s,i) - \min\limits_{s' \in S}{r_T(s',i)}}{\max\limits_{s' \in S}{r_T(s',i)} - \min\limits_{s' \in S}{r_T(s',i)}}
 	\end{align*}
-	\item \emph{PAR2\_norm}:
-	The penalized runtimes, but normalized to $[0,1]$ per instance.
-	This counterbalances variations in instance hardness, i.e., that some instances are easier to solve than others.
+	\item \emph{Unsolved}: A heavily discretized version of the runtimes, only stating whether a solver did not finish within $T$.
 	\begin{align*}
-		r_T(s,i) &:= \begin{cases}
-			1 & \text{if }r(s,i) = \bot\\
-			\frac{r(s,i) - \min_{s' \in S}{r(s',i)}}{\max_{s' \in S}{r(s',i)} - \min_{s' \in S}{r(s',i)}} & \text{otherwise}
-		\end{cases}
-	\end{align*}
-	\item \emph{Unsolved}:
-	A heavily discretized version of the runtimes, only stating whether a solver did not finish within $T$.
-	\begin{align*}
-		r_T(s,i) &:= \begin{cases}
-			1 & \text{if }r(s,i) = \bot\\
+		r_{0/1}(s,i) &:= \begin{cases}
+			1 & \text{if }r_T(s,i) = 2 \cdot T\\
 			0 & \text{otherwise}
 		\end{cases}
 	\end{align*}
 \end{itemize}
 
-To test generalization of search and prediction approaches, we conduct five-fold cross-validation, and average evaluation metrics over the folds.
-I.e., we split the instances of each of the three problems five times into a training set and a set set.
+To test generalization of search and prediction approaches, we conduct five-fold cross-validation, and average evaluation metrics over the folds. 
+%I.e., we split the instances of each of the three problems five times into a training and test set.
 We search for portfolios and train prediction models only on the training sets.
-We employ the four solution approaches from Section~\ref{sec:approach:solution} to search for portfolios:
+
+We employ the four solution approaches from Section~\ref{sec:approach} to search for portfolios.
 
 \begin{itemize}
 	\item \emph{Random search}:
-	Exhaustively evaluating all portfolios for all sizes $k$ is too expensive in our scenario, in particular, when training prediction models for each portfolio, as there are $2^{48}$ portfolios overall.
-	To still get an idea how the performance of arbitrary portfolios is distributed, we randomly sample 1000 portfolios for each $k$.
+	%Exhaustively evaluating all portfolios for all sizes $k$ is too expensive in our scenario, in particular, when training prediction models for each portfolio, as there are $2^{48}$ portfolios overall. (ergibt keinen Sinn, das in dem Zusammenhang zu erwähnen)
+	To get an idea how the performance of arbitrary portfolios is distributed, we randomly sample 1000 portfolios for each $k$.
 	\item \emph{Exact search}:
-	We solve the \ref{eq:small-portfolio-integer-problem} to exactly determine the best portfolio for each $k \in \{1, \dots, |S|\}$.
-	\item \emph{Beam search}:
+	We solve the $k$-Portfolio Problem to exactly determine the best portfolio for each $k \in \{1, \dots, |S|\}$.
+	\item \emph{Beam search}: 
 	We use this approach to search for good portfolios heuristically.
 	We evaluate all $k \in \{1, \dots, |S|\}$ and also vary the beam width $w \in \{1, 2, \dots, 10, 20, \dots, 100\}$.
 	\item \emph{K-best search}:
@@ -368,40 +356,38 @@ We employ the four solution approaches from Section~\ref{sec:approach:solution} 
 	We evaluate all $k \in \{1, \dots, |S|\}$.
 \end{itemize}
 
+
 \subsection{Prediction Approaches}
 
-All the solution approaches from the previous section use an oracle, the VBS, to choose a solver from the portfolio for an instance.
-We also analyze the more realistic scenario of using a prediction model to recommend a solver.
-To this end, we take the portfolios found by the solution approaches and train a prediction model.
-For each instance, the prediction target is the best solver out of the portfolio.
-As models, we use random forests~\cite{breiman2001random}, which are ensembles of decision trees.
-Preliminary experiments with single decision trees~\cite{breiman1984classification} of different depths yielded worse prediction performance.
-Random forests are also used in the well-known portfolio approach SATzilla2012~\cite{xu2012satzilla2012}.
+%All the solution approaches from the previous section use an oracle, the VBS, to choose a solver from the portfolio for an instance.
+We also analyze the performance of portfolios which use a prediction model to select a solver. 
+We train such prediction models for the portfolios found by our previously devised solutions for determining optimal $k$-portfolios. 
+
+For each instance, the prediction target is the best solver out of the given $k$-portfolio.
+As models, we use random forests~\cite{breiman2001random}, which are ensembles of decision trees. 
+Preliminary experiments with single decision trees~\cite{breiman1984classification} of different depths yielded worse prediction performance. 
+Random forests are also used in the well-known portfolio approach SATzilla2012~\cite{xu2012satzilla2012}. 
 To analyze if prediction performance improves due to ensembling, we train models with one, ten, and 100 trees.
 We evaluate prediction performance in two ways:
 
 \begin{itemize}
 	\item \emph{Objective value}:
-	We take the solvers recommended by the prediction model and average their costs.
-	The resulting objective value cannot be better than for the VBS, but also cannot be worse than for the VWS; see Section~\ref{sec:approach:problem:target}.
+	We evaluate the prediction models with respect to the objective value, i.e., the runtime cost function $c_{T}'(P)$ (cf. Section~\ref{sec:preliminaries}). 
 	\item \emph{MCC}:
-	We evaluate the predictions directly with Matthews correlation coefficient~\cite{matthews1975comparison, gorodkin2004comparing}.
+	We evaluate the predictions with Matthew's correlation coefficient (MMC)~\cite{matthews1975comparison, gorodkin2004comparing}.
 	This does not take into account how fast the recommended solvers actually are, but only if the fastest solver is recommended or not.
-	We use MCC instead of simpler metrics like accuracy, as the class labels might be imbalanced.
-	I.e., one solver might be the fastest for most of the instances, and always predicting that solver would already yield a high accuracy.
+	We use MCC instead of simpler metrics like accuracy, as the class labels might be imbalanced, i.e., one solver might be the fastest for most of the instances, and always predicting that solver would already yield a high accuracy.
 	MCC has a range of $[-1,1]$, being zero for both random guessing and always guessing the same solver.
 \end{itemize}
 
 \subsection{Dataset}
 
-We obtain a dataset from the \emph{Global Benchmark Database}~\cite{iser2020collaborative}.
-The dataset has $|S| = 48$ solvers and $|I| = 316$ instances.
-We take the 400 instances from the Main track of the SAT Competition 2020\footnote{\url{https://satcompetition.github.io/2020/}}~\cite{balyo2020proceedings, SC2020:AIJ}, but discard the instances where no solver finished in time.
-For predictions, we make use of 143 features to characterize instances:
-138 from SATzilla~\cite{xu2008satzilla, xu2012satzilla2012} and five from a gate-recognition approach~\cite{iser2020recognition}.
-%TODO @Markus from which SATzilla version exactly?
-%TODO @Markus vielleicht hast du noch eine bessere Referenz für gate recognition, ich habe erst mal deine Diss genommen
-We replace missing values of features with their training-set mean.
+In our experiments, we use a dataset of $|S| = 48$ solvers and $|I| = 400$ instances from the Main track of the SAT~Competition~2020\footnote{\url{https://satcompetition.github.io/2020/}}~\cite{balyo2020proceedings, SC2020:AIJ}. 
+We filtered out those instances where no solver finished in time, resulting in a dataset of $316$ instances. 
+
+For predictions, we make use of 143 features to characterize instances, of which 
+$138$ features stem from the feature extractor of SATzilla~2012~\cite{xu2008satzilla, xu2012satzilla2012} and five features stem from a gate-recognition approach~\cite{iser2020recognition}. 
+Feature values which are missing due to the feature extractor having exceeded time- or memory limits are replaced with their training-set mean. 
 
 \subsection{Implementation}
 
@@ -410,10 +396,11 @@ To create the dataset of solver runtimes, we use the package~\emph{gbd-tools}~\c
 For predictions, we use the package \emph{scikit-learn}~\cite{scikit-learn}.
 To solve the small portfolio-problem exactly, we use the package \emph{mip}~\cite{python-mip}.
 
+
 \section{Evaluation}
 \label{sec:evaluation}
 
-First, we evaluate the \ref{eq:small-portfolio-problem} as optimization problem based on VBS-performance, i.e., assuming that an oracle always chooses the best solver out of the portfolio for each instance.
+First, we evaluate the $k$-Portfolio Problem as optimization problem based on VBS-performance, i.e., assuming that an oracle always chooses the best solver out of the portfolio for each instance.
 Second, we analyze portfolio performance if actual prediction models are used to make instance-specific solver recommendations.
 
 \subsection{Optimization Results}
