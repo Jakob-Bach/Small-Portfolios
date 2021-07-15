@@ -190,12 +190,13 @@ Clearly, the portfolio cost $c_{T}(P)$ serves as a lower bound for the actual co
 \section{Optimal $k$-Portfolios}
 \label{sec:approach}
 
-The $k$-Portfolio Problem is to find a portfolio $P$ with minimum costs that contains at most $k$ solvers.%
+The $k$-Portfolio Problem is to find a portfolio $P$ of size $|P| = k$ with minimum costs.%
 %For each solver out of $S$, one needs to decide whether it becomes part of the portfolio $P$ or not.
 \begin{align*}
 \argmin\limits_{P \subseteq S, |P| = k} c_{T}(P)
 \end{align*}%
 %
+Note that the portfolio cost function decreases monotonically under the addition of solvers: $\forall s \in S, c_{T}(P) \leq c_{T}(P \cup \{s\})$. 
 In the following, we outline four approaches for either \emph{exact} or \emph{approximate} determination of solutions to that function. 
 
 
