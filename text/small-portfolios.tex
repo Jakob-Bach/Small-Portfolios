@@ -1,17 +1,18 @@
 \documentclass[conference]{IEEEtran}
 
-%\usepackage[style=ieee, backend=bibtex]{biblatex}
+%\usepackage[style=ieee, backend=bibtex]{biblatex} % handled by IEEE template at the moment
 \usepackage[linesnumbered,vlined]{algorithm2e} % pseudo-code; use of package discouraged by IEEE, but hacked in in a (hopefully acceptable) way
 \usepackage{amsmath} % mathematical symbols
 \usepackage{amssymb} % mathematical symbols
-\usepackage{amsthm}
+\usepackage{amsthm} % mathematical theorems
 \usepackage{balance} % balance columns on the last page
 \usepackage{booktabs} % nicely formatted tables
 \usepackage{graphicx} % plots
 \usepackage[caption=false,font=footnotesize]{subfig} % figures with multiple sub-figures and sub-captions; use of (newer) package "subcaption" discouraged by IEEE
-\usepackage{hyperref} % links and URLs
-%\addbibresource{references.bib}
-\usepackage{xcolor}
+\usepackage{xcolor} % colored text (for TODOs)
+\usepackage{hyperref} % links and URLs; should be loaded last
+
+%\addbibresource{references.bib} % handled by IEEE template at the moment
 
 \newtheorem{definition}{Definition}
 
@@ -23,8 +24,6 @@
 \begin{document}
 
 \title{Analysis of Optimal Small Portfolios}
-%TODO change title, as we do no only analyze optimal portfolios; mabye "Analyzing Small Portfolios of SAT Solvers"
-%TODO might even drop "small" in favor of the more technical "k-" (if we did that, we needed to adapt the remaining text, which consistently uses "small portfolio" at the moment)
 
 \author{\IEEEauthorblockN{Jakob Bach}
 \IEEEauthorblockA{\textit{KIT Department of Informatics} \\
@@ -40,6 +39,8 @@ markus.iser@kit.edu}
 }
 
 \maketitle
+\todo{change title, as we do no only analyze optimal portfolios; mabye "Analyzing Small Portfolios of SAT Solvers"}
+\todo{might even drop "small" in favor of the more technical "k-", which was introduced in an inconsistent manner in the commits from 0c0c554a28 on}
 
 \begin{abstract}
 Successful approaches that tackle hard combinatorial problems such as propositional satisfiability are often in some sense complementary, i.e., each approach is only the best on some problem instances. 
@@ -106,6 +107,7 @@ Thus, actual portfolio performance cannot benefit from the theoretical improveme
 \paragraph{Outline}
 
 In Section~\ref{sec:related-work}, we review related work. 
+\todo{add preliminaries}
 In Section~\ref{sec:approach}, we introduce the small-portfolio problem and multiple solution approaches for it. 
 We describe the experimental design in Section~\ref{sec:experimental-design} and present the experimental results in Section~\ref{sec:evaluation}. 
 We conclude with Section~\ref{sec:conclusion}. 
@@ -113,10 +115,10 @@ We conclude with Section~\ref{sec:conclusion}.
 \section{Related Work}
 \label{sec:related-work}
 
-%TODO conduct deeper literature research
-%TODO expand a bit, if necessary; currently, description of references is rather short
-%TODO describe "SAT Competition 2020" paper (if published), which does a lot of analysis on single solvers and some analysis on portfolios; citation already exists: \cite{SC2020:AIJ}
-%TODO some references have very long booktitles at the moment; if space is neeed, can use short conference/workshop name instead
+\todo{conduct deeper literature research}
+\todo{expand a bit, if necessary; currently, description of references is rather short}
+\todo{describe "SAT Competition 2020" paper (if published), which does a lot of analysis on single solvers and some analysis on portfolios; citation already exists: \cite{SC2020:AIJ}}
+\todo{some references have very long booktitles at the moment; if space is neeed, can use short conference/workshop name instead}
 
 A recent survey on algorithm-selection approaches is provided by Kerschke et al.~\cite{kerschke2019automated}.
 Portfolios of SAT solvers are a sub-category of this. 
@@ -149,7 +151,6 @@ For the exact solution, we provide an encoding as integer optimization problem.
 In comparison, \cite{nof2020real} provides an SMT encoding.
 Finally, their domain is different than ours, as they focus on instances of an allocation problem whose solution is evaluated already after 0.1~s.
 In comparison, solvers in our dataset have a much larger timeout of 5000~s.
-
 
 \section{Preliminiaries}
 \label{sec:preliminaries}
@@ -187,7 +188,6 @@ Clearly, the portfolio cost $c_{T}(P)$ serves as a lower bound for the actual co
 %In the worst case, the prediction model always recommends the slowest solver out of $P$ for each instance.
 %This serves as an upper bound for the actual portfolio score, which we will refer to as the \emph{virtual worst solver} (VWS) for $P$.
 
-
 \section{Optimal $k$-Portfolios}
 \label{sec:approach}
 
@@ -197,9 +197,8 @@ The $k$-Portfolio Problem is to find a portfolio $P$ of size $|P| = k$ with mini
 \argmin\limits_{P \subseteq S, |P| = k} c_{T}(P)
 \end{align*}%
 %
-Note that the portfolio cost function decreases monotonically under the addition of solvers: $\forall s \in S, c_{T}(P) \leq c_{T}(P \cup \{s\})$. 
+Note that the portfolio cost function decreases monotonically under the addition of solvers: $\forall s \in S, c_{T}(P \cup \{s\}) \leq c_{T}(P)$. 
 In the following, we outline four approaches for either \emph{exact} or \emph{approximate} determination of solutions to that function. 
-
 
 \subsection{Exhaustive Search (exact)}
 
@@ -232,7 +231,6 @@ Ultimately, the optimization target is specified by Equation~\ref{eq:ip4}.
 	\min_{x,y} \quad & \frac{1}{|I|} \cdot \sum_{i \in I} \sum_{s \in S} r_T(s,i) \cdot x_{s,i} \label{eq:ip4}
 %\label{eq:small-portfolio-integer-problem}
 \end{align}
-
 
 \subsection{Beam Search (approximate)}
 
@@ -311,7 +309,6 @@ This is a baseline used in~\cite{nof2020real}.
 It sorts all solvers by their individual performance and then picks the top $k$ from this list.
 Thus, opposed to beam search, it does not consider how solvers within a portfolio interact, e.g., if they complement each other.
 
-
 \section{Experimental Design}
 \label{sec:experimental-design}
 
@@ -357,7 +354,6 @@ We employ the four solution approaches from Section~\ref{sec:approach} to search
 	We evaluate all $k \in \{1, \dots, |S|\}$.
 \end{itemize}
 
-
 \subsection{Prediction Approaches}
 
 %All the solution approaches from the previous section use an oracle, the VBS, to choose a solver from the portfolio for an instance.
@@ -375,7 +371,7 @@ We evaluate prediction performance in two ways:
 	\item \emph{Objective value}:
 	We evaluate the prediction models with respect to the objective value, i.e., the runtime cost function $c_{T}'(P)$ (cf. Section~\ref{sec:preliminaries}). 
 	\item \emph{MCC}:
-	We evaluate the predictions with Matthew's correlation coefficient (MMC)~\cite{matthews1975comparison, gorodkin2004comparing}.
+	We evaluate the predictions with Matthews correlation coefficient (MMC)~\cite{matthews1975comparison, gorodkin2004comparing}.
 	This does not take into account how fast the recommended solvers actually are, but only if the fastest solver is recommended or not.
 	We use MCC instead of simpler metrics like accuracy, as the class labels might be imbalanced, i.e., one solver might be the fastest for most of the instances, and always predicting that solver would already yield a high accuracy.
 	MCC has a range of $[-1,1]$, being zero for both random guessing and always guessing the same solver.
@@ -397,12 +393,13 @@ To create the dataset of solver runtimes, we use the package~\emph{gbd-tools}~\c
 For predictions, we use the package \emph{scikit-learn}~\cite{scikit-learn}.
 To solve the small portfolio-problem exactly, we use the package \emph{mip}~\cite{python-mip}.
 
-
 \section{Evaluation}
 \label{sec:evaluation}
 
 In the following, we evaluate the performance and quality of the optimal solutions to the $k$-Portfolio Problem. 
+\todo{What is the difference between performance and quality?}
 To that, we subsequently relate the performance of those portfolio in combination with an actual prediction model for instance-specific solver selections. 
+\todo{Relate to what?}
 In particular, we are interested in the influence of the portfolio size $k$ on performance. 
 
 \subsection{Optimization Results}
@@ -426,7 +423,7 @@ This indicates that combing solvers in portfolios can improve overall runtime.
 		\includegraphics[width=0.98\columnwidth]{plots/search-test-objective-PAR2.pdf}
 		\label{fig:search-test-objective-PAR2}
 	}
-	\caption{Comparison of different solution approaches for objective \emph{PAR2}. Portfolio VBS Performance for different k and search algorithms. Optimized on Training (left), Evaluated on Test (right), five-fold cross-validation (avg). 
+	\caption{Comparison of different solution approaches for objective \emph{PAR2}. Portfolio VBS Performance for different k and search algorithms. Optimized on Training (left), Evaluated on Test (right), five-fold cross-validation. 
 \todo{use log-scale for y-axis}
 \todo{rename k-best search to k-best, it's not \emph{search}}
 \todo{remove upper-bound}
@@ -439,6 +436,7 @@ This indicates that combing solvers in portfolios can improve overall runtime.
 Figure~\ref{fig:search-train-objective} displays the cost in terms of the \emph{PAR-2} function of the best $k$-portfolios for $1 \leq k \leq 48$ as they are found by different solution approaches. 
 The performance of the optimal solution is given by \emph{mip\_search}. 
 \emph{Beam\_search} denotes the performance of the best portfolios found by a greedy search algorithm, i.e., executing the beam search algorithm with the smallest beam width $w=1$. 
+\todo{Harmonize names of approaches; sometimes they have a space, sometimes an underscore, sometimes a hyphen; also, sometimes italic, sometimes not}
 The approach \emph{k-best} displays the performance of portfolios which are comprised by the top $k$ single-best solvers. 
 In \emph{random\_search}, we average over the repetitions of random sampling.
 If we report numbers in the following, we refer to the training dataset for which the optimization problems are solved.
@@ -450,6 +448,7 @@ This ratio reduces to $1.89$ for the best $5$-portfolio and $1.25$ for the best 
 As Figure~\ref{fig:search-train-objective-PAR2} also shows, the cost of the best $k$-portfolios found by \emph{greedy-search} is very close to that of the exact solutions.
 These results are particularly impressive considering that the runtime of greedy search is linear in $k$ as well as the number of instances $n$, while the finding the exact solution is NP-complete.
 In contrast, the theoretical, submodularity-based upper bound for greedy search is clearly higher and therefore too loose to give a good estimate. 
+\todo{reference upper bound again}
 
 The baseline \emph{k-best} is worse than \emph{greedy search} on the training data, but still clearly better than \emph{random search}.
 As Figure~\ref{fig:search-test-objective-PAR2} shows, \emph{beam search}, \emph{k-best}, and \emph{mip-search} show similar performance on the test dataset.
@@ -460,9 +459,8 @@ Still, training and test performances are rather similar.
 On the training data, the best $2$-portfolio found by \emph{greedy-search} has a $14.7\%$ higher cost than that found by \emph{mip-search}, while the $2$-portfolio of \emph{k-best} has a $28.4\%$ higher cost than that found by \emph{mip-search}. 
 For all other $k$, the greedy-search portfolio has less than $4\%$ higher penalized runtime than the exact solution. 
 
-In contrast, the performance gap of \emph{k-best} portfolios to the exact solution widens for the first few $k$, before becoming smaller gain later.
+In contrast, the performance gap of \emph{k-best} portfolios to the exact solution widens for the first few $k$, before becoming smaller again later.
 For $k=8$, where the relative performance gap is the largest, the k-best portfolio has a 51.1\% higher penalized runtime than the exact solution.
-
 
 \subsubsection{Alternative Objective Functions}
 
@@ -472,7 +470,6 @@ For the objective function \emph{Unsolved}, a portfolio of ten solvers suffices 
 For the objective function \emph{Unsolved}, the greedy-search portfolio for $k=2$ solves only $1.9\%$ out of all instances less than the exact solution, and this difference decreases further with $k$.
 \emph{K-best} solves up to $4.3\%$ of all instances less than the exact solution.
 
-
 \subsubsection{Beam Search Width}
 
 To bring the beam-search solution even closer to the exact solution, one can increase $w$.
@@ -481,11 +478,10 @@ Regarding the set of the $w$ best portfolios within each iteration of beam searc
 We observe a large variance in the PAR-2 score of portfolios in the beam for small $k$, and this variance becomes smaller in later iterations, i.e., the top $w$ portfolios become more similar. 
 
 A similar phenomenon also occurs for randomly sampled portfolios. 
-With increasing $k$, the standard deviation of the objective value in a sample of portfolios increases.
+With increasing $k$, the standard deviation of the objective value in a sample of portfolios decreases.
 At the same time, the expected objective value converges towards the objective value of the optimal k-portfolio.
 This is clearly visible in Figure~\ref{fig:search-train-objective}.
 Thus, the benefit of searching for good portfolios is the greatest for small $k$.
-
 
 \subsubsection{Monotonicity of $k$-Portfolios}
 
@@ -496,11 +492,10 @@ However, despite this non-monotonous behavior of the exact solution, beam search
 This indicates that there are several good solver combinations, so solvers can substitute each other in portfolios to some extent.
 
 This substitution effect seems to be particularly present for large $k$, as we can observe for beam search with $w=100$. 
-For the objective function \emph{PAR-2}, one solver appears in 19\% of the beam of $2$-portfolios for $k=2$.\todo{how? there are only two iterations}
+For the objective function \emph{PAR-2}, one solver appears in 19\% of the beam of $2$-portfolios.\todo{how? there are only two iterations}
 However, for $k=10$, no solver appears in more than 10\% of the portfolios and for $k=20$, no solver appears in more than 5\% of the portfolios.
 A similar effect shows for the objective functions \emph{PAR2\_norm} and \emph{Unsolved}.
 This shows that a few solvers might be crucial for good objective value for small $k$, but there is more flexibility in building a good portfolio for large $k$.
-
 
 \subsubsection{Random Portfolios}
 
@@ -515,13 +510,12 @@ These results indicate that only the presence of some solvers has a moderately n
 The positive correlations are even weaker, i.e., there are no solvers which influence portfolio performance in a strongly negative manner.
 Overall, this means one needs a combination of solvers to clearly influence the objective value in either direction.\todo{last statement is trivial. what do you want to say?}
 
-
 \subsection{Prediction Results}
 
 In this section, we evaluate the prediction performance for the previously determined portfolios. 
 We also evaluate the actual performance of the resulting portfolios in terms of their penalized average runtimes. 
 
-\subsubsection{Mathew's Correlation Coefficient}
+\subsubsection{Matthews Correlation Coefficient}
 
 \begin{figure}[t]
 	\centering
@@ -573,7 +567,7 @@ This probably is related to the considerably variance in prediction performance,
 
 Averaging importance over all trained models, the most important feature has an importance of roughly 2\%, the least important feature has an importance of 0\%.
 To reach an cumulated average importance of 50\%, one needs 49 out of 143 features.
-On average prediction models use 106 features.
+On average, prediction models use 106 features.
 %Note that these figures includes random forests of all sizes, i.e., even the largest ones with 100 trees.
 If we limit our analysis to random forests with just one tree, the models still use 52 features on average.
 In conclusion, no single feature or even small sets of features drives prediction performance.
@@ -584,7 +578,6 @@ Considering the low prediction performance, this indicates that our dataset lack
 \todo{get rid of alternate objective functions (PAR-2 Norm and Unsolved) as in this context we cannot learn anything more from them}
 
 \todo{evaluate prediction performance also for the optimal k-portfolios}
-
 
 \section{Conclusions and Future Work}
 \label{sec:conclusion}
@@ -601,15 +594,16 @@ Regarding the solution approach, we found that beam-search yields close-to-optim
 After determining portfolios, we combined them with prediction models that made instance-specific solver recommendations.
 However, these models performed rather poorly on the given dataset, such that the objective value of portfolios with predictions did not improve with the portfolio size.
 We found, that prediction performance does not improve beyond portfolio sizes of $k=3$. 
+\todo{check validity of previous statement}
 
 In future work, we want to improve prediction performance, in particular, by adapting the set of instance features.
-Recent results in the empirical anaylsis of solver portfolios indicate that features which describe the community structure of graph representations of SAT instances correlate well with solver performance. 
+Recent results in the empirical analysis of solver portfolios indicate that features which describe the community structure of graph representations of SAT instances correlate well with solver performance. 
 Among those are features describing their hierarchical community structure, such as community leaf size, community degree, and the number of inter-community edges~\cite{Li:2021:HCS}. 
 Also, we want to integrate our portfolio-search functionality into the Python package~\emph{gbd-tools}, so it can be directly used in queries to the database GBD.
 
 \section*{Acknowledgments}
 
-%TODO check if Jakob and/or Markus need to add stuff here
+\todo{check if Jakob and/or Markus need to add stuff here}
 
 \balance % according to documentation, command might not work if issued to late in document, so hopefully placing it here suffices
 
