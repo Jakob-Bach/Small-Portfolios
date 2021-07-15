@@ -23,7 +23,7 @@
 
 \begin{document}
 
-\title{Analysis of Optimal Small Portfolios}
+\title{Analyzing Small Portfolios of SAT Solvers}
 
 \author{\IEEEauthorblockN{Jakob Bach}
 \IEEEauthorblockA{\textit{KIT Department of Informatics} \\
@@ -39,8 +39,6 @@ markus.iser@kit.edu}
 }
 
 \maketitle
-\todo{change title, as we do no only analyze optimal portfolios; mabye "Analyzing Small Portfolios of SAT Solvers"}
-\todo{might even drop "small" in favor of the more technical "k-", which was introduced in an inconsistent manner in the commits from 0c0c554a28 on}
 
 \begin{abstract}
 Successful approaches that tackle hard combinatorial problems such as propositional satisfiability are often in some sense complementary, i.e., each approach is only the best on some problem instances. 
@@ -107,7 +105,7 @@ Thus, actual portfolio performance cannot benefit from the theoretical improveme
 \paragraph{Outline}
 
 In Section~\ref{sec:related-work}, we review related work. 
-\todo{add preliminaries}
+Preliminaries are given in Section~\ref{sec:preliminaries}. 
 In Section~\ref{sec:approach}, we introduce the small-portfolio problem and multiple solution approaches for it. 
 We describe the experimental design in Section~\ref{sec:experimental-design} and present the experimental results in Section~\ref{sec:evaluation}. 
 We conclude with Section~\ref{sec:conclusion}. 
@@ -396,10 +394,8 @@ To solve the small portfolio-problem exactly, we use the package \emph{mip}~\cit
 \section{Evaluation}
 \label{sec:evaluation}
 
-In the following, we evaluate the performance and quality of the optimal solutions to the $k$-Portfolio Problem. 
-\todo{What is the difference between performance and quality?}
-To that, we subsequently relate the performance of those portfolio in combination with an actual prediction model for instance-specific solver selections. 
-\todo{Relate to what?}
+In the following, we evaluate the performance of the optimal and approximate solutions to the $k$-Portfolio Problem. 
+We subsequently relate the performance of such optimal $k$-Portfolios to the performance of an actual prediction model for instance-specific solver selection. 
 In particular, we are interested in the influence of the portfolio size $k$ on performance. 
 
 \subsection{Optimization Results}
