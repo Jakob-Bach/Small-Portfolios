@@ -327,7 +327,7 @@ We search for portfolios and train prediction models only on the training sets.
 We employ the four solution approaches from Section~\ref{sec:approach} to search for portfolios.
 
 \begin{itemize}
-	\item \emph{Random search}:
+	\item \emph{Random sampling}:
 	To get an idea how the performance of arbitrary portfolios is distributed, we randomly sample 1000 portfolios for each $k$.
 	Exhaustively evaluating all portfolios for all sizes $k$ is too expensive in our scenario.
 	\item \emph{MIP search}:
@@ -412,7 +412,6 @@ This indicates that combing solvers in portfolios can improve overall runtime.
 		\todo{use log-scale for y-axis}
 		\todo{rename mip-search to optimal solution}
 		\todo{add beam search results for w=100}
-		\todo{rename random search to random sampling}
 	}
 \label{fig:search-train-objective}
 \end{figure*}
@@ -421,7 +420,7 @@ Figure~\ref{fig:search-train-objective} displays the cost in terms of the \emph{
 The performance of the optimal solution is given by \emph{MIP search}. 
 \emph{Beam search} denotes the performance of the best portfolios found by a \emph{greedy search} algorithm, i.e., executing the \emph{beam search} algorithm with the smallest beam width $w=1$. 
 The approach \emph{k-best} displays the performance of portfolios which are comprised by the top $k$ single-best solvers. 
-In \emph{random search}, we average over the repetitions of random sampling.
+For \emph{random sampling}, we average over the repetitions of sampling.
 The \emph{upper bound} limits costs of {greedy search} according to Equation~\ref{eq:upper-bound}.
 If we report numbers in the following, we refer to the training dataset for which the optimization problems are solved.
 
@@ -433,7 +432,7 @@ As Figure~\ref{fig:search-train-objective-PAR2} also shows, the cost of the best
 These results are particularly impressive considering that the runtime of \emph{greedy search} is linear in $k$ as well as the number of instances $n$, while the finding the exact solution is NP-complete.
 In contrast, the theoretical, submodularity-based \emph{upper bound} for \emph{greedy search} is clearly higher and therefore too loose to give a good estimate. 
 
-The baseline \emph{k-best} is worse than \emph{greedy search} on the training data, but still clearly better than \emph{random search}.
+The baseline \emph{k-best} is worse than \emph{greedy search} on the training data, but still clearly better than \emph{random sampling}.
 As Figure~\ref{fig:search-test-objective-PAR2} shows, \emph{beam search}, \emph{k-best}, and \emph{MIP search} show similar performance on the test dataset.
 In particular, there is no clear winner, and the exact solution can even perform worse than those found by the approximate approaches. 
 This is because optimization is run on the training instances only, and the best portfolio on the training data is not necessarily the best portfolio on the test data.
@@ -482,7 +481,7 @@ This shows that a few solvers might be crucial for good objective value for smal
 
 \subsubsection{Random Portfolios}
 
-A correlation analysis on random-search results, of which we have 1000 portfolios for each $k$, also underlines the interaction between solvers.
+A correlation analysis on \emph{random sampling} results, of which we have 1000 portfolios for each $k$, also underlines the interaction between solvers.
 First, we encode the absence or presence of each solver in a portfolio with 0 or 1 respectively.
 Next, we compute the Spearman rank correlation between this occurrence vector with the objective value.
 For $k=5$, all correlations are in $[-0.40,0.17]$ for objective function \emph{PAR-2}, $[-0.42,0.17]$ for \emph{PAR-2\_norm}, and $[-0.41,0.15]$ for \emph{Unsolved}.
@@ -504,15 +503,15 @@ We also evaluate the actual performance of the resulting portfolios in terms of 
 	\centering
 	\includegraphics[width=\columnwidth]{plots/prediction-test-mcc.pdf}
 	\caption{
-		Test-set MCC for random-search portfolios, using random forests with 100 trees.
+		Test-set MCC for \emph{random sampling} portfolios, using random forests with 100 trees.
 		(MCC is 0 for random or constant prediction and it is 1 for perfect prediction.)
 	}
 	\label{fig:prediction-test-mcc}
 \end{figure}
 
-Figure~\ref{fig:prediction-test-mcc} shows test-set classification performance of random forests with 100 trees, using the portfolios from \emph{random search}.
+Figure~\ref{fig:prediction-test-mcc} shows test-set classification performance of random forests with 100 trees, using the portfolios from \emph{random sampling}.
 Classification performance with less trees is worse, on training set as well as test set.
-We use random-search results here, but classification results are similar for \emph{beam search} with $w=100$.
+We use \emph{random sampling} results here, but classification results are similar for \emph{beam search} with $w=100$.
 We do not display training-set performance, since it always is 1.0.
 As Figure~\ref{fig:prediction-test-mcc} shows, test-set prediction performance is rather low for all $k$.
 It is clearly higher than random guessing, which would yield an MCC of 0.0, but clearly lower than the optimal MCC of 1.0.
