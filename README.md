@@ -1,8 +1,8 @@
-# Analysis of Optimal Small Portfolios
+# Analyzing k-Portfolios of SAT Solvers
 
 This repository contains the code and text of the paper
 
-> Bach, Jakob and Markus Iser. "Analysis of Optimal Small Portfolios"
+> Bach, Jakob and Markus Iser. "Analyzing k-Portfolios of SAT Solvers"
 
 This document describes the repo structure and the steps to reproduce the experiments.
 
