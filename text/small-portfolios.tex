@@ -23,7 +23,7 @@
 
 \begin{document}
 
-\title{Analyzing Small Portfolios of SAT Solvers}
+\title{Analyzing k-Portfolios of SAT Solvers}
 
 \author{\IEEEauthorblockN{Jakob Bach}
 \IEEEauthorblockA{\textit{KIT Department of Informatics} \\
@@ -40,13 +40,11 @@ markus.iser@kit.edu}
 
 \maketitle
 
-\todo{still inconsistent/mixed use of terms "small portfolio", "$k$-portfolio" and "$k$-Portfolio"}
-
 \begin{abstract}
 Successful approaches that tackle hard combinatorial problems such as propositional satisfiability are often in some sense complementary, i.e., each approach is only the best on some problem instances. 
 Parallel portfolios and instance-specific algorithm selection take advantage of this. 
 In this paper, we present a systematic analysis of solver portfolios using runtime measurements from the SAT~Competition~2020. 
-First, we present and compare search approaches to find good portfolios of limited size.
+First, we present and compare search approaches to find good portfolios of limited size $k$.
 Second, we use prediction models to make instance-specific solver recommendations within the portfolios and evaluate this approach as well.
 \end{abstract}
 
@@ -68,32 +66,26 @@ The SAT Competition series, which is organized yearly as an international open e
 Solvers are usually evaluated based on compilations of benchmark instances representing diverse interesting application scenarios of SAT solvers. 
 Researchers who implement SAT solvers usually strive for so-called \emph{stable} SAT solvers with a good overall performance on many types of instances. 
 Still, we regularly observe the emergence of new heuristics and methods which contribute to the performance on only a specific subsets of instances. 
-Such insular improvements can subsequently serve as the subject for research on improvements for stable solvers. 
-
-In order to also highlight such insular developments, recent SAT Competitions introduced \emph{application tracks}, where SAT solvers are evaluated on instances which stem only from a specific application. 
-In SAT Competition 2021, for the first time a special innovation price was given to a solver based on its contributions to the best portfolio.\footnote{\url{https://satcompetition.github.io/2021/}} 
-\todo{need to re-add some description/definition what a portfolio is}
-
-Solvers portfolios can also be used in combination with runtime prediction models for instance-specific algorithm selection. 
-It has been shown in the past that such approaches can improve performance of SAT solvers~\cite{xu2008satzilla}.
+This gives way to portfolios, which are sets of SAT solvers.
+One can define the runtime of a portfolio on an instance as the runtime of the fastest solver from the portfolio.
+In that regard, a special innovation price was given to a solver based on its contributions to the best portfolio in the SAT Competition 2021\footnote{\url{https://satcompetition.github.io/2021/}}.
+Solvers portfolios can also be used in combination with runtime prediction models for instance-specific algorithm selection~\cite{xu2008satzilla}.
 
 \paragraph{Problem Statement}
 
-In this paper, we study small portfolios of SAT solvers.
-\emph{Small} refers to the number of solvers in the portfolio, which we limit to certain values~$k$.
-Also, we strive to keep the overall approach simple by only using one prediction model per portfolio, and no further portfolio components. 
-Instead, we analyze the impact of the portfolio size $k$. 
-In particular, we want to find out whether small portfolios are already sufficient to achieve a good solving performance. 
+In this paper, we study $k$-portfolios of SAT solvers, i.e., portfolios composed of $k$ SAT solvers.
+In particular, we analyze the impact of the portfolio size $k$ on the portfolio performance.
+We want to find out whether portfolios with just a few solvers are already sufficient to achieve a good solving performance.
 
 \paragraph{Contributions}
 
-We empirically analyze the performance of small portfolios on runtime data for 48 solvers and 400 instances from the SAT~Competition~2020. 
+We empirically analyze the performance of $k$-portfolios on runtime data for 48 solvers and 400 instances from the SAT~Competition~2020. 
 In our experiments, we compare possible portfolio sizes $k \in \{1, \dots, 48\}$. 
-For approximate determination of optimal portfolios if size $k$, we apply \emph{beam search} with varying beam widths. 
-We compare the quality of such approximations to the results of an exact search, for which we encode the $k$-portfolio problem as an integer optimization problem. 
+For approximate determination of optimal portfolios with size $k$, we apply \emph{beam search} with varying beam widths. 
+We compare the quality of such approximations to the results of an exact search, for which we encode the \emph{K-Portfolio Problem} as an integer optimization problem. 
 
 Moreover, we include two baselines, one employing random sampling and the other one ranking by individual solvers' performances. 
-We analyze three variants of the $k$-portfolio problem, based on different transformations of solver runtimes.
+We analyze three variants of the \emph{K-Portfolio Problem}, based on different transformations of solver runtimes.
 For evaluation, we consider both the theoretically optimal performance of portfolios as well as the performance if a prediction model makes instance-specific solver recommendations. 
 
 \paragraph{Results}
@@ -107,7 +99,7 @@ Thus, actual portfolio performance cannot benefit from the theoretical improveme
 
 In Section~\ref{sec:related-work}, we review related work. 
 Preliminaries are given in Section~\ref{sec:preliminaries}. 
-In Section~\ref{sec:approach}, we introduce the small-portfolio problem and multiple solution approaches for it. 
+In Section~\ref{sec:approach}, we introduce the \emph{K-Portfolio Problem} and multiple solution approaches for it. 
 We describe the experimental design in Section~\ref{sec:experimental-design} and present the experimental results in Section~\ref{sec:evaluation}. 
 We conclude with Section~\ref{sec:conclusion}. 
 
@@ -139,9 +131,9 @@ Our evaluation is less broad in terms of classification models, but instead we a
 Also, we evaluate additional search strategies for portfolios.
 For example, we systematically analyze parametrization of \emph{beam search}.
 Further, we compare against random portfolios of size $k$ as a baseline.
-Finally, we solve the small-portfolio-problem exactly, while \cite{amadini2014empirical} only uses heuristic search algorithms.
+Finally, we solve the \emph{K-Portfolio Problem} exactly, while \cite{amadini2014empirical} only uses heuristic search algorithms.
 
-Nof and Strichman formalize the small-portfolio problem in the form of two maximization problems with different objective functions~\cite{nof2020real}.
+Nof and Strichman formalize the \emph{K-Portfolio Problem} in the form of two maximization problems with different objective functions~\cite{nof2020real}.
 They show submodularity and NP-completeness of the problems.
 While we can build on the theoretical results of \cite{nof2020real}, our evaluation is different.
 In their evaluation, they use \emph{beam search} with a beam width of one.
@@ -156,12 +148,10 @@ In comparison, solvers in our dataset have a much larger timeout of 5000~s.
 \section{Preliminaries}
 \label{sec:preliminaries}
 
-Given is a set of solvers $S = \{s_1, \dots, s_n\}$, a set of SAT instances $I = \{i_1, \dots, i_m\}$ and discrete solver runtimes $r~:~S \times I \rightarrow [0, \dots, T]$ with a fixed timeout $T$. 
-\todo{runtimes are continuous in our dataset}
+Given is a set of solvers $S = \{s_1, \dots, s_n\}$, a set of SAT instances $I = \{i_1, \dots, i_m\}$ and solver runtimes $r~:~S \times I \rightarrow [0, T]$ with a fixed timeout $T$.
 A scoring function $c_T : S \rightarrow \mathbb{N}$ is used to estimate solver performance. 
 To score a solver, we use the frequently used penalized average runtime with a penalization factor of two (PAR-2 Score). 
-That score yields a trade-off between pace and the number of solved instances. 
-\todo{which pace? do you mean runtime of the solvers?}
+That score yields a trade-off between solver runtime and the number of solved instances.
 It is defined as follows.%
 \begin{align}
 r_T(s,i) &:= \begin{cases}
@@ -183,16 +173,15 @@ In the following, we will refer to $c_{T}(P)$ as the \emph{cost} of $P$.
 In reality, one may train a prediction model $m : I \rightarrow P$ for a solver portfolio $P \subseteq S$ which recommends a solver for each instance, using features of the instance. 
 The \emph{cost} of such a prediction model for solvers $P$ is given by the following function.%
 $$
-	c_{T}'(P) := \frac{1}{|I|} \sum\limits_{i \in I}{r_T(m(i),i)}
+	c_{T}'(m,P) := \frac{1}{|I|} \sum\limits_{i \in I}{r_T(m(i),i)}
 $$
-\todo{might add m as another parameter or superscript to the modified cost function}
 
 Clearly, the portfolio cost $c_{T}(P)$ serves as a lower bound for the actual cost of a portfolio $P$ which uses a prediction model.
 
 \section{Optimal $k$-Portfolios}
 \label{sec:approach}
 
-The $k$-Portfolio Problem is to find a portfolio $P$ of size $|P| = k$ with minimum costs.%
+The \emph{K-Portfolio Problem} is to find a portfolio $P$ of size $|P| = k$ with minimum costs.%
 $$
 \argmin\limits_{P \subseteq S, |P| = k} c_{T}(P)
 $$
@@ -201,13 +190,13 @@ In the following, we outline four approaches for either \emph{exact} or \emph{ap
 
 \subsection{Exhaustive Search (exact)}
 
-The simplest way to solve the $k$-Portfolio Problem is by exhaustively searching all portfolios with $k$ solvers. 
+The simplest way to solve the \emph{K-Portfolio Problem} is by exhaustively searching all portfolios with $k$ solvers. 
 Since there are $\binom{n}{k}$ possible portfolios to search, this becomes infeasible for sufficiently large $n$ and $k \gg 1$ as well as $k \ll n$.
 For example, with the $n=48$ solvers in our dataset, there are $1128$ portfolios for $k=2$, but roughly $6.54 * 10^9$ portfolios for $k=10$.
 
 \subsection{MIP Search (exact)}
 
-The $k$-Portfolio Problem is not linear due to the use of the $\min$ function.
+The \emph{K-Portfolio Problem} is not linear due to the use of the $\min$ function.
 However, one can make it an integer linear problem by introducing additional variables.
 This allows to obtain an exact solution for the problem with an off-the-shelf integer-programming solver.
 
@@ -271,11 +260,11 @@ We refer to this special case as \emph{greedy search}.
 For $w = |S|$, the algorithm degrades to exhaustive search. 
 For $w \ll |S|$, it yields a runtime advantage compared to exhaustive search, as it only evaluates $O(|S| \cdot w)$ portfolios per iteration. 
 
-The algorithm is a greedy heuristic that does not necessarily find the optimal solution to the $k$-Portfolio Problem. 
+The algorithm is a greedy heuristic that does not necessarily find the optimal solution to the \emph{K-Portfolio Problem}. 
 But there is a bound on the costs of a portfolio found by \emph{greedy search}. 
 To this end, one can use a result from~\cite{nemhauser1978analysis}, which applies to greedy algorithms on non-negative monotone submodular set functions.
 Nof and Strichman show that their \emph{K-Algorithms Max-Sum Problem} for portfolios is submodular and thus a bound on greedy algorithms holds~\cite{nof2020real}. 
-We can transform the $k$-Portfolio Problem (minimization) into the \emph{K-Algorithms Max-Sum Problem} (maximization) by replacing the costs with utilities as follows.%
+We can transform the \emph{K-Portfolio Problem} (minimization) into the \emph{K-Algorithms Max-Sum Problem} (maximization) by replacing the costs with utilities as follows.%
 $$
 u_{T}(P) := c_W - c_{T}(P)
 $$
@@ -289,9 +278,10 @@ $$
 $$
 I.e., there is a lower bound on the utility of a portfolio found by \emph{greedy search}.
 This can be transformed into an upper bound on the cost of a portfolio found by \emph{greedy search}.%
-$$
+\begin{equation}
 	c_{T}(P_{greedy}^k) \leq (1 - \frac{1}{e}) \cdot \min_{|P| \leq k}{c_{T}(P)} + \frac{1}{e} \cdot c_W
-$$
+	\label{eq:upper-bound}
+\end{equation}
 
 \subsection{K-Best (approximate)}
 
@@ -302,12 +292,12 @@ Thus, opposed to \emph{beam search}, it does not consider how solvers within a p
 \section{Experimental Design}
 \label{sec:experimental-design}
 
-In our experiments, we evaluate the presented optimization approaches, and analyze their relation to prediction approaches for $k$-Portfolios. 
+In our experiments, we evaluate the presented optimization approaches, and analyze their relation to prediction approaches for $k$-portfolios. 
 In particular, we are interested in the achievable performance improvements with increasing values for the parameter $k$. 
 
 \subsection{Optimization Approaches}
 
-We analyze the $k$-Portfolio Problem for three definitions of the cost function in the optimization objective.
+We analyze the \emph{K-Portfolio Problem} for three definitions of the cost function in the optimization objective.
 All cost functions average runtimes over instances, but differ in their definition of runtime.
 
 \begin{itemize}
@@ -335,7 +325,7 @@ We employ the four solution approaches from Section~\ref{sec:approach} to search
 	To get an idea how the performance of arbitrary portfolios is distributed, we randomly sample 1000 portfolios for each $k$.
 	Exhaustively evaluating all portfolios for all sizes $k$ is too expensive in our scenario.
 	\item \emph{MIP search}:
-	We solve the $k$-Portfolio Problem to exactly determine the best portfolio for each $k \in \{1, \dots, |S|\}$.
+	We solve the \emph{K-Portfolio Problem} to exactly determine the best portfolio for each $k \in \{1, \dots, |S|\}$.
 	\item \emph{Beam search}: 
 	We use this approach to search for good portfolios heuristically.
 	We evaluate all $k \in \{1, \dots, |S|\}$ and also vary the beam width $w \in \{1, 2, \dots, 10, 20, \dots, 100\}$.
@@ -380,13 +370,13 @@ Feature values which are missing due to the feature extractor having exceeded ti
 We implement our experimental design in Python and make our code available online\footnote{\url{https://github.com/Jakob-Bach/Small-Portfolios}}.
 To create the dataset of solver runtimes, we use the package~\emph{gbd-tools}~\cite{iser2020collaborative}.
 For predictions, we use the package \emph{scikit-learn}~\cite{scikit-learn}.
-To solve the small portfolio-problem exactly, we use the package \emph{mip}~\cite{python-mip}.
+To solve the \emph{K-Portfolio Problem} exactly, we use the package \emph{mip}~\cite{python-mip}.
 
 \section{Evaluation}
 \label{sec:evaluation}
 
-In the following, we evaluate the performance of the optimal and approximate solutions to the $k$-Portfolio Problem. 
-We subsequently relate the performance of such optimal $k$-Portfolios to the performance of an actual prediction model for instance-specific solver selection. 
+In the following, we evaluate the performance of the optimal and approximate solutions to the \emph{K-Portfolio Problem}. 
+We subsequently relate the performance of such optimal $k$-portfolios to the performance of an actual prediction model for instance-specific solver selection. 
 In particular, we are interested in the influence of the portfolio size $k$ on performance. 
 
 \subsection{Optimization Results}
@@ -426,8 +416,7 @@ The performance of the optimal solution is given by \emph{MIP search}.
 \emph{Beam search} denotes the performance of the best portfolios found by a \emph{greedy search} algorithm, i.e., executing the \emph{beam search} algorithm with the smallest beam width $w=1$. 
 The approach \emph{k-best} displays the performance of portfolios which are comprised by the top $k$ single-best solvers. 
 In \emph{random search}, we average over the repetitions of random sampling.
-The displayed \emph{upper bound} is calculated based on the runtimes of the worst performing $k$-portfolio. 
-\todo{that's wrong}
+The \emph{upper bound} limits costs of {greedy search} according to Equation~\ref{eq:upper-bound}.
 If we report numbers in the following, we refer to the training dataset for which the optimization problems are solved.
 
 For all approaches, the objective value improves rapidly for the first few $k$, but marginal gains become smaller with increasing $k$.
@@ -436,8 +425,7 @@ This ratio reduces to $1.89$ for the best $5$-portfolio and $1.25$ for the best 
 
 As Figure~\ref{fig:search-train-objective-PAR2} also shows, the cost of the best $k$-portfolios found by \emph{greedy search} is very close to that of the exact solutions.
 These results are particularly impressive considering that the runtime of \emph{greedy search} is linear in $k$ as well as the number of instances $n$, while the finding the exact solution is NP-complete.
-In contrast, the theoretical, submodularity-based upper bound for \emph{greedy search} is clearly higher and therefore too loose to give a good estimate. 
-\todo{add link to upper bound equation}
+In contrast, the theoretical, submodularity-based \emph{upper bound} for \emph{greedy search} is clearly higher and therefore too loose to give a good estimate. 
 
 The baseline \emph{k-best} is worse than \emph{greedy search} on the training data, but still clearly better than \emph{random search}.
 As Figure~\ref{fig:search-test-objective-PAR2} shows, \emph{beam search}, \emph{k-best}, and \emph{MIP search} show similar performance on the test dataset.
@@ -468,7 +456,7 @@ We observe a large variance in the PAR-2 score of portfolios in the beam for sma
 
 A similar phenomenon also occurs for randomly sampled portfolios. 
 With increasing $k$, the standard deviation of the objective value in a sample of portfolios decreases.
-At the same time, the expected objective value converges towards the objective value of the optimal $k$-Portfolio.
+At the same time, the expected objective value converges towards the objective value of the optimal $k$-portfolio.
 This is clearly visible in Figure~\ref{fig:search-train-objective}.
 Thus, the benefit of searching for good portfolios is the greatest for small $k$.
 
@@ -481,7 +469,7 @@ However, despite this non-monotonous behavior of the exact solution, \emph{beam 
 This indicates that there are several good solver combinations, so solvers can substitute each other in portfolios to some extent.
 
 This substitution effect seems to be particularly present for large $k$, as we can observe for \emph{beam search} with $w=100$. 
-For the objective function \emph{PAR-2}, one solver appears in 19\% of the beam of $2$-portfolios.\todo{how? there are only two iterations}
+For the objective function \emph{PAR-2}, one solver appears in 19\% of the beam of $2$-portfolios.
 However, for $k=10$, no solver appears in more than 10\% of the portfolios and for $k=20$, no solver appears in more than 5\% of the portfolios.
 A similar effect shows for the objective functions \emph{PAR-2\_norm} and \emph{Unsolved}.
 This shows that a few solvers might be crucial for good objective value for small $k$, but there is more flexibility in building a good portfolio for large $k$.
@@ -497,7 +485,7 @@ Similar correlation behavior occurs for other $k$.
 
 These results indicate that only the presence of some solvers has a moderately negative correlation to the objective value of the whole portfolio, i.e., only some solvers can clearly improve the portfolio performance of our minimization problem on their own.
 The positive correlations are even weaker, i.e., there are no solvers which influence portfolio performance in a strongly negative manner.
-Overall, this means one needs a combination of solvers to clearly influence the objective value in either direction.\todo{last statement is trivial. what do you want to say?}
+Overall, this means that the influence of single solvers on portfolio performance is limited; one needs a combination of solvers to clearly influence the objective value in either direction.
 
 \subsection{Prediction Results}
 
@@ -564,10 +552,8 @@ Averaging importance over all trained models, the most important feature has an 
 To reach an cumulated average importance of 50\%, one needs 49 out of 143 features.
 On average, prediction models use 106 features.
 If we limit our analysis to random forests with just one tree, the models still use 52 features on average.
-In conclusion, no single feature or even small sets of features drives prediction performance.
+In conclusion, no single feature or even small set of features drives prediction performance.
 Considering the low prediction performance, this indicates that our dataset lacks discriminating features which are suitable to decide which solver should be used on an instance.
-
-\todo{result for k=3 is best}
 
 \todo{get rid of alternate objective functions (PAR-2 Norm and Unsolved) as in this context we cannot learn anything more from them}
 
@@ -579,16 +565,14 @@ Considering the low prediction performance, this indicates that our dataset lack
 SAT solvers are often complementary, i.e, they are particularly good on some instances and less good on other instances.
 Thus, one combines several solvers into portfolios.
 We analyzed such portfolios with runtime data from the SAT~Competition~2020.
-In particular, we focused on portfolios with a limited number of solvers, so-called \emph{small portfolios}.
+In particular, we focused on portfolios with the number of solvers limited to $k$.
 
-We analyzed an integer optimization problem to find small portfolios exactly as well as a \emph{beam search} approach to find small portfolios fast.
-Regarding portfolio size, we saw a strong improvement in objective value for adding solvers to small portfolios, but a small impact once the portfolio reaches a certain size.
+We analyzed an integer optimization problem to find $k$-portfolios exactly as well as a \emph{beam search} approach to find $k$-portfolios fast.
+Regarding portfolio size, we saw a strong improvement in objective value for adding solvers to portfolios with small $k$, but a small impact once the portfolio reaches a certain size.
 
 Regarding the solution approach, we found that \emph{beam search} yields close-to-optimal solutions.
 After determining portfolios, we combined them with prediction models that made instance-specific solver recommendations.
 However, these models performed rather poorly on the given dataset, such that the objective value of portfolios with predictions did not improve with the portfolio size.
-We found, that prediction performance does not improve beyond portfolio sizes of $k=3$. 
-\todo{check validity of previous statement}
 
 In future work, we want to improve prediction performance, in particular, by adapting the set of instance features.
 Recent results in the empirical analysis of solver portfolios indicate that features which describe the community structure of graph representations of SAT instances correlate well with solver performance. 
