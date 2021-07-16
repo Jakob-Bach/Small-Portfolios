@@ -153,13 +153,14 @@ In comparison, \cite{nof2020real} provides an SMT encoding.
 Finally, their domain is different than ours, as they focus on instances of an allocation problem whose solution is evaluated already after 0.1~s.
 In comparison, solvers in our dataset have a much larger timeout of 5000~s.
 
-\section{Preliminiaries}
+\section{Preliminaries}
 \label{sec:preliminaries}
 
 Given is a set of solvers $S = \{s_1, \dots, s_n\}$, a set of SAT instances $I = \{i_1, \dots, i_m\}$ and discrete solver runtimes $r~:~S \times I \rightarrow [0, \dots, T]$ with a fixed timeout $T$. 
+\todo{runtimes are continuous in our dataset}
 A scoring function $c_T : S \rightarrow \mathbb{N}$ is used to estimate solver performance. 
 To score a solver, we use the frequently used penalized average runtime with a penalization factor of two (PAR-2 Score). 
-That score yields a tradoff between pace and the number of solved instances. 
+That score yields a trade-off between pace and the number of solved instances. 
 \todo{which pace? do you mean runtime of the solvers?}
 It is defined as follows.%
 \begin{align}
@@ -174,72 +175,60 @@ A portfolio $P \subseteq S$ is a \emph{non-empty} set of solvers.
 To score a solver portfolio $P$, we assume to have an oracle that always selects the fastest solver for each instance. 
 This construction is commonly referred to as the virtual best solver (VBS) for $P$. 
 Accordingly, we extend the scoring function as follows.%
-\begin{align*}
-	c_{T}(P) &:= \frac{1}{|I|} \sum\limits_{i \in I}{\min\{r_T(s,i) \mid s \in P\}}
-\end{align*}%
-%
+$$
+	c_{T}(P) := \frac{1}{|I|} \sum\limits_{i \in I}{\min\{r_T(s,i) \mid s \in P\}}
+$$
 In the following, we will refer to $c_{T}(P)$ as the \emph{cost} of $P$. 
 
-In reality, one may train a prediction model $m : I \rightarrow P$ for a solver portfolio $P \subseteq S$ which recommends a solver for each instance. 
+In reality, one may train a prediction model $m : I \rightarrow P$ for a solver portfolio $P \subseteq S$ which recommends a solver for each instance, using features of the instance. 
 The \emph{cost} of such a prediction model for solvers $P$ is given by the following function.%
-\begin{align*}
-	c_{T}'(P) &:= \frac{1}{|I|} \sum\limits_{i \in I}{r_T(m(i),i)}
-\end{align*}%
-%Such prediction models use feature records $r(I)$ of the SAT instances to make its recommendations. 
+$$
+	c_{T}'(P) := \frac{1}{|I|} \sum\limits_{i \in I}{r_T(m(i),i)}
+$$
+\todo{might add m as another parameter or superscript to the modified cost function}
 
 Clearly, the portfolio cost $c_{T}(P)$ serves as a lower bound for the actual cost of a portfolio $P$ which uses a prediction model.
-
-%In the worst case, the prediction model always recommends the slowest solver out of $P$ for each instance.
-%This serves as an upper bound for the actual portfolio score, which we will refer to as the \emph{virtual worst solver} (VWS) for $P$.
 
 \section{Optimal $k$-Portfolios}
 \label{sec:approach}
 
 The $k$-Portfolio Problem is to find a portfolio $P$ of size $|P| = k$ with minimum costs.%
-%For each solver out of $S$, one needs to decide whether it becomes part of the portfolio $P$ or not.
-\begin{align*}
+$$
 \argmin\limits_{P \subseteq S, |P| = k} c_{T}(P)
-\end{align*}%
-%
+$$
 Note that the portfolio cost function decreases monotonically under the addition of solvers: $\forall s \in S, c_{T}(P \cup \{s\}) \leq c_{T}(P)$. 
 In the following, we outline four approaches for either \emph{exact} or \emph{approximate} determination of solutions to that function. 
 
 \subsection{Exhaustive Search (exact)}
 
-The simplest way to solve the $k$-Portfolio Problem is by exhaustively searching all portfolios with at most $k$ solvers. 
-%Due to the use of a VBS, adding a solver to the portfolio cannot increase costs.
-%Thus, it is sufficient to search over all portfolios with exactly $k$ solvers, ignoring smaller portfolios.
+The simplest way to solve the $k$-Portfolio Problem is by exhaustively searching all portfolios with $k$ solvers. 
 Since there are $\binom{n}{k}$ possible portfolios to search, this becomes infeasible for sufficiently large $n$ and $k \gg 1$ as well as $k \ll n$.
 For example, with the $n=48$ solvers in our dataset, there are $1128$ portfolios for $k=2$, but roughly $6.54 * 10^9$ portfolios for $k=10$.
 
-\subsection{Integer Programming (exact)}
+\subsection{MIP Search (exact)}
 
 The $k$-Portfolio Problem is not linear due to the use of the $\min$ function.
 However, one can make it an integer linear problem by introducing additional variables.
 This allows to obtain an exact solution for the problem with an off-the-shelf integer-programming solver.
 
 We introduce two sets of binary decision variables. 
-The variables $y_s$ denote whether a solver $s \in S$ is in the portfolio, and 
-variables $x_{s,i}$ denotes whether solver $s \in S$ is selected for instance $i \in I$. 
+The binary variables $y_s$ denote whether a solver $s \in S$ is in the portfolio, and 
+the binay variables $x_{s,i}$ denote whether solver $s \in S$ is selected for instance $i \in I$. 
 Equation~\ref{eq:ip1} specifies the cardinality constraint on the number of solvers. 
 Equation~\ref{eq:ip2} stipulates that exactly one solver is chosen for each instance. 
 Equation~\ref{eq:ip3} ensures that a solver can only be chosen for an instance if it is part of the portfolio. 
-Ultimately, the optimization target is specified by Equation~\ref{eq:ip4}. 
-
+Ultimately, the optimization target is specified by Equation~\ref{eq:ip4}.%
 \begin{align}
-%	\forall_{s \in S}~y_s &\in \{0,1\}\\
-%	\forall_{i\in I} \forall_{s \in S}~x_{s,i} &\in \{0, 1\}\\
 	\sum_{s \in S} y_s &\leq k \label{eq:ip1}\\
 	\forall_{i\in I} \sum_{s \in S} x_{s,i} &= 1 \label{eq:ip2}\\
 	\forall_{s \in S} \sum_{i \in I} x_{s,i} &\leq |I| \cdot y_s \label{eq:ip3}\\
 	\min_{x,y} \quad & \frac{1}{|I|} \cdot \sum_{i \in I} \sum_{s \in S} r_T(s,i) \cdot x_{s,i} \label{eq:ip4}
-%\label{eq:small-portfolio-integer-problem}
 \end{align}
 
 \subsection{Beam Search (approximate)}
 
 % IEEE wants algorithms as figures, not separate floats (as "algorithm2e" does), so we need some hacking: https://tex.stackexchange.com/questions/147598/how-to-use-the-algorithm2e-package-with-ieeetran-class
-\begin{figure}[b]
+\begin{figure}[t]
 \makeatletter
 \let\@latex@error\@gobble
 \makeatother
@@ -264,12 +253,10 @@ Ultimately, the optimization target is specified by Equation~\ref{eq:ip4}.
 		\For{$j \leftarrow 1$ \KwTo $w$}{
 			$T_i \leftarrow T_i \cup \{\argmin\limits_{P \in U \setminus T_i}{c_T(P)}\}$\;
 		}
-		%$T_i \leftarrow \mathsf{sort}(U, P_0 < P_1 \leftrightarrow c_T(P_0) < c_T(P_1))$\;
-		%$T_i \leftarrow \{P_j \in U \mid j \leq w \}$\;
 	}
 	\Return $\argmin\limits_{P \in T_k}{c_{T}(P)}$\;
 \end{algorithm}
-\caption{Beam Search Algorithm}
+\caption{\emph{Beam search} algorithm.}
 \label{al:beam-search}
 \end{figure}
 
@@ -282,7 +269,7 @@ The beam-width $w$ is an input parameter.
 For $w=1$, only one portfolio remains at the end of each iteration.
 We refer to this special case as \emph{greedy search}.
 For $w = |S|$, the algorithm degrades to exhaustive search. 
-For $w << |S|$, it yields a runtime advantage compared to exhaustive search, as it only evaluates $O(|S| \cdot w)$ portfolios per iteration. 
+For $w \ll |S|$, it yields a runtime advantage compared to exhaustive search, as it only evaluates $O(|S| \cdot w)$ portfolios per iteration. 
 
 The algorithm is a greedy heuristic that does not necessarily find the optimal solution to the $k$-Portfolio Problem. 
 But there is a bound on the costs of a portfolio found by \emph{greedy search}. 
@@ -292,7 +279,7 @@ We can transform the $k$-Portfolio Problem (minimization) into the \emph{K-Algor
 $$
 u_{T}(P) := c_W - c_{T}(P)
 $$
-In this transformation $c_W$ denotes an upper bound on portolio performance, the virtual worst solver.%
+In this transformation $c_W$ denotes an upper bound on portfolio performance, the virtual worst solver.%
 $$
 c_W := \frac{1}{|I|} \sum_{i \in I}{\max\{{r_T(s,i) \mid s \in S}}\}
 $$
@@ -315,7 +302,7 @@ Thus, opposed to \emph{beam search}, it does not consider how solvers within a p
 \section{Experimental Design}
 \label{sec:experimental-design}
 
-In our experiments, we evaluate the presented optimization approaches, and analyze their relation to prediction approaches for $k$-Porfolios. 
+In our experiments, we evaluate the presented optimization approaches, and analyze their relation to prediction approaches for $k$-Portfolios. 
 In particular, we are interested in the achievable performance improvements with increasing values for the parameter $k$. 
 
 \subsection{Optimization Approaches}
@@ -325,7 +312,7 @@ All cost functions average runtimes over instances, but differ in their definiti
 
 \begin{itemize}
 	\item \emph{PAR-2}: The penalized runtimes $r_T$ as described in Section~\ref{sec:preliminaries}.
-	\item \emph{PAR2\_norm}: The penalized runtimes, but normalized to $[0,1]$ per instance. This counterbalances variations in instance hardness, i.e., that some instances are easier to solve than others.
+	\item \emph{PAR-2\_norm}: The penalized runtimes, but normalized to $[0,1]$ per instance. This counterbalances variations in instance hardness, i.e., that some instances are easier to solve than others.
 	\begin{align*}
 		\overline{r_T}(s,i) := \frac{r_T(s,i) - \min\limits_{s' \in S}{r_T(s',i)}}{\max\limits_{s' \in S}{r_T(s',i)} - \min\limits_{s' \in S}{r_T(s',i)}}
 	\end{align*}
@@ -423,11 +410,14 @@ This indicates that combing solvers in portfolios can improve overall runtime.
 		\includegraphics[width=0.98\columnwidth]{plots/search-test-objective-PAR2.pdf}
 		\label{fig:search-test-objective-PAR2}
 	}
-	\caption{Comparison of different solution approaches for objective \emph{PAR2}. Portfolio VBS Performance for different k and search algorithms. Optimized on Training (left), Evaluated on Test (right), five-fold cross-validation. 
-\todo{use log-scale for y-axis}
-\todo{rename mip-search to optimal solution}
-\todo{add beam search results for w=100}
-\todo{rename random search to random sampling}}
+	\caption{
+		Portfolio performance for different $k$ and search algorithms for objective \emph{PAR-2}.
+		Optimized on training set (left), evaluated on test set (right). 
+		\todo{use log-scale for y-axis}
+		\todo{rename mip-search to optimal solution}
+		\todo{add beam search results for w=100}
+		\todo{rename random search to random sampling}
+	}
 \label{fig:search-train-objective}
 \end{figure*}
 
@@ -463,7 +453,7 @@ For $k=8$, where the relative performance gap is the largest, the \emph{k-best} 
 
 \subsubsection{Alternative Objective Functions}
 
-Since the objective functions \emph{PAR2\_norm} and \emph{Unsolved} follow a similar pattern as \emph{PAR-2}, we omitted them in our plots. 
+Since the objective functions \emph{PAR-2\_norm} and \emph{Unsolved} follow a similar pattern as \emph{PAR-2}, we omitted them in our plots. 
 For the objective function \emph{Unsolved}, a portfolio of ten solvers suffices to solve all instances, while the best $5$-portfolio leaves $1.7\%$ of instances unsolved and the best $1$-portfolio leaves $16.4\%$ of instances unsolved.
 
 For the objective function \emph{Unsolved}, the greedy-search portfolio for $k=2$ solves only $1.9\%$ out of all instances less than the exact solution, and this difference decreases further with $k$.
@@ -493,7 +483,7 @@ This indicates that there are several good solver combinations, so solvers can s
 This substitution effect seems to be particularly present for large $k$, as we can observe for \emph{beam search} with $w=100$. 
 For the objective function \emph{PAR-2}, one solver appears in 19\% of the beam of $2$-portfolios.\todo{how? there are only two iterations}
 However, for $k=10$, no solver appears in more than 10\% of the portfolios and for $k=20$, no solver appears in more than 5\% of the portfolios.
-A similar effect shows for the objective functions \emph{PAR2\_norm} and \emph{Unsolved}.
+A similar effect shows for the objective functions \emph{PAR-2\_norm} and \emph{Unsolved}.
 This shows that a few solvers might be crucial for good objective value for small $k$, but there is more flexibility in building a good portfolio for large $k$.
 
 \subsubsection{Random Portfolios}
@@ -501,7 +491,7 @@ This shows that a few solvers might be crucial for good objective value for smal
 A correlation analysis on random-search results, of which we have 1000 portfolios for each $k$, also underlines the interaction between solvers.
 First, we encode the absence or presence of each solver in a portfolio with 0 or 1 respectively.
 Next, we compute the Spearman rank correlation between this occurrence vector with the objective value.
-For $k=5$, all correlations are in $[-0.40,0.17]$ for objective function \emph{PAR2}, $[-0.42,0.17]$ for \emph{PAR2\_norm}, and $[-0.41,0.15]$ for \emph{Unsolved}.
+For $k=5$, all correlations are in $[-0.40,0.17]$ for objective function \emph{PAR-2}, $[-0.42,0.17]$ for \emph{PAR-2\_norm}, and $[-0.41,0.15]$ for \emph{Unsolved}.
 The mean correlation is zero for all objective functions.
 Similar correlation behavior occurs for other $k$.
 
@@ -519,7 +509,10 @@ We also evaluate the actual performance of the resulting portfolios in terms of 
 \begin{figure}[t]
 	\centering
 	\includegraphics[width=\columnwidth]{plots/prediction-test-mcc.pdf}
-	\caption{Test-set MCC for random-search portfolios. Random forests with 100 trees. (mcc: 0 - random/constant, 1 - perfect prediction)}
+	\caption{
+		Test-set MCC for random-search portfolios, using random forests with 100 trees.
+		(MCC is 0 for random or constant prediction and it is 1 for perfect prediction.)
+	}
 	\label{fig:prediction-test-mcc}
 \end{figure}
 
@@ -537,7 +530,7 @@ For low $k$, the prediction performance varies stronger between portfolios than 
 
 \begin{figure*}[t]
 	\centering
-	\subfloat[\emph{PAR2} objective function.]{
+	\subfloat[\emph{PAR-2} objective function.]{
 		\includegraphics[width=0.98\columnwidth]{plots/prediction-test-objective-PAR2.pdf}
 		\label{fig:prediction-test-objective-PAR2}
 	}
@@ -546,7 +539,10 @@ For low $k$, the prediction performance varies stronger between portfolios than 
 		\includegraphics[width=0.98\columnwidth]{plots/prediction-test-objective-unsolved.pdf}
 		\label{fig:prediction-test-objective-unsolved}
 	}
-	\caption{Objective value for \emph{beam search} portfolios with $w=100$. Random forests with 100 trees. Portfolio performance for test set vbs (orange) and prediction model (blue)}
+	\caption{
+		Portfolio performance for \emph{beam search} portfolios with $w=100$, comparing VBS (orange) to portfolios with prediction model (blue).
+		Random forests with 100 trees for the predictions.
+	}
 	\label{fig:prediction-test-objective}
 \end{figure*}
 
