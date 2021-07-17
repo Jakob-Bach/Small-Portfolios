@@ -281,9 +281,9 @@ We can transform the \emph{K-Portfolio Problem} (minimization) into the \emph{K-
 $$
 u_{T}(P) := c_W - c_{T}(P)
 $$
-In this transformation $c_W$ denotes an upper bound on portfolio performance, the virtual worst solver.%
+In this transformation $c_W$ denotes an upper bound on portfolio performance, the single worst solver.%
 $$
-c_W := \frac{1}{|I|} \sum_{i \in I}{\max\{{r_T(s,i) \mid s \in S}}\}
+c_W := \max\{c_T(s) \mid s \in S\}
 $$
 As $u_{T}(P)$ is non-negative, monotone and submodular, we get the following bound on a greedy-search result $P_{greedy}^k$~\cite{nemhauser1978analysis, krause2014submodular}.%
 $$
