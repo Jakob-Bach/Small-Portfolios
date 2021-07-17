@@ -98,7 +98,6 @@ We compare the quality of such approximations to the results of an exact search.
 For the exact search, we encode the \emph{K-Portfolio Problem} as an integer optimization problem. 
 
 We rely on two baselines, one deploying random sampling and the other one ranking by individual solvers' performances. %KB: Die zweite Baseline habe ich hier nicht verstanden.
-We analyze three variants of the \emph{K-Portfolio Problem}, based on different transformations of solver runtimes. %KB: Weiß jeder, was hier gemeint ist? (Ich nicht. Bin aber auch kein Experte.)
 For the evaluation, we consider both the theoretically optimal performance of portfolios %KB: Was soll das 'theoretically' hier?
 as well as the performance if a prediction model makes instance-specific solver recommendations. %KB: Abhängig von k, oder was ist gemeint? -- Wie machen Sie es eigentlich? Nehmen Sie dann die k schnellsten Solver? Oder achten Sie auch (wie auch immer genau) darauf, dass diese Solver irgendwie unterschiedlich sind?
 
@@ -216,7 +215,7 @@ This allows to obtain an exact solution for the problem with an off-the-shelf in
 
 We introduce two sets of binary decision variables. 
 The binary variables $y_s$ denote whether a solver $s \in S$ is in the portfolio, and 
-the binay variables $x_{s,i}$ denote whether solver $s \in S$ is selected for instance $i \in I$. 
+the binary variables $x_{s,i}$ denote whether solver $s \in S$ is selected for instance $i \in I$. 
 Equation~\ref{eq:ip1} specifies the cardinality constraint on the number of solvers. 
 Equation~\ref{eq:ip2} stipulates that exactly one solver is chosen for each instance. 
 Equation~\ref{eq:ip3} ensures that a solver can only be chosen for an instance if it is part of the portfolio. 
@@ -311,28 +310,7 @@ In particular, we are interested in the achievable performance improvements with
 
 \subsection{Optimization Approaches}
 
-We analyze the \emph{K-Portfolio Problem} for three definitions of the cost function in the optimization objective.
-All cost functions average runtimes over instances, but differ in their definition of runtime.
-
-\begin{itemize}
-	\item \emph{PAR-2}: The penalized runtimes $r_T$ as described in Section~\ref{sec:preliminaries}.
-	\item \emph{PAR-2\_norm}: The penalized runtimes, but normalized to $[0,1]$ per instance. This counterbalances variations in instance hardness, i.e., that some instances are easier to solve than others.
-	\begin{align*}
-		\overline{r_T}(s,i) := \frac{r_T(s,i) - \min\limits_{s' \in S}{r_T(s',i)}}{\max\limits_{s' \in S}{r_T(s',i)} - \min\limits_{s' \in S}{r_T(s',i)}}
-	\end{align*}
-	\item \emph{Unsolved}: A heavily discretized version of the runtimes, only stating whether a solver did not finish within $T$.
-	\begin{align*}
-		r_{0/1}(s,i) &:= \begin{cases}
-			1 & \text{if }r_T(s,i) = 2 \cdot T\\
-			0 & \text{otherwise}
-		\end{cases}
-	\end{align*}
-\end{itemize}
-
-To test generalization of search and prediction approaches, we conduct five-fold cross-validation over SAT instances, and average evaluation metrics over these folds. 
-We search for portfolios and train prediction models only on the training sets.
-
-We employ the four solution approaches from Section~\ref{sec:approach} to search for portfolios.
+We employ the four solution approaches from Section~\ref{sec:approach} to search for portfolios:
 
 \begin{itemize}
 	\item \emph{Random sampling}:
@@ -348,6 +326,13 @@ We employ the four solution approaches from Section~\ref{sec:approach} to search
 	We evaluate all $k \in \{1, \dots, |S|\}$.
 \end{itemize}
 
+The optimization goal for all approaches is the PAR-2 score $c_T(P)$.
+In preliminary experiments, we also analyzed two slightly different objectives, i.e., number of unsolved instances and PAR-2 score normalized for each instance.
+However, overall trends in the results were similar to those with PAR-2 score, so we stick to the latter.
+
+To test generalization of search and prediction approaches, we conduct five-fold cross-validation over SAT instances, and average evaluation metrics over these folds. 
+We search for portfolios and train prediction models only on the training sets.
+
 \subsection{Prediction Approaches}
 
 We also analyze the performance of portfolios which use a prediction model to select a solver. 
@@ -362,7 +347,7 @@ We evaluate prediction performance in two ways:
 
 \begin{itemize}
 	\item \emph{Objective value}:
-	We evaluate the prediction models with respect to the objective value, i.e., the runtime cost function $c_{T}'(P)$ (cf. Section~\ref{sec:preliminaries}). 
+	We evaluate the prediction models with respect to the objective value, i.e., the runtime cost function $c_{T}'(m,P)$ (cf. Section~\ref{sec:preliminaries}). 
 	\item \emph{MCC}:
 	We evaluate the predictions with Matthews correlation coefficient (MMC)~\cite{matthews1975comparison, gorodkin2004comparing}.
 	This does not take into account how fast the recommended solvers actually are, but only if the fastest solver is recommended or not.
@@ -388,6 +373,8 @@ To solve the \emph{K-Portfolio Problem} exactly, we use the package \emph{mip}~\
 
 \section{Evaluation}
 \label{sec:evaluation}
+
+\todo{update to removal of alternative objectives}
 
 In the following, we evaluate the performance of the exact and approximate solutions to the \emph{K-Portfolio Problem}. 
 We subsequently relate the performance of such optimal $k$-portfolios to the performance of an actual prediction model for instance-specific solver selection. 

@@ -24,14 +24,10 @@ import search
 CV_FOLDS = 5
 
 
-# Define the different optimization problems. Though the overall objective function and cardinality
-# constraint are the same, the definition of runtimes r_T(s,i) varies.
+# Define the different optimization problems.
 def define_problems(runtimes: pd.DataFrame) -> Dict[str, pd.DataFrame]:
     assert runtimes.notna().all().all()  # search approaches don't consider NAs
-    is_unsolved = (runtimes == prepare_dataset.PENALTY).astype(int)
-    runtimes_norm = runtimes.transform(lambda x: (x - x.min()) / (x.max() - x.min()), axis='columns')
-    runtimes_norm.fillna(0, inplace=True)  # if all runtimes are the same, solver choice does not matter
-    return {'PAR2': runtimes, 'PAR2_norm': runtimes_norm, 'Unsolved': is_unsolved}
+    return {'SC-2020': runtimes}
 
 
 # Create a list of search algorithms and their parametrization.
