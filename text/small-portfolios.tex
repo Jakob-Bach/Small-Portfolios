@@ -42,10 +42,17 @@ markus.iser@kit.edu}
 
 \begin{abstract}
 Successful approaches that tackle hard combinatorial problems such as propositional satisfiability are often complementary, i.e., an approach only works best on some problem instances, but not on a great many of them. 
-Parallel portfolios and instance-specific algorithm selection take advantage of this. %KB: 'take advantage' ist vielleicht zu positiv, ich hätte hier eher erwartet "versuchen, das auszubügeln" oder so. Der Satz liest sich auch, als sei das Problem jetzt gelöst.
-In this paper, we present a systematic analysis of solver portfolios using runtime measurements from the SAT~Competition~2020. %KB: Warum? Es fehlt ein motivierender Satz.
-First, we present and compare search approaches to find good portfolios of limited size $k$.
+%Parallel portfolios and instance-specific algorithm selection take advantage of this. %KB: 'take advantage' ist vielleicht zu positiv, ich hätte hier eher erwartet "versuchen, das auszubügeln" oder so. Der Satz liest sich auch, als sei das Problem jetzt gelöst.
+Parallel portfolios and instance-specific algorithm selection try to exploit this.
+%In this paper, we present a systematic analysis of solver portfolios using runtime measurements from the SAT~Competition~2020. %KB: Warum? Es fehlt ein motivierender Satz.
+%At the same time, we observe continuous advances in the runtime of individual solvers, which are often achieved through better heuristics and hybridization of approaches. 
+However, portfolio approaches are in competition with the progressive improvements of individual solvers.
+It therefore remains an open question to what extent complementarity can be exploited in recent solvers. 
+In this paper, we present a systematic analysis of portfolios of recent SAT solvers using runtime measurements from the SAT~Competitions~2020 and~2021. 
+First, we present and compare search approaches to find good portfolios of limited size~$k$.
 Second, we use prediction models to make instance-specific solver recommendations within the portfolios and evaluate this approach as well. %KB: Es fehlt eine abschließende Aussage, dass das ganz gut funktioniert.
+We show that greedy solutions for finding good portfolios can compete well with optimal solutions. 
+We also show that the marginal returns of adding more solvers diminish with increasing portfolios size, which becomes particularly evident in connection with prediction models. 
 \end{abstract}
 
 \begin{IEEEkeywords}
