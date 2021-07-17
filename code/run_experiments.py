@@ -61,7 +61,6 @@ def search_and_evaluate(problem_name: str, search_func: str, search_args: Dict[s
     for fold_id, (train_idx, test_idx) in enumerate(splitter.split(X=runtimes)):
         runtimes_train = runtimes.iloc[train_idx]
         runtimes_test = runtimes.iloc[test_idx]
-        search_args = search_args.copy()
         search_args['runtimes'] = runtimes_train
         start_time = time.process_time()
         search_result = search_func(**search_args)  # returns list of tuples
@@ -98,6 +97,7 @@ def search_and_evaluate(problem_name: str, search_func: str, search_args: Dict[s
     search_results['settings_id'] = settings_id
     search_results['problem'] = problem_name
     search_results['algorithm'] = search_func
+    del search_args['runtimes']
     for key, value in search_args.items():
         search_results[key] = value
     prediction_results = pd.concat(prediction_results)
