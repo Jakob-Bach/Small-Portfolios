@@ -31,15 +31,14 @@ def define_experimental_design(problems: List[Dict[str, Any]]) -> List[Dict[str,
     for problem in problems:
         max_k = problem['runtimes'].shape[1]
         for k in range(1, max_k + 1):
-            results.append({'search_func': 'random_search', 'search_args': {'k': k, 'w': 1000}})
+            results.append({**problem, 'search_func': 'random_search', 'search_args': {'k': k, 'w': 1000}})
         for k in range(1, max_k + 1):
-            results.append({'search_func': 'mip_search', 'search_args': {'k': k}})
+            results.append({**problem, 'search_func': 'mip_search', 'search_args': {'k': k}})
         for w in list(range(1, 11)) + list(range(20, 101, 10)):
-            results.append({'search_func': 'beam_search', 'search_args': {'k': max_k, 'w': w}})
-        results.append({'search_func': 'kbest_search', 'search_args': {'k': max_k}})
-        for i, result in enumerate(results):
-            result['settings_id'] = i
-            result.update(problem)
+            results.append({**problem, 'search_func': 'beam_search', 'search_args': {'k': max_k, 'w': w}})
+        results.append({**problem, 'search_func': 'kbest_search', 'search_args': {'k': max_k}})
+    for i, result in enumerate(results):
+        result['settings_id'] = i
     return results
 
 
