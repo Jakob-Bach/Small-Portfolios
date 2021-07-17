@@ -91,8 +91,8 @@ We want to find out whether portfolios with just a few solvers are already suffi
 
 \paragraph{Contributions}
 
-We empirically analyze the performance of $k$-portfolios on runtime data for 48 solvers and 400 instances from the SAT~Competition~2020. 
-In our experiments, we compare possible portfolio sizes $k \in \{1, \dots, 48\}$. 
+We empirically analyze the performance of $k$-portfolios on runtime data from the SAT Competitions 2020 and 2021, featuring 48 and 46 solvers, respectively.
+In our experiments, we compare all possible portfolio sizes $k$. 
 For approximate determination of optimal portfolios with size $k$, we apply \emph{beam search} with varying beam widths. %KB: Was bedeutet 'optimal portfolio' eigentlich? Bitte explizit sagen.
 We compare the quality of such approximations to the results of an exact search.
 For the exact search, we encode the \emph{K-Portfolio Problem} as an integer optimization problem. 
@@ -205,7 +205,7 @@ In the following, we outline four approaches for either \emph{exact} or \emph{ap
 
 The simplest way to solve the \emph{K-Portfolio Problem} is by exhaustively searching all portfolios with $k$ solvers. 
 Since there are $\binom{n}{k}$ possible portfolios to search, this becomes infeasible for sufficiently large $n$ and $k \gg 1$ as well as $k \ll n$.
-For example, with the $n=48$ solvers in our dataset, there are $1128$ portfolios for $k=2$, but roughly $6.54 * 10^9$ portfolios for $k=10$.
+For example, with $n=48$ solvers in the SAT Competition 2020, there are $1128$ portfolios for $k=2$, but roughly $6.54 * 10^9$ portfolios for $k=10$.
 
 \subsection{MIP Search (exact)}
 
@@ -362,8 +362,11 @@ We evaluate prediction performance in two ways:
 
 \subsection{Dataset}
 
-In our experiments, we use a dataset of $|S| = 48$ solvers and $400$ instances from the Main track of the SAT~Competition~2020\footnote{\url{https://satcompetition.github.io/2020/}}~\cite{balyo2020proceedings, SC2020:AIJ}. 
+In our experiments, we use two datasets.
+The first one contains $|S| = 48$ solvers and $400$ instances from the Main track of the SAT~Competition~2020\footnote{\url{https://satcompetition.github.io/2020/}}~\cite{balyo2020proceedings, SC2020:AIJ}. 
 We filtered out those instances where no solver finished in time, resulting in a dataset of $|I| = 316$ instances. 
+The second dataset contains $|S| = 46$ solvers $400$ instances from the Main track of the SAT~Competition~2021\footnote{\url{https://satcompetition.github.io/2021/}}.
+Again, we filtered out those instances where no solver finished in time, resulting in a dataset of $|I| = 325$ instances.
 
 For predictions, we make use of 143 features to characterize instances, of which 
 $138$ features stem from the feature extractor of SATzilla~2012~\cite{xu2008satzilla, xu2012satzilla2012} and five features stem from a gate-recognition approach~\cite{Iser:2015:GateRecognition}. 
@@ -567,7 +570,7 @@ Considering the low prediction performance, this indicates that our dataset lack
 
 SAT solvers are often complementary, i.e, they are particularly good on some instances and less good on other instances.
 Thus, one combines several solvers into portfolios.
-We analyzed such portfolios with runtime data from the SAT~Competition~2020.
+We analyzed such portfolios with runtime data from the SAT~Competitions~2020 and 2021.
 In particular, we focused on portfolios with the number of solvers limited to $k$.
 
 We analyzed an integer optimization problem to find $k$-portfolios exactly as well as a \emph{beam search} approach to find $k$-portfolios fast.

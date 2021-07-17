@@ -1,7 +1,7 @@
 """Prepare dataset
 
 Download GBD databases, transform to CVS, and extract input data for experimental pipeline:
-solver runtimes and instance features for main track of SAT Competition 2020.
+solver runtimes and instance features for main track of SAT Competitions 2020 and 2021.
 
 Usage: python -m prepare_dataset --help
 """
@@ -16,7 +16,7 @@ import gbd_tool.gbd_api
 import pandas as pd
 
 
-DATABASES = ['meta.db', 'gates.db', 'satzilla.db', 'sc2020.db']
+DATABASES = ['meta.db', 'gates.db', 'satzilla.db', 'sc2020.db', 'sc2021.db']
 PENALTY = 10000  # PAR2 score with timeout of 5000
 
 
@@ -47,16 +47,16 @@ def transform_dbs_to_csvs(data_dir: pathlib.Path) -> None:
 
 
 # Save runtimes and features for experimental pipeline.
-def save_dataset(runtimes: pd.DataFrame, features: pd.DataFrame, data_dir: pathlib.Path) -> None:
-    runtimes.to_csv(data_dir / 'runtimes.csv', index=False)
-    features.to_csv(data_dir / 'features.csv', index=False)
+def save_dataset(runtimes: pd.DataFrame, features: pd.DataFrame, dataset_name: str, data_dir: pathlib.Path) -> None:
+    runtimes.to_csv(data_dir / f'{dataset_name}_runtimes.csv', index=False)
+    features.to_csv(data_dir / f'{dataset_name}_features.csv', index=False)
 
 
 # Load runtimes and features. If "exclude_solved", delete instances (rows) where all solvers have
 # the penalty value.
-def load_dataset(data_dir: pathlib.Path, exclude_unsolved: bool = True) -> Tuple[pd.DataFrame, pd.DataFrame]:
-    runtimes = pd.read_csv(data_dir / 'runtimes.csv')
-    features = pd.read_csv(data_dir / 'features.csv')
+def load_dataset(dataset_name: str, data_dir: pathlib.Path, exclude_unsolved: bool = True) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    runtimes = pd.read_csv(data_dir / f'{dataset_name}_runtimes.csv')
+    features = pd.read_csv(data_dir / f'{dataset_name}_features.csv')
     assert (runtimes['hash'] == features['hash']).all()
     runtimes.drop(columns='hash', inplace=True)
     features.drop(columns='hash', inplace=True)
@@ -70,26 +70,28 @@ def load_dataset(data_dir: pathlib.Path, exclude_unsolved: bool = True) -> Tuple
 # Create file with runtimes and file with instance features. To that end, do some pre-processing.
 def transform_csvs_for_pipeline(data_dir: pathlib.Path) -> None:
     meta_db = pd.read_csv(data_dir / 'meta.csv')
-    hashes = meta_db.loc[meta_db['competition_track'].fillna('').str.contains('main_2020'), 'hash']
-
-    runtimes = pd.read_csv(data_dir / 'sc2020.csv').drop(columns=['tags', 'filename', 'local'])
-    runtimes = runtimes[runtimes['hash'].isin(hashes)].reset_index(drop=True)
-    runtimes.sort_values(by='hash', inplace=True)
-    numeric_cols = [x for x in runtimes.columns if x != 'hash']
-    runtimes[numeric_cols] = runtimes[numeric_cols].transform(pd.to_numeric, errors='coerce')
-    runtimes.fillna(value=PENALTY, inplace=True)
-
     gates_db = pd.read_csv(data_dir / 'gates.csv').drop(columns=['local', 'filename', 'tags', 'variables', 'clauses'])
-    gates_db = gates_db[gates_db['hash'].isin(hashes)].reset_index(drop=True)
     satzilla_db = pd.read_csv(data_dir / 'satzilla.csv').drop(columns=['local', 'filename', 'tags'])
-    satzilla_db = satzilla_db[satzilla_db['hash'].isin(hashes)].reset_index(drop=True)
-    features = satzilla_db.merge(gates_db, on='hash')
-    features.sort_values(by='hash', inplace=True)
-    assert (runtimes['hash'] == features['hash']).all()
-    numeric_cols = [x for x in features.columns if x != 'hash']
-    features[numeric_cols] = features[numeric_cols].transform(pd.to_numeric, errors='coerce')
 
-    save_dataset(runtimes=runtimes, features=features, data_dir=data_dir)
+    for year in [2020, 2021]:
+        hashes = meta_db.loc[meta_db['competition_track'].fillna('').str.contains(f'main_{year}'), 'hash']
+
+        runtimes = pd.read_csv(data_dir / f'sc{year}.csv').drop(columns=['tags', 'filename', 'local'])
+        runtimes = runtimes[runtimes['hash'].isin(hashes)].reset_index(drop=True)
+        runtimes.sort_values(by='hash', inplace=True)
+        numeric_cols = [x for x in runtimes.columns if x != 'hash']
+        runtimes[numeric_cols] = runtimes[numeric_cols].transform(pd.to_numeric, errors='coerce')
+        runtimes.fillna(value=PENALTY, inplace=True)
+
+        gates = gates_db[gates_db['hash'].isin(hashes)].reset_index(drop=True)
+        satzilla = satzilla_db[satzilla_db['hash'].isin(hashes)].reset_index(drop=True)
+        features = satzilla.merge(gates, on='hash')
+        features.sort_values(by='hash', inplace=True)
+        assert (runtimes['hash'] == features['hash']).all()
+        numeric_cols = [x for x in features.columns if x != 'hash']
+        features[numeric_cols] = features[numeric_cols].transform(pd.to_numeric, errors='coerce')
+
+        save_dataset(runtimes=runtimes, features=features, dataset_name=f'sc{year}', data_dir=data_dir)
 
 
 # Main routine: Download, pre-process, save.

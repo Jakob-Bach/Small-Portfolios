@@ -24,45 +24,44 @@ import search
 CV_FOLDS = 5
 
 
-# Define the different optimization problems.
-def define_problems(runtimes: pd.DataFrame) -> Dict[str, pd.DataFrame]:
-    assert runtimes.notna().all().all()  # search approaches don't consider NAs
-    return {'SC-2020': runtimes}
-
-
 # Create a list of search algorithms and their parametrization.
-def define_experimental_design() -> List[Dict[str, Any]]:
+# Adapt them to datasets given by "problems".
+def define_experimental_design(problems: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     results = []
-    for k in range(1, 49):
-        results.append({'func': 'random_search', 'args': {'k': k, 'w': 1000}})
-    for k in range(1, 49):
-        results.append({'func': 'mip_search', 'args': {'k': k}})
-    for w in list(range(1, 11)) + list(range(20, 101, 10)):
-        results.append({'func': 'beam_search', 'args': {'k': 48, 'w': w}})
-    results.append({'func': 'kbest_search', 'args': {'k': 48}})
-    for i, result in enumerate(results):
-        result['settings_id'] = i
+    for problem in problems:
+        max_k = problem['runtimes'].shape[1]
+        for k in range(1, max_k + 1):
+            results.append({'search_func': 'random_search', 'search_args': {'k': k, 'w': 1000}})
+        for k in range(1, max_k + 1):
+            results.append({'search_func': 'mip_search', 'search_args': {'k': k}})
+        for w in list(range(1, 11)) + list(range(20, 101, 10)):
+            results.append({'search_func': 'beam_search', 'search_args': {'k': max_k, 'w': w}})
+        results.append({'search_func': 'kbest_search', 'search_args': {'k': max_k}})
+        for i, result in enumerate(results):
+            result['settings_id'] = i
+            result.update(problem)
     return results
 
 
 # Conduct one (actually, more than one, due to cross-validation) portfolio search for a particular
 # dataset (runtimes and instance features): search for portfolios, make predictions, and compute
 # evaluation metrics.
-# - "search_settings" should contain the search function and their arguments.
-# - "problem_name" should identify the dataset.
+# - "problem_name" should identify the dataset; is just copied to output.
+# - "search_func" and "search_args" should allow a function call (see module "search").
+# - "settings_id" should identify the experimental run; is just copied to output.
 # - "runtimes" and "features" are the dataset (with features only being necessary for predictions,
 # not for search).
 # Return two data frames, one with search results and one with prediction results (can be joined).
-def search_and_evaluate(problem_name: str, runtimes: pd.DataFrame, features: pd.DataFrame,
-                        search_settings: Dict[str, Any]) -> Tuple[pd.DataFrame, pd.DataFrame]:
-    search_func = getattr(search, search_settings['func'])
+def search_and_evaluate(problem_name: str, search_func: str, search_args: Dict[str, Any],
+                        settings_id: int, runtimes: pd.DataFrame, features: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    search_func = getattr(search, search_func)
     splitter = sklearn.model_selection.KFold(n_splits=CV_FOLDS, shuffle=True, random_state=25)
     search_results = []
     prediction_results = []
     for fold_id, (train_idx, test_idx) in enumerate(splitter.split(X=runtimes)):
         runtimes_train = runtimes.iloc[train_idx]
         runtimes_test = runtimes.iloc[test_idx]
-        search_args = search_settings['args'].copy()
+        search_args = search_args.copy()
         search_args['runtimes'] = runtimes_train
         start_time = time.process_time()
         search_result = search_func(**search_args)  # returns list of tuples
@@ -96,13 +95,13 @@ def search_and_evaluate(problem_name: str, runtimes: pd.DataFrame, features: pd.
             prediction_result['fold_id'] = portfolio_result['fold_id']
             prediction_results.append(prediction_result)
     search_results = pd.concat(search_results)
-    search_results['settings_id'] = search_settings['settings_id']
+    search_results['settings_id'] = settings_id
     search_results['problem'] = problem_name
-    search_results['algorithm'] = search_settings['func']
-    for key, value in search_settings['args'].items():
+    search_results['algorithm'] = search_func
+    for key, value in search_args.items():
         search_results[key] = value
     prediction_results = pd.concat(prediction_results)
-    prediction_results['settings_id'] = search_settings['settings_id']
+    prediction_results['settings_id'] = settings_id
     prediction_results['problem'] = problem_name
     return search_results, prediction_results
 
@@ -116,16 +115,18 @@ def run_experiments(data_dir: pathlib.Path, results_dir: pathlib.Path, n_process
         results_dir.mkdir(parents=True)
     if any(results_dir.iterdir()):
         print('Results directory is not empty. Files might be overwritten, but not deleted.')
-    runtimes, features = prepare_dataset.load_dataset(data_dir=data_dir)
-    problems = define_problems(runtimes=runtimes)
-    settings_list = define_experimental_design()
+    problems = []
+    for year in [2020, 2021]:
+        problem_name = f'sc{year}'
+        runtimes, features = prepare_dataset.load_dataset(dataset_name=problem_name, data_dir=data_dir)
+        problems.append({'problem_name': problem_name, 'runtimes': runtimes, 'features': features})
+    settings_list = define_experimental_design(problems=problems)
     print('Running evaluation...')
-    progress_bar = tqdm.tqdm(total=len(settings_list) * len(problems))
+    progress_bar = tqdm.tqdm(total=len(settings_list))
     process_pool = multiprocessing.Pool(processes=n_processes)
-    results = [process_pool.apply_async(search_and_evaluate, kwds={
-        'problem_name': problem_name, 'runtimes': runtime_data, 'features': features,
-        'search_settings': settings}, callback=lambda x: progress_bar.update())
-        for problem_name, runtime_data in problems.items() for settings in settings_list]
+    results = [process_pool.apply_async(search_and_evaluate, kwds=settings,
+                                        callback=lambda x: progress_bar.update())
+               for settings in settings_list]
     process_pool.close()
     process_pool.join()
     progress_bar.close()

@@ -43,7 +43,6 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
 
     # Load runtimes, which we need for beam-search bounds and single-solver analysis
     runtimes, _ = prepare_dataset.load_dataset(data_dir=data_dir)
-    problems = run_experiments.define_problems(runtimes=runtimes)
 
     # Load prediction results
     prediction_results = pd.read_csv(results_dir / 'prediction_results.csv')
@@ -64,7 +63,7 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
     data = search_results.loc[(search_results['algorithm'] != 'beam_search') | (search_results['w'] == 1)]
     bound_data = data[data['algorithm'] == 'mip_search'].copy()
     bound_data['algorithm'] = 'upper_bound'
-    for problem in problems.keys():
+    for problem in data['problem'].unique():
         bound_data.loc[bound_data['problem'] == problem, 'train_objective'] =\
             bound_data.loc[bound_data['problem'] == problem, 'train_global_sws'] / math.e +\
                 (1 - 1 / math.e) * bound_data.loc[bound_data['problem'] == problem, 'train_objective']
@@ -156,7 +155,7 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
                           (search_results['k'] == k)].copy()
     for solver_name in runtimes.columns:
         data[solver_name] = data['solvers'].apply(lambda x: solver_name in x)  # is solver in portfolio?
-    for problem in problems.keys():
+    for problem in data['problem'].unique():
         print(f'- {problem}:')
         print(data.loc[data['problem'] == problem, runtimes.columns].corrwith(
             data.loc[data['problem'] == problem, 'train_objective'], method='spearman').describe().round(2))
