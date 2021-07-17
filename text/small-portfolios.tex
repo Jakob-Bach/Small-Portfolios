@@ -100,6 +100,7 @@ For the exact search, we encode the \emph{K-Portfolio Problem} as an integer opt
 We rely on two baselines, one deploying random sampling and the other one ranking by individual solvers' performances. %KB: Die zweite Baseline habe ich hier nicht verstanden.
 For the evaluation, we consider both the theoretically optimal performance of portfolios %KB: Was soll das 'theoretically' hier?
 as well as the performance if a prediction model makes instance-specific solver recommendations. %KB: Abhängig von k, oder was ist gemeint? -- Wie machen Sie es eigentlich? Nehmen Sie dann die k schnellsten Solver? Oder achten Sie auch (wie auch immer genau) darauf, dass diese Solver irgendwie unterschiedlich sind?
+We make all our code and data available online.
 
 \paragraph{Results}
 
@@ -375,7 +376,12 @@ Feature values which are missing due to the feature extractor having exceeded ti
 \subsection{Implementation}
 
 We implement our experimental design in Python and make our code available online\footnote{\url{https://github.com/Jakob-Bach/Small-Portfolios}}.
-To create the dataset of solver runtimes, we use the package~\emph{gbd-tools}~\cite{iser2020collaborative}.
+\todo{make repo public, adapt URL if necessary}
+The code also allows to download and prepare the datasets.
+Additionally, we publish the full experimental data, including results\footnote{\url{https://www.ipd.kit.edu/mitarbeiter/bach/k-portfolio-data.tar.gz}}.
+\todo{put data on server, adapt URL if necessary}
+
+To create the datasets, we use the package~\emph{gbd-tools}~\cite{iser2020collaborative}.
 For predictions, we use the package \emph{scikit-learn}~\cite{scikit-learn}.
 To solve the \emph{K-Portfolio Problem} exactly, we use the package \emph{mip}~\cite{python-mip}.
 
@@ -383,6 +389,7 @@ To solve the \emph{K-Portfolio Problem} exactly, we use the package \emph{mip}~\
 \label{sec:evaluation}
 
 \todo{update to removal of alternative objectives}
+\todo{update to SC 2021}
 
 In the following, we evaluate the performance of the exact and approximate solutions to the \emph{K-Portfolio Problem}. 
 We subsequently relate the performance of such optimal $k$-portfolios to the performance of an actual prediction model for instance-specific solver selection. 
@@ -560,8 +567,6 @@ On average, prediction models use 106 features.
 If we limit our analysis to random forests with just one tree, the models still use 52 features on average.
 In conclusion, no single feature or even small set of features drives prediction performance.
 Considering the low prediction performance, this indicates that our dataset lacks discriminating features which are suitable to decide which solver should be used on an instance.
-
-\todo{get rid of alternate objective functions (PAR-2 Norm and Unsolved) as in this context we cannot learn anything more from them}
 
 \todo{evaluate prediction performance also for the optimal k-portfolios}
 
