@@ -70,10 +70,14 @@ def search_and_evaluate(problem_name: str, runtimes: pd.DataFrame, features: pd.
         search_result = pd.DataFrame(search_result, columns=['solvers', 'train_objective'])
         search_result['test_objective'] = search_result['solvers'].apply(
             lambda x: runtimes_test[x].min(axis='columns').mean())
-        search_result['train_vbs'] = runtimes_train.min(axis='columns').mean()
-        search_result['test_vbs'] = runtimes_test.min(axis='columns').mean()
-        search_result['train_vws'] = runtimes_train.max(axis='columns').mean()
-        search_result['test_vws'] = runtimes_test.max(axis='columns').mean()
+        search_result['train_portfolio_vws'] = search_result['solvers'].apply(
+            lambda x: runtimes_train[x].max(axis='columns').mean())
+        search_result['test_portfolio_vws'] = search_result['solvers'].apply(
+            lambda x: runtimes_test[x].max(axis='columns').mean())
+        search_result['train_global_vbs'] = runtimes_train.min(axis='columns').mean()
+        search_result['test_global_vbs'] = runtimes_test.min(axis='columns').mean()
+        search_result['train_global_vws'] = runtimes_train.max(axis='columns').mean()
+        search_result['test_global_vws'] = runtimes_test.max(axis='columns').mean()
         search_result['search_time'] = end_time - start_time
         search_result['solution_id'] = np.arange(len(search_result))  # there might be multiple results per search
         search_result['fold_id'] = fold_id

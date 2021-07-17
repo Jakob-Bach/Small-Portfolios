@@ -66,10 +66,10 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
     bound_data['algorithm'] = 'upper_bound'
     for problem in problems.keys():
         bound_data.loc[bound_data['problem'] == problem, 'train_objective'] =\
-            bound_data.loc[bound_data['problem'] == problem, 'train_vws'] / math.e +\
+            bound_data.loc[bound_data['problem'] == problem, 'train_global_vws'] / math.e +\
                 (1 - 1 / math.e) * bound_data.loc[bound_data['problem'] == problem, 'train_objective']
         bound_data.loc[bound_data['problem'] == problem, 'test_objective'] =\
-            bound_data.loc[bound_data['problem'] == problem, 'test_vws'] / math.e +\
+            bound_data.loc[bound_data['problem'] == problem, 'test_global_vws'] / math.e +\
                 (1 - 1 / math.e) * bound_data.loc[bound_data['problem'] == problem, 'test_objective']
     data = pd.concat([data, bound_data]).reset_index(drop=True)
     data['k_objective_frac'] = data.groupby(['problem', 'k', 'fold_id'])['train_objective'].apply(lambda x: x / x.min())
