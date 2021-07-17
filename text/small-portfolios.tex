@@ -410,8 +410,6 @@ This indicates that combing solvers in portfolios can improve overall runtime.
 	\caption{
 		Portfolio performance for different $k$ and search algorithms for objective \emph{PAR-2}.
 		Optimized on training set (left), evaluated on test set (right). 
-		\todo{use log-scale for y-axis}
-		\todo{add beam search results for w=100}
 	}
 \label{fig:search-train-objective}
 \end{figure*}
@@ -505,6 +503,7 @@ We also evaluate the actual performance of the resulting portfolios in terms of 
 	\caption{
 		Test-set MCC for \emph{random sampling} portfolios, using random forests with 100 trees.
 		(MCC is 0 for random or constant prediction and it is 1 for perfect prediction.)
+		For readability reasons, we do not plot outlier points.
 	}
 	\label{fig:prediction-test-mcc}
 \end{figure}

@@ -75,12 +75,25 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
     data['k_objective_frac'] = data.groupby(['problem', 'k', 'fold_id'])['train_objective'].apply(lambda x: x / x.min())
     data['k_objective_diff'] = data.groupby(['problem', 'k', 'fold_id'])['train_objective'].apply(lambda x: x - x.min())
     data['objective_frac'] = data.groupby(['problem', 'fold_id'])['train_objective'].apply(lambda x: x / x.min())
+    plot_data = data.groupby(['problem', 'algorithm', 'k'])[['train_objective', 'test_objective']].mean().reset_index()
+    plot_data['algorithm'] = plot_data['algorithm'].replace({
+        'random_search': 'Random sampling', 'mip_search': 'Optimal solution',
+        'beam_search': 'Greedy search', 'kbest_search': 'K-best', 'upper_bound': 'Upper bound'})
+    plot_data.rename(columns={'algorithm': 'Solution approach', 'k': 'Portfolio size $k$'}, inplace=True)
     plt.figure(figsize=(4, 3))
-    sns.lineplot(x='k', y='train_objective', hue='algorithm', data=data[data['problem'] == 'PAR2'], ci=None)
+    sns.lineplot(x='Portfolio size $k$', y='train_objective',
+                 hue='Solution approach', style='Solution approach',
+                 data=plot_data[plot_data['problem'] == 'PAR2'], palette='Set1')
+    plt.ylabel('PAR-2 score')
+    plt.legend(edgecolor='white', loc='center right', framealpha=0, bbox_to_anchor=(1, 0.4))
     plt.tight_layout()
     plt.savefig(plot_dir / 'search-train-objective-PAR2.pdf')
     plt.figure(figsize=(4, 3))
-    sns.lineplot(x='k', y='test_objective', hue='algorithm', data=data[data['problem'] == 'PAR2'], ci=None)
+    sns.lineplot(x='Portfolio size $k$', y='test_objective',
+                 hue='Solution approach', style='Solution approach',
+                 data=plot_data[plot_data['problem'] == 'PAR2'], palette='Set1')
+    plt.ylabel('PAR-2 score')
+    plt.legend(edgecolor='white', loc='center right', framealpha=0, bbox_to_anchor=(1, 0.4))
     plt.tight_layout()
     plt.savefig(plot_dir / 'search-test-objective-PAR2.pdf')
 
@@ -158,8 +171,14 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
                     (data['n_estimators'] == 100), ['problem', 'k', 'solution_id', 'test_pred_mcc']]
     # Aggregate over cross-validation folds:
     data = data.groupby(['problem', 'k', 'solution_id']).mean().reset_index().drop(columns='solution_id')
+    data['problem'] = data['problem'].replace({'PAR2': 'PAR-2', 'PAR2_norm': 'PAR-2_norm'})
+    data.rename(columns={'problem': 'Objective', 'k': 'Portfolio size $k$',
+                         'test_pred_mcc': 'Test-set MCC'}, inplace=True)
     plt.figure(figsize=(4, 3))
-    sns.boxplot(x='k', y='test_pred_mcc', hue='problem', fliersize=0, data=data)
+    sns.boxplot(x='Portfolio size $k$', y='Test-set MCC', hue='Objective', fliersize=0, data=data,
+                palette='Set2')
+    plt.ylim(-0.1, 1)
+    plt.legend(edgecolor='white')
     plt.tight_layout()
     plt.savefig(plot_dir / 'prediction-test-mcc.pdf')
 
@@ -183,13 +202,21 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
     # go over mutliple values of k):
     data = data.groupby(['problem', 'solution_id']).mean().reset_index().drop(columns='solution_id')
     data = data.melt(id_vars=['problem', 'k'], value_vars=plot_vars,
-                     var_name='score', value_name='objective')
+                     var_name='Approach', value_name='objective')
+    data['Approach'] = data['Approach'].replace({'test_pred_objective': 'Prediction', 'test_objective': 'VBS'})
+    data.rename(columns={'k': 'Portfolio size $k$'}, inplace=True)
     plt.figure(figsize=(4, 3))
-    sns.boxplot(x='k', y='objective', hue='score', data=data[data['problem'] == 'PAR2'])
+    sns.boxplot(x='Portfolio size $k$', y='objective', hue='Approach',
+                data=data[data['problem'] == 'PAR2'], palette='Set2')
+    plt.ylabel('PAR-2 score')
+    plt.legend(edgecolor='white', loc='center right', framealpha=0, bbox_to_anchor=(1, 0.45))
     plt.tight_layout()
     plt.savefig(plot_dir / 'prediction-test-objective-PAR2.pdf')
     plt.figure(figsize=(4, 3))
-    sns.boxplot(x='k', y='objective', hue='score', data=data[data['problem'] == 'Unsolved'])
+    sns.boxplot(x='Portfolio size $k$', y='objective', hue='Approach',
+                data=data[data['problem'] == 'Unsolved'], palette='Set2')
+    plt.ylabel('Fraction of unsolved instances')
+    plt.legend(edgecolor='white', loc='center right', framealpha=0, bbox_to_anchor=(1, 0.45))
     plt.tight_layout()
     plt.savefig(plot_dir / 'prediction-test-objective-unsolved.pdf')
 
