@@ -68,38 +68,54 @@ SAT solving is the archetypal NP-complete problem. It has lots of practical appl
 Today, SAT solvers are not only used to solve hard combinatorial problems in industry but also to solve previously open problems in mathematics~\cite{Heule:2016:Pyth,Heule:2018:Schur}. 
 
 One can observe continuous progress in SAT solving methods, heuristics, and their implementations in SAT solvers. 
-The SAT Competition series, which is organized yearly as an international open event, aims to support and provide further incentives for maintaining this progress~\cite{balyo2020proceedings}. %KB: Ich halte den Satz hier für unpassend. Es sollte rein inhaltlich argumentiert werden.
-
 Solvers are usually evaluated based on compilations of benchmark instances representing diverse interesting application scenarios of SAT solvers. 
 Researchers who propose new SAT solvers tend to strive for \emph{stable} SAT solvers, i.e., with a good overall performance on many types of instances. 
-At the same time, new heuristics and methods which contribute to the performance on only a narrow subset of instances continue to emerge. 
-This diversity has motivated \emph{portfolios}, which are sets of SAT solvers.
-One can define the runtime of a portfolio on an instance as the runtime of the fastest solver from the portfolio. %KB: Vielleicht "It is common and plausible to define the runtime ..."
-In that regard, a special innovation price was given to a solver based on its contributions to the best portfolio in the SAT Competition 2021\footnote{\url{https://satcompetition.github.io/2021/}}. %KB: Das ist auch keine inhaltliche Aussage, ich würde Derartiges weglassen. Es entsteht auch der Eindruck, dass Portfolios reif, etabliert usw. seien. Das passt aber nicht zu Ihrem Pitch.
-Solver portfolios can also be used in combination with runtime prediction models for instance-specific algorithm selection~\cite{xu2008satzilla}. %KB: Wieso brauche ich dafür Portfolios? Diese Art Vorhersage kann ich vermutlich mit kleinem Aufwand für viele (fast alle) Solver machen, oder nicht? Und dann weiter: Könnte ich nicht, basierend auf diesen Vorhersagen, 'on the fly' ein Portfolio für ein bestimmtes Problem zusammenstellen?
+
+Additionally, one can regularly observe the emergence of new heuristics which contribute to the performance on only a narrow subset of instances. 
+Such approaches can be seen as ``complementary'' to the best average solvers. 
+In order to highlight such ``insular'' progress, one can evaluate solvers on projections of the instance set, e.g., under projection to a certain family of instances. 
+Another possiblity to capture this kind of progress is to consider the marginal contributions of solvers to the performance of a solver portfolio. 
+
+It has been shown in the past, that combining several SAT solvers with a complex solver selection process which also involves runtime prediction models can considerably outperform single best solvers~\cite{xu2008satzilla}. 
+Such complex portfolios usually lack of explainability of their performance gains. 
+Moreover, they compete with the ongoing and considerable performance gains through research on singular solvers. 
+
+%This diversity has motivated \emph{portfolios}, which are sets of SAT solvers.
+%One can define the runtime of a portfolio on an instance as the runtime of the fastest solver from the portfolio. %KB: Vielleicht "It is common and plausible to define the runtime ..."
+%Solver portfolios can also be used in combination with runtime prediction models for instance-specific algorithm selection. %KB: Wieso brauche ich dafür Portfolios? Diese Art Vorhersage kann ich vermutlich mit kleinem Aufwand für viele (fast alle) Solver machen, oder nicht? Und dann weiter: Könnte ich nicht, basierend auf diesen Vorhersagen, 'on the fly' ein Portfolio für ein bestimmtes Problem zusammenstellen?
 %KB: Anscheinend funktioniert das noch nicht optimal, sonst würden Sie es in der Studie nicht aufgreifen. Hier sollte gesagt werden, was also unklar ist, und warum es wichtig ist, das zu klären.
 %KB: Hier fehlt ein Satz, dass das Konzept zwar im Raum steht, dass aber nicht genügend darüber bekannt ist, wie Portfolios also wirken (in quantitativer Hinsicht). (Ist doch so, oder? Sonst bedürfte es Ihrer Studie ja nicht.)
 
 \paragraph{Problem Statement}
 
-In this paper, we study $k$-portfolios of SAT solvers, i.e., portfolios composed of $k$ SAT solvers.
-In particular, we analyze the impact of the portfolio size $k$ on portfolio performance.
-We want to find out whether portfolios with just a few solvers are already sufficient to achieve a good solving performance. %KB: Hier sollte die Reihenfolge der Aussagen vertauscht sein. Zuerst das hier sagen, dann das, was gemacht wird.
+SAT solving is a very active area of research such that complex handcrafted portfolios can be quickly outdated and lack to capture the state-of-the-art. 
+We want to find out how much portfolios with just a few state-of-the-art solvers are already sufficient to improve solving performance. 
+In particular, we study $k$-portfolios of SAT solvers, i.e., portfolios composed of exactly $k$ SAT solvers, and systematically analyze the impact of the portfolio size $k$ on portfolio performance. 
+
+Determination of the optimal, i.e., best performing, porfolio of size $k$ in a given set of $n$ solvers is an NP-hard optimization problem such that exhaustive search quickly becomes infeasible. 
+Thus, we analyze the quality of approximate solutions to that problem w.r.t. to exact solutions. 
+
+The good theoretical performance of the such determined $k$-portfolios does not necessarily imply a good performance in combination with a runtime prediction model. 
+With increasing $k$, solvers in portfolio are much harder to discriminate. 
+
+%KB: Hier sollte die Reihenfolge der Aussagen vertauscht sein. Zuerst das hier sagen, dann das, was gemacht wird.
 %KB: Hier fehlt mir auch etwas Eindringlichkeit. Warum ist es wichtig, darüber Bescheid zu wissen, wie das k sich auswirkt?
 %KB: Gibt es noch weitere Antworten, die die Studie gibt? Das würde ich hier dann als Frage(n) formulieren. Nur diese eine Frage wirkt ein bisschen mickrig.
 %KB: So, wie es derzeit geschrieben ist, entsteht ein bisschen der Eindruck, dass die Studie in ihrer Durchführung höchst einfach war. Ein paar Sätze, mit welchen Schwierigkeiten Sie zu kämpfen hatten, würden sich hier gut machen, denke ich.
 
 \paragraph{Contributions}
 
-We empirically analyze the performance of $k$-portfolios on runtime data from the SAT Competitions 2020 and 2021, featuring 48 and 46 solvers, respectively.
-In our experiments, we compare all possible portfolio sizes $k$. 
+We empirically analyze the performance of $k$-portfolios on the two datasets \texttt{SC2020} and \texttt{SC2021}. 
+While \texttt{SC2020} consists of runtime data for 48~solvers and 400~instances from the SAT Competition~2020, \texttt{SC2021} consists of runtime data for 46~solvers and 400~instances from the SAT Competition~2021. 
+In our experiments, we compare possible portfolio sizes $k$. 
 For approximate determination of optimal portfolios with size $k$, we apply \emph{beam search} with varying beam widths. %KB: Was bedeutet 'optimal portfolio' eigentlich? Bitte explizit sagen.
 We compare the quality of such approximations to the results of an exact search.
 For the exact search, we encode the \emph{K-Portfolio Problem} as an integer optimization problem. 
 
-We rely on two baselines, one deploying random sampling and the other one ranking by individual solvers' performances. %KB: Die zweite Baseline habe ich hier nicht verstanden.
-For the evaluation, we consider both the theoretically optimal performance of portfolios %KB: Was soll das 'theoretically' hier?
+Exact solutions to the \emph{K-Portfolio Problem} are optimal in the sense that if we always pick for each instance the fastest solver in the optimal $k$-portfolio it outperforms all other $k$-porfolios that can be drawn from the given $n$ solvers. 
+For the evaluation of our approach, for all $k$, we consider both the theoretically optimal performance of portfolios %KB: Was soll das 'theoretically' hier?
 as well as the performance if a prediction model makes instance-specific solver recommendations. %KB: Abhängig von k, oder was ist gemeint? -- Wie machen Sie es eigentlich? Nehmen Sie dann die k schnellsten Solver? Oder achten Sie auch (wie auch immer genau) darauf, dass diese Solver irgendwie unterschiedlich sind?
+We rely on two baselines, one that randomly samples $k$ solvers, and and another one that selects the $k$ fastest individual solvers. %KB: Die zweite Baseline habe ich hier nicht verstanden.
 We make all our code and data available online.
 
 \paragraph{Results}
