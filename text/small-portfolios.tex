@@ -343,6 +343,11 @@ As models, we use random forests~\cite{breiman2001random}, which are ensembles o
 Preliminary experiments with single decision trees~\cite{breiman1984classification} of different depths yielded worse prediction performance. 
 Random forests are also used in the well-known portfolio approach SATzilla2012~\cite{xu2012satzilla2012}. 
 To analyze if prediction performance improves due to ensembling, we train models with one, ten, and 100 trees.
+The prediction approach in SATzilla2012 has two major differences from ours:
+First, it trains a classifier for each pair of solvers in the portfolio, while we only train one classifier, making a multi-class prediction.
+Second, it weights instances based on the runtime difference between solvers, while we go for an unweighted approach.
+However, both these changes did not help to improve prediction performance in preliminary experiments of us, so we opt for the simpler approach instead.
+
 We evaluate prediction performance in two ways:
 
 \begin{itemize}
