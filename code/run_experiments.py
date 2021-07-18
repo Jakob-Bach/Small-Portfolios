@@ -53,16 +53,14 @@ def define_experimental_design(problems: List[Dict[str, Any]]) -> List[Dict[str,
 # Return two data frames, one with search results and one with prediction results (can be joined).
 def search_and_evaluate(problem_name: str, search_func: str, search_args: Dict[str, Any],
                         settings_id: int, runtimes: pd.DataFrame, features: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame]:
-    search_func = getattr(search, search_func)
     splitter = sklearn.model_selection.KFold(n_splits=CV_FOLDS, shuffle=True, random_state=25)
     search_results = []
     prediction_results = []
     for fold_id, (train_idx, test_idx) in enumerate(splitter.split(X=runtimes)):
         runtimes_train = runtimes.iloc[train_idx]
         runtimes_test = runtimes.iloc[test_idx]
-        search_args['runtimes'] = runtimes_train
         start_time = time.process_time()
-        search_result = search_func(**search_args)  # returns list of tuples
+        search_result = getattr(search, search_func)({**search_args, 'runtimes': runtimes_train})  # returns list of tuples
         end_time = time.process_time()
         search_result = pd.DataFrame(search_result, columns=['solvers', 'train_objective'])
         search_result['test_objective'] = search_result['solvers'].apply(
@@ -96,7 +94,6 @@ def search_and_evaluate(problem_name: str, search_func: str, search_args: Dict[s
     search_results['settings_id'] = settings_id
     search_results['problem'] = problem_name
     search_results['algorithm'] = search_func
-    del search_args['runtimes']
     for key, value in search_args.items():
         search_results[key] = value
     prediction_results = pd.concat(prediction_results)
