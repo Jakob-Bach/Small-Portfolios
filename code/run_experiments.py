@@ -42,6 +42,31 @@ def define_experimental_design(problems: List[Dict[str, Any]]) -> List[Dict[str,
     return results
 
 
+# Add several types of aggregate single-solver runtimes and portfolio runtimes to a "search_result",
+# which should contain the portfolios in column "solvers". These aggregate runtimes help for
+# evaluating the portfolio performance; the search function itself only returns the VBS performance
+# on the training set.
+# This function modifies "search_result" in-place.
+def add_portfolio_performance(search_result: pd.DataFrame, runtimes_train: pd.DataFrame,
+                              runtimes_test: pd.DataFrame) -> None:
+    search_result['test_objective'] = search_result['solvers'].apply(
+            lambda x: runtimes_test[x].min(axis='columns').mean())  # test set VBS
+    search_result['train_portfolio_vws'] = search_result['solvers'].apply(
+        lambda x: runtimes_train[x].max(axis='columns').mean())  # lower bound for model-based portfolio
+    search_result['test_portfolio_vws'] = search_result['solvers'].apply(
+        lambda x: runtimes_test[x].max(axis='columns').mean())
+    search_result['train_portfolio_sbs'] = search_result['solvers'].apply(
+        lambda x: runtimes_train[x].mean().min())  # baseline for model-based portfolio
+    search_result['test_portfolio_sbs'] = search_result['solvers'].apply(
+        lambda x: runtimes_test[x].mean().min())
+    search_result['train_portfolio_sws'] = search_result['solvers'].apply(
+        lambda x: runtimes_train[x].mean().max())  # baseline for model-based portfolio
+    search_result['test_portfolio_sws'] = search_result['solvers'].apply(
+        lambda x: runtimes_test[x].mean().max())
+    search_result['train_global_sws'] = runtimes_train.mean().max()  # for submodularity bounds
+    search_result['test_global_sws'] = runtimes_test.mean().max()
+
+
 # Conduct one (actually, more than one, due to cross-validation) portfolio search for a particular
 # dataset (runtimes and instance features): search for portfolios, make predictions, and compute
 # evaluation metrics.
@@ -63,18 +88,8 @@ def search_and_evaluate(problem_name: str, search_func: str, search_args: Dict[s
         search_result = getattr(search, search_func)({**search_args, 'runtimes': runtimes_train})  # returns list of tuples
         end_time = time.process_time()
         search_result = pd.DataFrame(search_result, columns=['solvers', 'train_objective'])
-        search_result['test_objective'] = search_result['solvers'].apply(
-            lambda x: runtimes_test[x].min(axis='columns').mean())
-        search_result['train_portfolio_vws'] = search_result['solvers'].apply(  # lower bound for model-based portfolio
-            lambda x: runtimes_train[x].max(axis='columns').mean())
-        search_result['test_portfolio_vws'] = search_result['solvers'].apply(
-            lambda x: runtimes_test[x].max(axis='columns').mean())
-        search_result['train_portfolio_sws'] = search_result['solvers'].apply(  # baseline for model-based portfolio
-            lambda x: runtimes_train[x].mean().max())
-        search_result['test_portfolio_sws'] = search_result['solvers'].apply(
-            lambda x: runtimes_test[x].mean().max())
-        search_result['train_global_sws'] = runtimes_train.mean().max()  # for submodularity bounds
-        search_result['test_global_sws'] = runtimes_test.mean().max()
+        add_portfolio_performance(search_result=search_result, runtimes_train=runtimes_train,
+                                  runtimes_test=runtimes_test)
         search_result['search_time'] = end_time - start_time
         search_result['solution_id'] = np.arange(len(search_result))  # there might be multiple results per search
         search_result['fold_id'] = fold_id
