@@ -16,7 +16,6 @@ import pandas as pd
 import seaborn as sns
 
 import prepare_dataset
-import run_experiments
 
 
 plt.rcParams['font.family'] = 'Helvetica'  # IEEE template's sans-serif font
@@ -42,7 +41,8 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
         search_results.loc[search_results['algorithm'] == 'kbest_search', 'solvers'].transform(len)
 
     # Load runtimes, which we need for beam-search bounds and single-solver analysis
-    runtimes, _ = prepare_dataset.load_dataset(data_dir=data_dir)
+    runtimes2020, _ = prepare_dataset.load_dataset(dataset_name='sc2020', data_dir=data_dir)
+    runtimes2021, _ = prepare_dataset.load_dataset(dataset_name='sc2021', data_dir=data_dir)
 
     # Load prediction results
     prediction_results = pd.read_csv(results_dir / 'prediction_results.csv')
@@ -52,14 +52,14 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
 
     # ----Performance of Single Solvers----
 
-    print('How often is a solver fastest?')
-    print(runtimes.idxmin(axis='columns').value_counts())
-    print('How many instances does each solver *not* solve?')
-    print((runtimes == prepare_dataset.PENALTY).sum(axis='rows').sort_values())
+    print('How often is a solver fastest in SC2020?')
+    print(runtimes2020.idxmin(axis='columns').value_counts())
+    print('How often is a solver fastest in SC2021?')
+    print(runtimes2021.idxmin(axis='columns').value_counts())
 
-    # ----Objective Value of Portfolios----
+    # ----Overall Trend / Test-Set Performance----
 
-    # Figure 2: Performance of search approaches over k (Figure 1 is pseudo-code, not created here)
+    # Figures 2 and 3: Performance of search approaches over k (Figure 1 is pseudo-code, not created here)
     data = search_results.loc[(search_results['algorithm'] != 'beam_search') | (search_results['w'] == 1)]
     bound_data = data[data['algorithm'] == 'mip_search'].copy()
     bound_data['algorithm'] = 'upper_bound'
@@ -72,105 +72,107 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
                 (1 - 1 / math.e) * bound_data.loc[bound_data['problem'] == problem, 'test_objective']
     data = pd.concat([data, bound_data]).reset_index(drop=True)
     data['k_objective_frac'] = data.groupby(['problem', 'k', 'fold_id'])['train_objective'].apply(lambda x: x / x.min())
-    data['k_objective_diff'] = data.groupby(['problem', 'k', 'fold_id'])['train_objective'].apply(lambda x: x - x.min())
     data['objective_frac'] = data.groupby(['problem', 'fold_id'])['train_objective'].apply(lambda x: x / x.min())
     plot_data = data.groupby(['problem', 'algorithm', 'k'])[['train_objective', 'test_objective']].mean().reset_index()
     plot_data['algorithm'] = plot_data['algorithm'].replace({
         'random_search': 'Random sampling', 'mip_search': 'Optimal solution',
         'beam_search': 'Greedy search', 'kbest_search': 'K-best', 'upper_bound': 'Upper bound'})
     plot_data.rename(columns={'algorithm': 'Solution approach', 'k': 'Portfolio size $k$'}, inplace=True)
+    # Figure 2 (a)
     plt.figure(figsize=(4, 3))
     sns.lineplot(x='Portfolio size $k$', y='train_objective',
                  hue='Solution approach', style='Solution approach',
-                 data=plot_data[plot_data['problem'] == 'PAR2'], palette='Set1')
+                 data=plot_data[plot_data['problem'] == 'sc2020'], palette='Set1')
     plt.ylabel('PAR-2 score')
     plt.legend(edgecolor='white', loc='center right', framealpha=0, bbox_to_anchor=(1, 0.4))
     plt.tight_layout()
-    plt.savefig(plot_dir / 'search-train-objective-PAR2.pdf')
+    plt.savefig(plot_dir / 'search-train-objective-2020.pdf')
+    # Figure 2 (b)
+    plt.figure(figsize=(4, 3))
+    sns.lineplot(x='Portfolio size $k$', y='train_objective',
+                 hue='Solution approach', style='Solution approach',
+                 data=plot_data[plot_data['problem'] == 'sc2021'], palette='Set1')
+    plt.ylabel('PAR-2 score')
+    plt.legend(edgecolor='white', loc='center right', framealpha=0, bbox_to_anchor=(1, 0.4))
+    plt.tight_layout()
+    plt.savefig(plot_dir / 'search-train-objective-2021.pdf')
+    # Figure 3
     plt.figure(figsize=(4, 3))
     sns.lineplot(x='Portfolio size $k$', y='test_objective',
                  hue='Solution approach', style='Solution approach',
-                 data=plot_data[plot_data['problem'] == 'PAR2'], palette='Set1')
+                 data=plot_data[plot_data['problem'] == 'sc2020'], palette='Set1')
     plt.ylabel('PAR-2 score')
     plt.legend(edgecolor='white', loc='center right', framealpha=0, bbox_to_anchor=(1, 0.4))
     plt.tight_layout()
-    plt.savefig(plot_dir / 'search-test-objective-PAR2.pdf')
+    plt.savefig(plot_dir / 'search-test-objective-2020.pdf')
 
     print('Ratio of PAR2 between best k-portfolio and best portfolio of all solvers:')
-    print(data.loc[(data['problem'] == 'PAR2') & (data['algorithm'] == 'mip_search'),
-                   ['k', 'objective_frac']].groupby('k').mean().round(2))  # mean over folds
-    print('Which fraction of instances remains unsolved in best k-portfolio?')
-    print(data.loc[(data['problem'] == 'Unsolved') & (data['algorithm'] == 'mip_search'),
-                   ['k', 'train_objective']].groupby('k').mean())  # mean over folds
+    print(data.loc[data['algorithm'] == 'mip_search',  ['problem', 'k', 'objective_frac']].groupby(
+        ['problem', 'k']).mean().reset_index().pivot(index='k', columns='problem').round(2))  # mean over folds
+
+    # ----Beam Search----
+
     print('Ratio of PAR2 value between greedy-search/k-best and exact solution:')
-    print(data.loc[(data['problem'] == 'PAR2') & (data['algorithm'].isin(['beam_search', 'kbest_search']))].groupby(
-        ['algorithm', 'k'])['k_objective_frac'].mean().reset_index().pivot(index='k', columns='algorithm').round(3))
-    print('Difference in fraction of unsolved instances between greedy-search/k-best and exact solution:')
-    print(data.loc[(data['problem'] == 'Unsolved') & (data['algorithm'].isin(['beam_search', 'kbest_search']))].groupby(
-        ['algorithm', 'k'])['k_objective_diff'].mean().reset_index().pivot(index='k', columns='algorithm').round(3))
+    print(data.loc[data['algorithm'] == 'beam_search', ['problem', 'k', 'k_objective_frac']].groupby(
+        ['problem', 'k']).mean().reset_index().pivot(index='k', columns='problem').round(3))
 
     w = 10
     data = search_results[(search_results['algorithm'] == 'mip_search') |
                           ((search_results['algorithm'] == 'beam_search') & (search_results['w'] == w))].copy()
     data['k_objective_frac'] = data.groupby(['problem', 'k', 'fold_id'])['train_objective'].apply(lambda x: x / x.min())
-    data['k_objective_diff'] = data.groupby(['problem', 'k', 'fold_id'])['train_objective'].apply(lambda x: x - x.min())
     print(f'Ratio of PAR2 value between best {w=} beam-search-portfolio and exact solution:')
-    print(data.loc[(data['problem'] == 'PAR2') & (data['algorithm'] == 'beam_search')].groupby(
-        ['k', 'fold_id'])['k_objective_frac'].min().groupby('k').mean().round(3))  # mean over folds
-    print(f'Difference in unsolved instances between best {w=} beam-search-portfolio and exact solution:')
-    print(data.loc[(data['problem'] == 'Unsolved') & (data['algorithm'] == 'beam_search')].groupby(
-        ['k', 'fold_id'])['k_objective_diff'].min().groupby('k').mean().round(4))  # mean over folds
+    # Need to pick optimal portfolio (min out of w portfolios) for each k first, then average over folds
+    print(data.loc[data['algorithm'] == 'beam_search', ['problem', 'k', 'fold_id', 'k_objective_frac']].groupby(
+        ['problem', 'k', 'fold_id'])['k_objective_frac'].min().groupby(['problem', 'k']).mean(
+            ).reset_index().pivot(index='k', columns='problem').round(3))
+
     print(f'Standard deviation of objective value of top {w=} portfolios in beam search:')
-    print(data[data['k'] <= 10].groupby(['problem', 'k'])['train_objective'].std().round(3))
+    print(data.loc[data['algorithm'] == 'beam_search'].groupby(['problem', 'k'])['train_objective'].std(
+        ).reset_index().pivot(index='k', columns='problem').round(2))
+
     print('Standard deviation of objective value for random search:')
     data = search_results[search_results['algorithm'] == 'random_search']
     print(data.groupby(['problem', 'k'])['train_objective'].std().reset_index().pivot(
         columns='problem', index='k').round(2))
 
-    # ----Solvers in Portfolio----
+    # ----Portfolio Composition----
 
-    print('How many solver changes are there from k-1 to k in exact search?')
     data = search_results[search_results['algorithm'] == 'mip_search'].copy()
     data['prev_solvers'] = data.groupby(['problem', 'fold_id'])['solvers'].shift().fillna('').apply(list)
     data['solvers_added'] = data.apply(lambda x: len(set(x['solvers']) - set(x['prev_solvers'])), axis='columns')
     data['solvers_deleted'] = data.apply(lambda x: len(set(x['prev_solvers']) - set(x['solvers'])), axis='columns')
-    data['solver_changes'] = data['solvers_added'] + data['solvers_deleted']
-    print(data.loc[data['k'] <= 10].groupby(['problem', 'k'])[['solvers_added', 'solvers_deleted', 'solver_changes']].mean())
 
-    w = 100
-    print(f'Frequency of the respective most frequent solver in the top {w=} portfolios in beam search:')
-    data = search_results[(search_results['algorithm'] == 'beam_search') & (search_results['w'] == w)].copy()
-    # Need to take care of solvers which do not appear in any portfolio; add them to data by re-indexing:
-    data = data[['problem', 'solvers', 'k']].explode('solvers').value_counts()
-    new_index = pd.MultiIndex.from_product(
-        [data.index.get_level_values('problem').unique(), runtimes.columns, range(1, 49)],
-        names=['problem', 'solvers', 'k'])
-    data = data.reindex(new_index).reset_index().rename(columns={0: 'occurrence'}).fillna(0)
-    data['occurrence'] = data.groupby(['problem', 'k'])['occurrence'].transform(lambda x: x / x.sum())
-    print(data[data['k'] <= 20].groupby(['problem', 'k'])['occurrence'].max().round(3))
+    print('How many solver changes are there from k-1 to k in exact search?')
+    print(data.loc[data['k'] <= 20].groupby(['problem', 'k'])[
+        ['solvers_added', 'solvers_deleted']].mean())
+
+    print('How many solver changes are there from k-1 to k in exact search, aggregating over k?')
+    print(data.groupby('problem')[['solvers_added', 'solvers_deleted']].describe().transpose())
+
+    # ----Impact of single solvers on Portfolios----
 
     k = 5
     print(f'How is solver occurrence in random {k=}-portfolio correlated to objective value?')
-    data = search_results[(search_results['algorithm'] == 'random_search') &
-                          (search_results['k'] == k)].copy()
-    for solver_name in runtimes.columns:
-        data[solver_name] = data['solvers'].apply(lambda x: solver_name in x)  # is solver in portfolio?
-    for problem in data['problem'].unique():
+    for problem, problem_runtimes in zip(['sc2020', 'sc2021'], [runtimes2020, runtimes2021]):
+        data = search_results[(search_results['problem'] == problem) &
+                              (search_results['algorithm'] == 'random_search') & (search_results['k'] == k)].copy()
+        for solver_name in problem_runtimes.columns:
+            data[solver_name] = data['solvers'].apply(lambda x: solver_name in x)  # is solver in portfolio?
         print(f'- {problem}:')
-        print(data.loc[data['problem'] == problem, runtimes.columns].corrwith(
-            data.loc[data['problem'] == problem, 'train_objective'], method='spearman').describe().round(2))
+        print(data[problem_runtimes.columns].corrwith(data['train_objective'], method='spearman').describe().round(2))
 
     # ------Prediction Results------
 
     # ----MCC----
 
-    # Figure 3: MCC for random portfolios per k
+    # Figure 4: MCC for random portfolios per k
     data = prediction_results.loc[(prediction_results['algorithm'] == 'random_search')]
     data = data.loc[(data['k'] > 1) & (data['k'] <= 10) & (data['model'] == 'Random forest') &
                     (data['n_estimators'] == 100), ['problem', 'k', 'solution_id', 'test_pred_mcc']]
     # Aggregate over cross-validation folds:
     data = data.groupby(['problem', 'k', 'solution_id']).mean().reset_index().drop(columns='solution_id')
-    data['problem'] = data['problem'].replace({'PAR2': 'PAR-2', 'PAR2_norm': 'PAR-2_norm'})
+    data['problem'] = data['problem'].replace({'sc2020': 'SAT Competition 2020',
+                                               'sc2021': 'SAT Competition 2021'})
     data.rename(columns={'problem': 'Objective', 'k': 'Portfolio size $k$',
                          'test_pred_mcc': 'Test-set MCC'}, inplace=True)
     plt.figure(figsize=(4, 3))
@@ -181,8 +183,25 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
     plt.tight_layout()
     plt.savefig(plot_dir / 'prediction-test-mcc.pdf')
 
+    print('Mean MCC for beam search with w=100, random forest with 100 trees:')
+    data = prediction_results[(prediction_results['algorithm'] == 'beam_search') &
+                              (prediction_results['w'] == 100) &
+                              (prediction_results['model'] == 'Random forest') &
+                              (prediction_results['n_estimators'] == 100)]
+    print(data.groupby(['problem', 'k'])['test_pred_mcc'].agg(['mean', 'std']).reset_index().pivot(
+        index='k', columns='problem').round(2))
+
+    print('Mean MCC for exact search, random forest with 100 trees:')
+    data = prediction_results[(prediction_results['algorithm'] == 'mip_search') &
+                              (prediction_results['model'] == 'Random forest') &
+                              (prediction_results['n_estimators'] == 100)]
+    print(data.groupby(['problem', 'k'])['test_pred_mcc'].agg(['mean', 'std']).reset_index().pivot(
+        index='k', columns='problem').round(2))
+
     print('Median MCC per model and number of estimators, using all prediction results:')
-    print(prediction_results.groupby(['problem', 'model', 'n_estimators'])[['train_pred_mcc', 'test_pred_mcc']].median().round(2))
+    print(prediction_results.groupby(['problem', 'model', 'n_estimators'])[
+        ['train_pred_mcc', 'test_pred_mcc']].median().round(2))
+
     print('Train-test MCC difference per model and number of estimators, using all prediction results:')
     data = prediction_results[['problem', 'model', 'n_estimators', 'train_pred_mcc', 'test_pred_mcc']].copy()
     data['train_test_diff'] = data['train_pred_mcc'] - data['test_pred_mcc']
@@ -190,11 +209,11 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
 
     # ----Objective Value----
 
-    # Figure 4: Objective value for model-based and VBS-based top beam-search portfolios
+    # Figure 5: Objective value for model-based and VBS-based top beam-search portfolios
     w = 100
     data = prediction_results.loc[(prediction_results['algorithm'] == 'beam_search') &
                                   (prediction_results['w'] == w)]
-    plot_vars = ['test_pred_objective', 'test_objective']
+    plot_vars = ['test_pred_objective', 'test_objective', 'test_portfolio_sbs']
     data = data.loc[(data['k'] != 1) & (data['k'] <= 10) & (data['model'] == 'Random forest') &
                     (data['n_estimators'] == 100), ['problem', 'k', 'solution_id'] + plot_vars]
     # Aggregate over cross-validation folds (don't group by k here, as solution_ids for beam search
@@ -202,22 +221,50 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
     data = data.groupby(['problem', 'solution_id']).mean().reset_index().drop(columns='solution_id')
     data = data.melt(id_vars=['problem', 'k'], value_vars=plot_vars,
                      var_name='Approach', value_name='objective')
-    data['Approach'] = data['Approach'].replace({'test_pred_objective': 'Prediction', 'test_objective': 'VBS'})
+    data['Approach'] = data['Approach'].replace(
+        {'test_pred_objective': 'Prediction', 'test_objective': 'VBS', 'test_portfolio_sbs': 'SBS'})
+    data.rename(columns={'k': 'Portfolio size $k$'}, inplace=True)
+    global_sbs_data = search_results.loc[(search_results['algorithm'] == 'mip_search') &
+                                         (search_results['k'] == 1), ['problem', 'fold_id', 'test_objective']]
+    # Figure 5 (a)
+    plt.figure(figsize=(4, 3))
+    sns.boxplot(x='Portfolio size $k$', y='objective', hue='Approach',
+                data=data[data['problem'] == 'sc2020'], palette='Set2')
+    plt.axhline(y=global_sbs_data.loc[global_sbs_data['problem'] == 'sc2020', 'test_objective'].mean(),
+                color=sns.color_palette('Set2').as_hex()[3])  # SBS
+    plt.ylabel('PAR-2 score')
+    plt.legend(edgecolor='white', loc='center right', framealpha=0, bbox_to_anchor=(1, 0.35))
+    plt.tight_layout()
+    plt.savefig(plot_dir / 'prediction-test-objective-beam-2020.pdf')
+    # Figure 5 (b)
+    plt.figure(figsize=(4, 3))
+    sns.boxplot(x='Portfolio size $k$', y='objective', hue='Approach',
+                data=data[data['problem'] == 'sc2021'], palette='Set2')
+    plt.axhline(y=global_sbs_data.loc[global_sbs_data['problem'] == 'sc2021', 'test_objective'].mean(),
+                color=sns.color_palette('Set2').as_hex()[3])  # SBS
+    plt.ylabel('PAR-2 score')
+    plt.legend(edgecolor='white', loc='center right', framealpha=0, bbox_to_anchor=(1, 0.25))
+    plt.tight_layout()
+    plt.savefig(plot_dir / 'prediction-test-objective-beam-2021.pdf')
+
+    # Figure 6: Objective value for optimal (MIP search) portfolios
+    data = prediction_results.loc[(prediction_results['algorithm'] == 'mip_search')]
+    data = data.loc[(data['k'] != 1) & (data['k'] <= 10) & (data['model'] == 'Random forest') &
+                    (data['n_estimators'] == 100), ['problem', 'k', 'solution_id'] + plot_vars]
+    data = data.melt(id_vars=['problem', 'k'], value_vars=plot_vars,
+                     var_name='Approach', value_name='objective')
+    data['Approach'] = data['Approach'].replace(
+        {'test_pred_objective': 'Prediction', 'test_objective': 'VBS', 'test_portfolio_sbs': 'SBS'})
     data.rename(columns={'k': 'Portfolio size $k$'}, inplace=True)
     plt.figure(figsize=(4, 3))
-    sns.boxplot(x='Portfolio size $k$', y='objective', hue='Approach',
-                data=data[data['problem'] == 'PAR2'], palette='Set2')
+    sns.stripplot(x='Portfolio size $k$', y='objective', hue='Approach',
+                    data=data[data['problem'] == 'sc2020'], palette='Set2', dodge=True)
+    plt.axhline(y=global_sbs_data.loc[global_sbs_data['problem'] == 'sc2020', 'test_objective'].mean(),
+                color=sns.color_palette('Set2').as_hex()[3])  # SBS
     plt.ylabel('PAR-2 score')
-    plt.legend(edgecolor='white', loc='center right', framealpha=0, bbox_to_anchor=(1, 0.45))
+    plt.legend(edgecolor='white',  loc='lower left', bbox_to_anchor=(0, 1), ncol=3)
     plt.tight_layout()
-    plt.savefig(plot_dir / 'prediction-test-objective-PAR2.pdf')
-    plt.figure(figsize=(4, 3))
-    sns.boxplot(x='Portfolio size $k$', y='objective', hue='Approach',
-                data=data[data['problem'] == 'Unsolved'], palette='Set2')
-    plt.ylabel('Fraction of unsolved instances')
-    plt.legend(edgecolor='white', loc='center right', framealpha=0, bbox_to_anchor=(1, 0.45))
-    plt.tight_layout()
-    plt.savefig(plot_dir / 'prediction-test-objective-unsolved.pdf')
+    plt.savefig(plot_dir / 'prediction-test-objective-optimal-2020.pdf')
 
     # ----Feature Importance----
 

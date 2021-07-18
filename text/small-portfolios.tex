@@ -330,10 +330,10 @@ Thus, opposed to \emph{beam search}, it does not consider how solvers within a p
 \section{Experimental Design}
 \label{sec:experimental-design}
 
-In our experiments, we evaluate the presented optimization approaches, and analyze their relation to prediction approaches for $k$-portfolios. 
+In our experiments, we evaluate the presented solution approaches, and analyze their relation to prediction approaches for $k$-portfolios. 
 In particular, we are interested in the achievable performance improvements with increasing values for the parameter $k$. 
 
-\subsection{Optimization Approaches}
+\subsection{Solution Approaches}
 
 We employ the four solution approaches from Section~\ref{sec:approach} to search for portfolios:
 
@@ -361,7 +361,7 @@ We search for portfolios and train prediction models only on the training sets.
 \subsection{Prediction Approaches}
 
 We also analyze the performance of portfolios which use a prediction model to select a solver. 
-We train such prediction models for all the portfolios found by our previously described optimization approaches. 
+We train such prediction models for all the portfolios found by our previously described solution approaches. 
 
 For each instance, the prediction target is the best solver out of the given $k$-portfolio.
 As models, we use random forests~\cite{breiman2001random}, which are ensembles of decision trees. 
@@ -412,121 +412,125 @@ To solve the \emph{K-Portfolio Problem} exactly, we use the package \emph{mip}~\
 \section{Evaluation}
 \label{sec:evaluation}
 
-\todo{update to removal of alternative objectives}
-\todo{update to SC 2021}
-
 In the following, we evaluate the performance of the exact and approximate solutions to the \emph{K-Portfolio Problem}. 
 We subsequently relate the performance of such optimal $k$-portfolios to the performance of an actual prediction model for instance-specific solver selection. 
 In particular, we are interested in the influence of the portfolio size $k$ on performance. 
 
 \subsection{Optimization Results}
 
-The dataset seems promising for portfolios.
-Regarding \mbox{PAR-2} score, there is no single solver which is fastest for all or even for a majority of the $316$ instances. 
-The three solvers which are fastest on average (in terms of their PAR-2 Score), `win' on only 46, 38, and 26 instances, respectively. 
-Regarding the number of solved instances, the three best single solvers still leave 52, 55, and 61 instances unsolved. 
+The datasets seem promising for portfolios.
+In both datasets, there is no single solver which is fastest for all or even for a majority of the instances.
+For the $316$ instances of the SAT Competition~2020, the three overall fastest solvers `win' on only 46, 38, and 26 instances, respectively.
+For the $325$ instances of the SAT Competition~2021, the three overall fastest solvers `win' on only 25, 22, and 20 instances, respectively.
 This indicates that combing solvers in portfolios can improve overall runtime.
 
-\subsubsection{Optimizing the PAR-2 Score}
+\subsubsection{Overall Trend}
 
 \begin{figure*}[t]
 	\centering
-	\subfloat[Training data.]{
-		\includegraphics[width=0.98\columnwidth]{plots/search-train-objective-PAR2.pdf}
-		\label{fig:search-train-objective-PAR2}
+	\subfloat[SAT Competition 2020.]{
+		\includegraphics[width=0.98\columnwidth]{plots/search-train-objective-2020.pdf}
+		\label{fig:search-train-objective-2020}
 	}
 	\hfil
-	\subfloat[Test data.]{
-		\includegraphics[width=0.98\columnwidth]{plots/search-test-objective-PAR2.pdf}
-		\label{fig:search-test-objective-PAR2}
+	\subfloat[SAT Competition 2021.]{
+		\includegraphics[width=0.98\columnwidth]{plots/search-train-objective-2021.pdf}
+		\label{fig:search-train-objective-2021}
 	}
 	\caption{
-		Portfolio performance for different $k$ and search algorithms for objective \emph{PAR-2}.
-		Optimized on training set (left), evaluated on test set (right). 
+		Training-set portfolio performance for different $k$ and search algorithms.
 	}
-\label{fig:search-train-objective}
+	\label{fig:search-train-objective}
 \end{figure*}
 
-Figure~\ref{fig:search-train-objective} displays the cost in terms of the \emph{PAR-2} function of the best $k$-portfolios for $1 \leq k \leq 48$ as they are found by different solution approaches. 
+Figure~\ref{fig:search-train-objective} displays the cost in terms of the PAR-2 function of the best $k$-portfolios for the different solution approaches. 
 The \emph{optimal solution} is the exact optimum.
-\emph{Beam search} denotes the performance of the best portfolios found by a \emph{greedy search} algorithm, i.e., executing the \emph{beam search} algorithm with the smallest beam width $w=1$. 
+\emph{Greedy search} denotes the performance of the best portfolios found by a \emph{beam search} algorithm with the smallest beam width $w=1$. 
 The approach \emph{k-best} displays the performance of portfolios which are comprised by the top $k$ single-best solvers. 
 For \emph{random sampling}, we average over the repetitions of sampling.
-The \emph{upper bound} limits costs of {greedy search} according to Equation~\ref{eq:upper-bound}.
+The \emph{upper bound} limits costs of \emph{greedy search} according to Equation~\ref{eq:upper-bound}.
 If we report numbers in the following, we refer to the training dataset for which the optimization problems are solved.
 
-For all approaches, the objective value improves rapidly for the first few $k$, but marginal gains become smaller with increasing $k$.
-For the \emph{optimal solution}, the best $1$-portfolio has a penalized runtime $5.51$ times as high as the $48$-portfolio. 
-This ratio reduces to $1.89$ for the best $5$-portfolio and $1.25$ for the best $10$-portfolio. 
+For all approaches and both datasets, the PAR-2 score improves rapidly for the first few $k$, but marginal gains become smaller with increasing $k$.
+For the SAT Competition~2020, the optimal $1$-portfolio has a penalized runtime $5.51$ times as high as the $48$-portfolio.
+This ratio reduces to $1.89$ for the best $5$-portfolio and $1.25$ for the best $10$-portfolio.
+For the SAT Competition~2021, the respective ratios are $4.74$ for $k=1$, $1.58$ for $k=5$ and $1.17$ for $k=10$.
 
-As Figure~\ref{fig:search-train-objective-PAR2} also shows, the cost of the best $k$-portfolios found by \emph{greedy search} is very close to that of the \emph{optimal solution}.
+\subsubsection{Beam Search}
+
+As Figure~\ref{fig:search-train-objective} also shows, the cost of the best $k$-portfolios found by \emph{greedy search} is very close to that of the \emph{optimal solution}.
 These results are particularly impressive considering that the runtime of \emph{greedy search} is linear in $k$ as well as the number of instances $n$, while the finding the \emph{optimal solution} is NP-complete.
-In contrast, the theoretical, submodularity-based \emph{upper bound} for \emph{greedy search} is clearly higher and therefore too loose to give a good estimate. 
-
-The baseline \emph{k-best} is worse than \emph{greedy search} on the training data, but still clearly better than \emph{random sampling}.
-As Figure~\ref{fig:search-test-objective-PAR2} shows, \emph{beam search}, \emph{k-best}, and the \emph{optimal solution} show similar performance on the test dataset.
-In particular, there is no clear winner, and the \emph{optimal solution} can even perform worse than those found by the approximate approaches. 
-This is because optimization is run on the training instances only, and the best portfolio on the training data is not necessarily the best portfolio on the test data.
-Still, training and test performances are rather similar.
-
-On the training data, the best $2$-portfolio found by \emph{greedy search} has a $14.7\%$ higher cost than the \emph{optimal solution}, while the $2$-portfolio of \emph{k-best} has a $28.4\%$ higher cost than the \emph{optimal solution}. 
-For all other $k$, the greedy-search portfolio has less than $4\%$ higher penalized runtime than the \emph{optimal solution}.
-
-In contrast, the performance gap of \emph{k-best} portfolios to the \emph{optimal solution} widens for the first few $k$, before becoming smaller again later.
-For $k=8$, where the relative performance gap is the largest, the \emph{k-best} portfolio has a 51.1\% higher penalized runtime than the \emph{optimal solution}.
-
-\subsubsection{Alternative Objective Functions}
-
-Since the objective functions \emph{PAR-2\_norm} and \emph{Unsolved} follow a similar pattern as \emph{PAR-2}, we omitted them in our plots. 
-For the objective function \emph{Unsolved}, a portfolio of ten solvers suffices to solve all instances, while the best $5$-portfolio leaves $1.7\%$ of instances unsolved and the best $1$-portfolio leaves $16.4\%$ of instances unsolved.
-
-For the objective function \emph{Unsolved}, the greedy-search portfolio for $k=2$ solves only $1.9\%$ out of all instances less than the \emph{optimal solution}, and this difference decreases further with $k$.
-\emph{K-best} solves up to $4.3\%$ of all instances less than the \emph{optimal solution}.
-
-\subsubsection{Beam Search Width}
+In contrast, the theoretical, submodularity-based \emph{upper bound} for \emph{greedy search} is clearly higher and therefore too loose to give a good estimate.
 
 To bring the \emph{beam search} solution even closer to the \emph{optimal solution}, one can increase $w$.
-E.g., for $w=10$ and for all $k$, the PAR-2 score is never more than $2\%$ higher than the \emph{optimal solution} and the difference in unsolved instances is never more than $0.1\%$ of all instances.
-Regarding the set of the $w$ best portfolios within each iteration of \emph{beam search}, we observe convergence with increasing $k$. 
-We observe a large variance in the PAR-2 score of portfolios in the beam for small $k$, and this variance becomes smaller in later iterations, i.e., the top $w$ portfolios become more similar. 
+For example, the best $2$-portfolio found by \emph{greedy search} has a $14.7\%$ higher cost than the \emph{optimal solution} for the SAT Competition~2020.
+For all other $k$, the \emph{greedy search} portfolio has less than $4\%$ higher penalized runtime than the \emph{optimal solution}.
+In comparison, for $w=10$ and for all $k$, the PAR-2 score is never more than $2\%$ higher than the \emph{optimal solution}.
 
-A similar phenomenon also occurs for randomly sampled portfolios. 
-With increasing $k$, the standard deviation of the objective value in a sample of portfolios decreases.
-At the same time, the expected objective value converges towards the objective value of the optimal $k$-portfolio.
-This is clearly visible in Figure~\ref{fig:search-train-objective}.
-Thus, the benefit of searching for good portfolios is the greatest for small $k$.
+Regarding the set of the $w$ best portfolios within each iteration of \emph{beam search}, we observe convergence of portfolio performance with increasing $k$. 
+There is a large variance in the PAR-2 score of portfolios in the beam for small $k$, and this variance becomes smaller in later iterations, i.e., the top $w$ portfolios become more similar in performance.
+A similar phenomenon also occurs for \emph{random sampling} portfolios:
+With increasing $k$, the standard deviation of the PAR-2 score in a sample of portfolios decreases.
+Also, the expected value of portfolio performance improves.
+Thus, carefully picking the solvers for a portfolio makes the biggest difference for small $k$.
 
-\subsubsection{Monotonicity of $k$-Portfolios}
+\subsubsection{K-Best}
+
+The baseline \emph{k-best} is worse than \emph{greedy search} on the training data, but better than \emph{random sampling}.
+While \emph{greedy search} always is relatively close to the \emph{optimal solution}, the performance gap of \emph{k-best} widens after the first few $k$ and only becomes smaller for large $k$ later.
+The performance of \emph{k-best} relative to the other approaches also differs between the SAT Competitions~2020 and 2021.
+In 2020, \emph{k-best} is closer to the optimal solution, while in 2021, \emph{k-best} is closer to the expected value of \emph{random sampling}.
+This indicates that building a portfolio of complementary solvers is more important in 2021, rather than picking just the best individual solvers.
+
+\subsubsection{Test-Set Performance}
+
+\begin{figure}[t]
+	\centering
+	\includegraphics[width=0.98\columnwidth]{plots/search-test-objective-2020.pdf}
+	\caption{
+		Test-set portfolio performance for different $k$ and search algorithms.
+		Data from the SAT Competition 2020.
+	}
+	\label{fig:search-test-objective-2020}
+\end{figure}
+
+Figure~\ref{fig:search-test-objective-2020} shows test-set portfolio cost for the different solution approaches.
+The overall trends are the same as on the training set, displayed in Figure~\ref{fig:search-train-objective}.
+As a notable exception, \emph{beam search}, \emph{k-best}, and the \emph{optimal solution} show similar performance on the test data of the SAT Competition~2020.
+In particular, there is no clear winner, and the \emph{optimal solution} can even perform worse than those found by the approximate approaches. 
+This is because optimization is run on the training instances only, and the best portfolio on the training data is not necessarily the best portfolio on the test data.
+For the test data of the SAT Competition~2021, which we do not display here, \emph{k-best} still shows clear difference to \emph{beam search} and the \emph{optimal solution}.
+This might be caused by the larger performance gap already on the training set.
+
+\subsubsection{Portfolio Composition}
 
 While \emph{beam search} iteratively adds solvers, the \emph{optimal solution} might differ in more than one solver from $k-1$ to $k$, i.e., existing solvers from the portfolio can be replaced.
-Indeed, we observe this phenomenon frequently in our results.
-For example, the best $2$-portfolios usually do not contain the best $1$-portfolio in our experiments.
-However, despite this non-monotonous behavior of the \emph{optimal solution}, \emph{beam search} still yields a close-to-optimal objective value.
-This indicates that there are several good solver combinations, so solvers can substitute each other in portfolios to some extent.
+Indeed, we observe this phenomenon in our results.
+For example, the optimal $2$-portfolios do not contain the optimal $1$-portfolios for both SAT Competitions.
+However, this non-monotonous behavior is not strong.
+On average, between one and two new solvers become part of the optimal portfolio when increasing $k$ by one.
+I.e., between zero and one solvers get replaced on average when increasing $k$ by one.
+Also, the replaced solver might only be slightly worse than its substitute.
+This might explain the good performance of \emph{beam search}, which pursues a monotonous approach when building portfolios.
 
-This substitution effect seems to be particularly present for large $k$, as we can observe for \emph{beam search} with $w=100$. 
-For the objective function \emph{PAR-2}, one solver appears in 19\% of the beam of $2$-portfolios.
-However, for $k=10$, no solver appears in more than 10\% of the portfolios and for $k=20$, no solver appears in more than 5\% of the portfolios.
-A similar effect shows for the objective functions \emph{PAR-2\_norm} and \emph{Unsolved}.
-This shows that a few solvers might be crucial for good objective value for small $k$, but there is more flexibility in building a good portfolio for large $k$.
+\subsubsection{Impact of Single Solvers on Portfolios}
 
-\subsubsection{Random Portfolios}
-
-A correlation analysis on \emph{random sampling} results, of which we have 1000 portfolios for each $k$, also underlines the interaction between solvers.
+A correlation analysis on \emph{random sampling} results, of which we have 1000 portfolios for each $k$, underlines the interaction between solvers.
 First, we encode the absence or presence of each solver in a portfolio with 0 or 1 respectively.
-Next, we compute the Spearman rank correlation between this occurrence vector with the objective value.
-For $k=5$, all correlations are in $[-0.40,0.17]$ for objective function \emph{PAR-2}, $[-0.42,0.17]$ for \emph{PAR-2\_norm}, and $[-0.41,0.15]$ for \emph{Unsolved}.
-The mean correlation is zero for all objective functions.
+Next, we compute the Spearman rank correlation between this occurrence vector with the PAR-2 score.
+For $k=5$, all correlations are in $[-0.40,0.17]$ for data from the SAT Competition~202, and $[-0.24,0.23]$ for data from the SAT Competition~2021.
+The mean correlation is zero in both cases.
 Similar correlation behavior occurs for other $k$.
 
-These results indicate that only the presence of some solvers has a moderately negative correlation to the objective value of the whole portfolio, i.e., only some solvers can clearly improve the portfolio performance of our minimization problem on their own.
+These results indicate that only the presence of some solvers has a moderately negative correlation to the PAR-2 score of the whole portfolio, i.e., only some solvers can improve the portfolio performance of our minimization problem on their own.
+This effect is stronger for data from the SAT Competition~2021.
 The positive correlations are even weaker, i.e., there are no solvers which influence portfolio performance in a strongly negative manner.
-Overall, this means that the influence of single solvers on portfolio performance is limited; one needs a combination of solvers to clearly influence the objective value in either direction.
+Overall, this means that the influence of single solvers on portfolio performance is limited; one needs a combination of solvers to clearly influence the PAR-2 score in either direction.
 
 \subsection{Prediction Results}
 
-In this section, we evaluate the prediction performance for the previously determined portfolios. 
-We also evaluate the actual performance of the resulting portfolios in terms of their penalized average runtimes. 
+In this section, we evaluate the prediction performance for making instance-specific solver predictions in the previously determined portfolios. 
+We also evaluate the PAR-2 score of these portfolios with prediction model. 
 
 \subsubsection{Matthews Correlation Coefficient}
 
@@ -543,56 +547,78 @@ We also evaluate the actual performance of the resulting portfolios in terms of 
 
 Figure~\ref{fig:prediction-test-mcc} shows test-set classification performance of random forests with 100 trees, using the portfolios from \emph{random sampling}.
 Classification performance with less trees is worse, on training set as well as test set.
-We use \emph{random sampling} results here, but classification results are similar for \emph{beam search} with $w=100$.
-We do not display training-set performance, since it always is 1.0.
+We use \emph{random sampling} results here, to show the variation of prediction performance over a large set of portfolios.
+However, classification results are similar for \emph{beam search} with $w=100$ and for the \emph{optimal solution}.
+We do not display training-set performance, since it is close to 1.0.
+
 As Figure~\ref{fig:prediction-test-mcc} shows, test-set prediction performance is rather low for all $k$.
 It is clearly higher than random guessing, which would yield an MCC of 0.0, but clearly lower than the optimal MCC of 1.0.
-With a perfect training-set performance, but a low test set performance, the model seems to be overfitting to the training set.
-This could cause a bad objective value for model-based portfolios, as we will analyze latter.
+With a nearly perfect training-set performance, but a low test set performance, the model seems to be overfitting to the training set.
+This could cause a bad PAR-2 value for model-based portfolios, as we will analyze next.
 For low $k$, the prediction performance varies stronger between portfolios than for larger $k$.
 
 \subsubsection{Portfolio Performance}
 
 \begin{figure*}[t]
 	\centering
-	\subfloat[\emph{PAR-2} objective function.]{
-		\includegraphics[width=0.98\columnwidth]{plots/prediction-test-objective-PAR2.pdf}
-		\label{fig:prediction-test-objective-PAR2}
+	\subfloat[SAT Competition 2020.]{
+		\includegraphics[width=0.98\columnwidth]{plots/prediction-test-objective-beam-2020.pdf}
+		\label{fig:prediction-test-objective-beam-2020}
 	}
 	\hfil
-	\subfloat[\emph{Unsolved} objective function.]{
-		\includegraphics[width=0.98\columnwidth]{plots/prediction-test-objective-unsolved.pdf}
-		\label{fig:prediction-test-objective-unsolved}
+	\subfloat[SAT Competition 2021.]{
+		\includegraphics[width=0.98\columnwidth]{plots/prediction-test-objective-beam-2021.pdf}
+		\label{fig:prediction-test-objective-beam-2021}
 	}
 	\caption{
-		Portfolio performance for \emph{beam search} portfolios with $w=100$, comparing VBS (orange) to portfolios with prediction model (blue).
-		Random forests with 100 trees for the predictions.
+		Portfolio performance for \emph{beam search} portfolios with $w=100$, comparing the portfolio's virtual best solver (VBS), single best solver (SBS), and score with prediction model.
+		Prediction model: random forests with 100 trees.
+		The performance of the the global SBS, i.e., not only considering solvers from the portfolio, is shown as horizontal line.
 	}
-	\label{fig:prediction-test-objective}
+	\label{fig:prediction-test-objective-beam}
 \end{figure*}
 
-Figure~\ref{fig:prediction-test-objective} shows test-set objective value for portfolios from \emph{beam search} with $w=100$.
-The plot compares the objective value of portfolios with an oracle, the VBS, to the objective value of portfolios with random forests with 100 trees
+Figure~\ref{fig:prediction-test-objective-beam} shows test-set PAR-2 score for portfolios from \emph{beam search} with $w=100$.
+The plot compares the PAR-2 score of portfolios with prediction model to two competitors without prediction model, computed on the same portfolios.
+The virtual best solver (VBS) provides a lower bound, as its portfolio performance can only be achieved with perfect prediction.
+The single best solver (SBS) of each portfolio serves as a baseline, being equal to a constant prediction.
+Note that the portfolio performance with prediction models can even be worse than the SBS, e.g., when always predicting the slowest solver for each instance.
+However, we do not show this upper bound on PAR-2 score here.
+
 As discussed before, VBS score decreases with $k$.
 In theory, this also allows portfolios with prediction model to potentially improve their performance.
-
-However, in our case, the objective value of model-based portfolios remains rather stable with increasing values of $k$.
-This implies that the prediction model cannot help to leverage the larger amount of solvers in the portfolio.
+However, in our case, the PAR-2 score of model-based portfolios remains rather stable with increasing values of $k$, with the biggest improvement from $k=2$ to $k=3$.
+This implies that the prediction model cannot help to benefit the larger amount of solvers in the portfolio with increasing $k$.
 Given the low prediction performance in terms of MCC, as previously seen in Figure~\ref{fig:prediction-test-mcc}, this is expected.
 As a consequence, the gap between VBS and the predicted solver grows with $k$.
-Also, the objective value of model-based portfolios varies more than that of VBS-portfolios.
-This probably is related to the considerably variance in prediction performance, which is shown in Figure~\ref{fig:prediction-test-mcc}.
+However, the model-based portfolios are usually at least better than the single best solver from these portfolios, i.e., the prediction models can discriminate between solvers to some extent.
+Also, for $k > 2$ the model-based portfolios are on average better than the global single-best solver, which might not be part of the portfolio.
+
+\begin{figure}[t]
+	\centering
+	\includegraphics[width=0.98\columnwidth]{plots/prediction-test-objective-optimal-2020.pdf}
+	\caption{
+		Portfolio performance for \emph{optimal solution} portfolios, comparing the portfolio's virtual best solver (VBS), single best solver (SBS), and score with prediction model.
+		Data from the SAT Competition 2020.
+		Prediction model: random forests with 100 trees.
+		The performance of the the global SBS, i.e., not only considering solvers from the portfolio, is shown as horizontal line.
+	}
+	\label{fig:prediction-test-objective-optimal-2020}
+\end{figure}
+
+Figure~\ref{fig:prediction-test-objective-optimal-2020} repeats the same comparison as before for the \emph{optimal solution} portfolios.
+Overall trends remain the same.
+As a difference to Figure~\ref{fig:prediction-test-objective-beam}, the are only five portfolios for each $k$ here, one for each fold of cross-validation.
+We still see a considerable variance for each $k$, i.e., the test set performance also depends on the current split of instances.
 
 \subsubsection{Feature Importance}
 
 Averaging importance over all trained models, the most important feature has an importance of roughly 2\%, the least important feature has an importance of 0\%.
-To reach an cumulated average importance of 50\%, one needs 49 out of 143 features.
-On average, prediction models use 106 features.
-If we limit our analysis to random forests with just one tree, the models still use 52 features on average.
+To reach an cumulated average importance of 50\%, one needs 40 out of 143 features.
+On average, prediction models use 109 features.
+If we limit our analysis to random forests with just one tree, the models still use 59 features on average.
 In conclusion, no single feature or even small set of features drives prediction performance.
-Considering the low prediction performance, this indicates that our dataset lacks discriminating features which are suitable to decide which solver should be used on an instance.
-
-\todo{evaluate prediction performance also for the optimal k-portfolios}
+Together with the low prediction performance, this indicates that our dataset lacks discriminating features which are suitable to decide which solver should be used on an instance.
 
 \section{Conclusions and Future Work}
 \label{sec:conclusion}
@@ -607,7 +633,7 @@ Regarding portfolio size, we saw a strong improvement in objective value for add
 
 Regarding the solution approach, we found that \emph{beam search} yields close-to-optimal solutions.
 After determining portfolios, we combined them with prediction models that made instance-specific solver recommendations.
-However, these models performed rather poorly on the given dataset, such that the objective value of portfolios with predictions did not improve with the portfolio size.
+However, these models performed not satisfactorily on the given dataset, such that the objective value of portfolios with predictions did not continuously improve with the portfolio size.
 
 In future work, we want to improve prediction performance, in particular, by adapting the set of instance features.
 Recent results in the empirical analysis of solver portfolios indicate that features which describe the community structure of graph representations of SAT instances correlate well with solver performance. 
