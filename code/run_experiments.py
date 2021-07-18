@@ -85,7 +85,7 @@ def search_and_evaluate(problem_name: str, search_func: str, search_args: Dict[s
         runtimes_train = runtimes.iloc[train_idx]
         runtimes_test = runtimes.iloc[test_idx]
         start_time = time.process_time()
-        search_result = getattr(search, search_func)({**search_args, 'runtimes': runtimes_train})  # returns list of tuples
+        search_result = getattr(search, search_func)(runtimes=runtimes_train, **search_args)  # returns list of tuples
         end_time = time.process_time()
         search_result = pd.DataFrame(search_result, columns=['solvers', 'train_objective'])
         add_portfolio_performance(search_result=search_result, runtimes_train=runtimes_train,
