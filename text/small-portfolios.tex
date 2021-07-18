@@ -136,21 +136,27 @@ We conclude with Section~\ref{sec:conclusion}.
 \section{Related Work}
 \label{sec:related-work}
 
-\todo{conduct deeper literature research}
-\todo{expand a bit, if necessary; currently, description of references is rather short}
-\todo{describe "SAT Competition 2020" paper (if published), which does a lot of analysis on single solvers and some analysis on portfolios; citation already exists: \cite{SC2020:AIJ}}
-\todo{some references might be shortened if space is needed}
+Solver complementarity with respect to their contributions to the runtime of a solver portfolio has been evaluated by Xu et al.~\cite{Xu:2012:EvalContribVBS}. 
+They show that large contributions to the runtime of a portfolio oftentimes come from solvers which are not competitive when evaluated as a standalone solver. 
+This however depends on the dataset under evaluation. 
+In fact, the organizers of SAT Competition~2020 showed in~\cite{SC2020:AIJ} that the best $k$-portfolios ($k \in [1,3]$) drawn from participating solvers are comprised of solvers which actually received an award in the standalone evaluation. 
+In particular, the best performing $2$-portfolio of solvers consists of the winners of the SAT and UNSAT tracks. 
+This was fundamentally differnt in SAT Competition~2021, where the same organizers gave a \emph{special innovation price} to a solver which was not competitive in the standalone evaluation but part of the best performing $2$-portfolio (drawn from the solvers in that particular competition). 
+Their work underlines the importance of portfolio analysis for research on better stable solvers, where we can oftentimes see progress through complex hybridization of methods. 
 
-A recent survey on algorithm-selection approaches is provided by Kerschke et al.~\cite{kerschke2019automated}.
-Portfolios of SAT solvers are a sub-category of this. 
-Many portfolio approaches have several stages and configuration options, which makes configuring and selecting the best portfolio approach difficult.
-To this end, Autofolio by Lindauer et al. provides an automatic configurator~\cite{lindauer2015autofolio}.
-Also, one can analyze the impact of configuration options, e.g., with the tool CAVE~\cite{biedenkapp2018cave}. 
-
-One of the most well-known complex portfolio approaches is SATzilla, of which multiple versions exist~\cite{xu2008satzilla, xu2012satzilla2012}. 
+Another point-of-view on solver complementarity is given by instance-specific solver selection approaches. 
+One of the most well-known complex solver-selection approaches is SATzilla, of which multiple versions exist~\cite{xu2008satzilla, xu2012satzilla2012}. 
+They combine instance classification with runtime prediction models in a mixture-of-experts approach in order to select a solver in their portfolio. 
 Additional components of SATzilla are so-called \emph{pre-solvers}, which are only run for a short time to solve easy instances, or a \emph{backup-solver}, which is responsible for instances where computing features for the prediction models takes too long. 
 Overall, portfolio approaches can become quite complex and it becomes unclear which parts of the portfolio solution are really necessary to achieve a good performance.
-Besides complex portfolio approaches, there are also simple ones, e.g., selecting a solver nearest-neighbor-based, without training a prediction model~\cite{malitsky2011non, nikolic2013simple, samulowitz2013snappy}.
+%Besides complex portfolio approaches, there are also simple ones, e.g., selecting a solver nearest-neighbor-based, without training a prediction model~\cite{malitsky2011non, nikolic2013simple, samulowitz2013snappy}.%MI: what are they doing?
+
+Other well known instance-specific solver selection approaches are ISAC, which is based on k-nearest-neigbours in the instance feature space~\cite{Kadioglu:2010:ISAC}, and SNNAP which combines the ISAC approach with runtime prediction models~\cite{Collautti:2013:SNNAP}. 
+A recent survey on algorithm-selection approaches is provided by Kerschke et al.~\cite{kerschke2019automated}.
+Portfolios of SAT solvers are a sub-category of this. 
+%Many portfolio approaches have several stages and configuration options, which makes configuring and selecting the best portfolio approach difficult.
+%To this end, Autofolio by Lindauer et al. provides an automatic configurator~\cite{lindauer2015autofolio}.
+%Also, one can analyze the impact of configuration options, e.g., with the tool CAVE~\cite{biedenkapp2018cave}. %MI: it bloats
 
 Adamini et al. analyze portfolios of CSP solvers in terms of average runtime and solved instances~\cite{amadini2014empirical, amadini2016extensive}. 
 Thus, they focus on different instances and solvers than we, though the evaluation procedure has some similarities.
