@@ -188,7 +188,7 @@ We rather evaluate the runtimes of an instance-specific algorithm selector which
 \section{Preliminaries}
 \label{sec:preliminaries}
 
-Let a set of solvers $S = \{s_1, \dots, s_n\}$, a set of SAT instances $I = \{i_1, \dots, i_m\}$ and solver runtimes $r~:~S \times I \rightarrow [0, T]$ with a fixed timeout $T$ be given.
+Let a set of solvers $S = \{s_1, \dots, s_n\}$, a set of SAT instances $I = \{i_1, \dots, i_m\}$ and solver runtimes $r:~S \times I \rightarrow [0, T]$ with a fixed timeout $T$ be given.
 A scoring function $c_T : S \rightarrow \mathbb{N}$ is used to estimate solver performance. 
 To score a solver, we use the frequently used penalized average runtime with a penalization factor of two (PAR-2 Score). 
 This score is a trade-off between solver runtime and the number of solved instances.
