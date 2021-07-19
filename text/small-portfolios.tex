@@ -15,6 +15,7 @@
 %\addbibresource{references.bib} % handled by IEEE template at the moment
 
 \newtheorem{definition}{Definition}
+\newtheorem{example}{Example}
 
 \DeclareMathOperator*{\argmax}{arg\,max}
 \DeclareMathOperator*{\argmin}{arg\,min}
@@ -66,58 +67,63 @@ It has lots of practical applications, e.g., verification of hardware and softwa
 Today, SAT solvers are not only used to solve hard combinatorial problems in industry, but also previously open problems in mathematics~\cite{Heule:2016:Pyth,Heule:2018:Schur}. 
 
 One can observe continuous progress in SAT solving methods, heuristics, and their implementations in SAT solvers. 
-Solvers are usually evaluated based on compilations of benchmark instances which represent diverse interesting application scenarios for SAT solvers. 
+Solvers are usually evaluated based on compilations of benchmark instances which represent \emph{diverse} interesting application scenarios for SAT solvers. 
 Researchers who propose new SAT solvers tend to strive for \emph{stable} SAT solvers, i.e., with a good overall performance on many types of instances. 
 
-Another observation is an ongoing emergence of new heuristics which contribute to the performance on narrow subsets of instances. 
-Such approaches are complementary to solvers with the best average behavior.
-In order to highlight such insular progress, one can evaluate solvers on projections of the instance set, e.g., projections to a certain family of instances.
-Another possibility to capture this kind of progress %KB: Es liest sich, als wären beide Alternativen gleich gut. Die erste ist aber nur reißerisch, die zweite ist seriöser. Vermutlich sehen Sie das auch so. Das sollte explizit gesagt werden.
-is to consider the marginal contributions of solvers to the performance of a solver portfolio. %KB: Hier ist die Reihenfolge komisch. Stattdessen: "Another possibility is relate to so-called portfolios, which are ... (Vielleicht sollten auch die folgenden Einlassungen zu Portfolios ("It has been shown that ...") hier gleich kommen. bzw. die Erklärungen von Portfolios gesamthaft vor dem 'emergence'-Text.) One cann now quantify the improvement coming from a new solver as ..." 
-Portfolios are sets of solvers, from which one solver is chosen for each SAT instance. %KB: Vielleicht noch zu kurz. Wer choost? (Oder ist hier alles erlaubt?) Wann wird gechoost? 
+Another observation is an recurrent emergence of new heuristics and methods which contribute to the performance on only a narrow subset of instances. 
+Such approaches can be seen as complementary to solvers with the best average behavior.
+In order to highlight such insular progress, one can evaluate solvers separatly only on specific types instances.
+One example for this kind of evaluations is the introduction of an application track in SAT Competitions in which the participating solvers are additionally evaluated on a large benchmark set stemming purely from one specific application. 
 
-It has been shown that combining several SAT solvers following a complex solver selection process which also involves runtime prediction models can considerably outperform single best solvers~\cite{xu2008satzilla}. %KB: Hier dann aber gleich sagen, was die Limitierungen beispielsweise dieser Studie sind, nicht es erst weiter unten andeuten.
-%KB: Selbst wenn sie schneller sind, ist aber der Rechenaufwand vermutlich deutlich höher, stimmt das? Wenn ja, würde ich das hier explizit sagen, auch um das, was folgt, gut zu motivieren.
-Such complex portfolios usually lack of explainability of their performance gains. %KB: Was ist der Unterschied zwischen 'portfolio' und 'complex portfolio'? -- Explainability kommt hier unmotiviert -- warum will man es hier?
-Moreover, they compete with the ongoing and considerable performance gains through research on singular solvers. %KB: Den Satz verstehe ich nicht.
+\begin{example}[Crypto Track in SAT Competition 2021]
+The SAT Solver \emph{SLIME} was not competitive in the evaluations on the diverse set of instances in the Main Track of SAT Competition~2021. 
+However, \emph{SLIME} achieved the best score in the Crypto Track where SAT solvers were evaluated on a set of $200$ instances purely stemming from cryptographic applications. 
+\end{example}
 
-\paragraph{Problem Statement}
+Another possibility to capture the progress in SAT solving beyond measuring each solver's average performance is to consider portfolios, which are sets of solvers.  
+A solver portfolio can be combined with a perfect oracle which selects the fastest solver for each instance in the benchmark set. 
+Such a theoretical construction is commonly referred to as the \emph{Virtual Best Solver} (VBS). 
+One can determine an alternative ranking of solvers based on their marginal contribution to the VBS, which has already been suggested in~\cite{Xu:2012:EvalContribVBS}. 
 
-SAT solving is a very active area of research such that complex handcrafted portfolios can be quickly outdated %KB: Das hier gehört nach vorn, zu dem 'Emergence'-Text. hier nicht noch einmal ansetzen bitte.
-and lack to capture the state-of-the-art. 
-We want to find out to which extent portfolios with just a few state-of-the-art solvers are sufficient to improve solving performance. 
-In particular, we study $k$-portfolios of SAT solvers, i.e., portfolios composed of exactly $k$ SAT solvers, and systematically analyze the impact of the portfolio size $k$ on portfolio performance. 
+\begin{example}[Special Price in SAT Competition 2021]
+In SAT Competition 2021, the performance of the VBS of all possible portfolios of size two which can be drawn from the entirety of participating solvers has been evaluated. 
+The best performing tuple of solvers (in terms of their VBS), contains the solver \emph{CaDiCaL\_PriPro}, which was not competitive in the overall evaluation and thus given the new \emph{Special Innovation Price}.
+\end{example}
 
-Determination of the optimal, i.e., best performing, portfolio of size $k$ in a given set of $n$ solvers is an NP-hard optimization problem such that exhaustive search quickly becomes infeasible. %KB: Der Text ab 'such that ...' scheint mir entbehrlich zu sein, ist ja NP-hard.
-So we focus on the quality of approximate solutions to that problem. 
+Besides the theoretical performance gains of the VBS, it has been shown that combining a portfolio with a complex automatic solver selection process which also involves runtime prediction models can considerably outperform single best solvers~\cite{xu2008satzilla}. 
+However, such complex constructions usually lack to capture the state-of-the-art in SAT solving as the integration of new SAT solvers is time consuming. 
 
-A good performance of such $k$-portfolios does not necessarily imply a good performance in combination with a runtime prediction model. %KB: runtime prediction im aktuellen Kontext sollte weiter oben explizit motiviert werden.
-With increasing $k$, solvers in portfolios are much harder to discriminate. %KB: Den Satz verstehe ich nicht.
-Thus, we also analyze the performance of prediction models for different portfolio sizes $k$.
+% Problem Statement
+First, one has to decide which and how many solvers to combine in a portfolio. 
+A $k$-portfolio is a set of $k$ solvers drawn from a given set of $n \geq k$ solvers $S$. 
+A $k$-portfolio is optimal if its VBS outperforms that of all other $k$-portfolios which can be drawn from $S$. 
+The \emph{$K$-Portfolio Problem}, which is to determine an optimal $k$-portfolio, is an NP-hard optimization problem~\cite{nof2020real}. 
+
+Second, the assembly of a dataset which contains instance features as well as runtime data, the training of instance classifiers and runtime prediction models requires a considerable amount of computation time. 
+
 
 \paragraph{Contributions}
 
-We empirically analyze the performance of $k$-portfolios on the two datasets \texttt{SC2020} and \texttt{SC2021}. 
-\texttt{SC2020} consists of runtime data for 48~solvers and 400~instances from the SAT~Competition~2020, \texttt{SC2021} of runtime data for 46~solvers and 400~instances from the SAT~Competition~2021. 
-In our experiments, we look at all possible portfolio sizes $k$.
-For approximate determination of optimal portfolios of size $k$, we apply \emph{beam search} with varying beam widths.
-We compare the quality of such approximations to the results of an exact search. %KB: Das wurde bereits gesagt.
-For the exact search, we encode the \emph{K-Portfolio Problem} as an integer optimization problem. 
+In the presented study, we \emph{capture and evaluate} the state-of-the-art in SAT solving in terms of portfolio performance based on very recent datasets which consist of the runtime data of solvers participating in SAT~Competitions~2020 and~2021. 
 
-Exact solutions to the \emph{K-Portfolio Problem} are optimal in the sense that if one always picks the fastest solver in the optimal $k$-portfolio for each instance, %KB: Sind 'optimal solution' und 'optimal portfolio' hier dasselbe? Ich vermute, die Formulierung ist umständlich. Warum nicht einfach in etwa "A k-portfolio is optimal if it outperforms ..."?
-it outperforms all other $k$-portfolios that can be drawn from the given $n$ solvers. %KB: Das gehört nach vorne. Dorthin, wo zum ersten mal vom 'optimal behavior' oder so die Rede ist.
-For the evaluation of our approach, %KB: Sorry, aber was ist 'our approach'? MMn wurde bis jetzt nichts Neues vorgeschlagen -- es geht um Evaluierung?!
-for all $k$, we consider both the theoretically optimal performance of portfolios %KB: Welche portfolios? Ich denke leider, dass es immer noch unklar ist.
-as well as the performance if a prediction model makes instance-specific solver recommendations.
-We compare to two baselines, one that randomly samples $k$ solvers, and another one that selects the $k$ individually fastest solvers. --
+We systematically construct $k$-portfolios and analyze the impact of the portfolio size $k$ on portfolio performance. 
+For exact search, we encode the K-Portfolio Problem as an \emph{integer optimization problem}. 
+We also analyze the quality of several approximate and random solutions. 
+With the presented approaches, we provide means to \emph{create optimal portfolios} in an ad-hoc manner. 
+
+For each portfolio size $k$, we also train runtime prediction models which use random forests trained with the instance feature records of SATzilla~2012~\cite{xu2012satzilla2012}. 
+We analyze the prediction performance and the runtimes of the resulting automatic solver selection approaches with respect to $k$. 
 We make all our code and data available online.
+
 
 \paragraph{Results}
 
-For both datasets, we see that adding solvers to a portfolio has diminishing returns, i.e., portfolio performance improves most when adding the first few solvers.
-Additionally, the portfolios found heuristically by \emph{beam search} have very similar performance to the optimal solution, even for minimal beam width $w=1$, while beam search has a computational advantage.
-We also observe that the prediction models exhibit a rather low \emph{prediction performance} in our experiments. We hypothesize that this is due to the instance features available in our dataset.
-Therefore, the \emph{actual runtime} of portfolios with predictive models is not even close to the theoretical improvement we could have with a perfect oracle. 
+Naturally, portfolio performance improves most when adding the first few solvers returns diminish with increasing $k$. 
+The best approximate solutions to the $K$-Portfolio Problem could be found by \emph{beam search}. 
+They have very similar performance to the optimal solution, even for a minimal beam width of one. 
+
+Our prediction models exhibit a rather low \emph{prediction performance} in our experiments. We hypothesize that this is due to the instance features available in our dataset. 
+The \emph{actual runtime} of portfolios with predictive models is not even close to the theoretical improvement we could have with a perfect oracle. 
 The marginal returns through adding solvers are stagnating quickly, %KB: Das wurde doch gerade gesagt -- jetzt nicht noch einmal ansetzen. (Bitte beides zusammenführen.)
 such that beyond portfolio sizes of $k=3$ in \texttt{SC2020} ($k=4$ in \texttt{SC2021}), the runtimes of portfolios with predictive models does not improve further. %KB: Ich würde hier noch einen Satz hinzufügen, dass das ja schon ein wichtiges Ergebnis ist, weil man also sehr früh (früher als von uns erwartet) mit der Konstruktion von Portfolios aufhören kann (oder so ähnlich).
 
