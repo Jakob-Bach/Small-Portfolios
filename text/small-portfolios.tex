@@ -122,10 +122,13 @@ Naturally, portfolio performance improves most when adding the first few solvers
 The best approximate solutions to the $K$-Portfolio Problem could be found by \emph{beam search}. 
 They have very similar performance to the optimal solution, even for a minimal beam width of one. 
 
-Our prediction models exhibit a rather low \emph{prediction performance} in our experiments. We hypothesize that this is due to the instance features available in our dataset. 
-The \emph{actual runtime} of portfolios with predictive models is not even close to the theoretical improvement we could have with a perfect oracle. 
-The marginal returns through adding solvers are stagnating quickly, %KB: Das wurde doch gerade gesagt -- jetzt nicht noch einmal ansetzen. (Bitte beides zusammenführen.)
-such that beyond portfolio sizes of $k=3$ in \texttt{SC2020} ($k=4$ in \texttt{SC2021}), the runtimes of portfolios with predictive models does not improve further. %KB: Ich würde hier noch einen Satz hinzufügen, dass das ja schon ein wichtiges Ergebnis ist, weil man also sehr früh (früher als von uns erwartet) mit der Konstruktion von Portfolios aufhören kann (oder so ähnlich).
+Our prediction models exhibit a rather low \emph{prediction performance} in our experiments. 
+We hypothesize that this is due to the instance features available in our dataset. 
+Also the \emph{actual runtime} of portfolios with predictive models is not even close to the theoretical improvement we could have with a perfect oracle. 
+
+Still, we can observe considerably performance improvements with runtime prediction for $k$-portfolios up to portfolios of size $k = 4$. 
+For larger $k$, the runtimes of portfolios with predictive models does not improve further. 
+This shows that it does not make sense to combine very many solvers to a portfolio. 
 
 
 \paragraph{Outline}
