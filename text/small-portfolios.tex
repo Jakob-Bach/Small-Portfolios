@@ -62,27 +62,30 @@ Propositional Satisfiability, Solver Portfolios, Runtime Prediction Models, Mach
 \paragraph{Motivation}
 
 SAT solving is the archetypal NP-complete problem.
-It has lots of practical applications, e.g., verification of hard- and software~\cite{Kaufmann:2021:Amulet,Buning:2020:QPRVerify}, product configuration~\cite{Janota:2014:Configuration}, cryptanalysis~\cite{Nejati:2020:CDCLCrypto}, or planning~\cite{Schreiber:2021:Lilotane}.
-Today, SAT solvers are not only used to solve hard combinatorial problems in industry but also to solve previously open problems in mathematics~\cite{Heule:2016:Pyth,Heule:2018:Schur}. 
+It has lots of practical applications, e.g., verification of hardware and software~\cite{Kaufmann:2021:Amulet,Buning:2020:QPRVerify}, product configuration~\cite{Janota:2014:Configuration}, cryptanalysis~\cite{Nejati:2020:CDCLCrypto}, or planning~\cite{Schreiber:2021:Lilotane}.
+Today, SAT solvers are not only used to solve hard combinatorial problems in industry, but also previously open problems in mathematics~\cite{Heule:2016:Pyth,Heule:2018:Schur}. 
 
 One can observe continuous progress in SAT solving methods, heuristics, and their implementations in SAT solvers. 
-Solvers are usually evaluated based on compilations of benchmark instances representing diverse interesting application scenarios of SAT solvers. 
+Solvers are usually evaluated based on compilations of benchmark instances which represent diverse interesting application scenarios for SAT solvers. 
 Researchers who propose new SAT solvers tend to strive for \emph{stable} SAT solvers, i.e., with a good overall performance on many types of instances. 
 
-Additionally, one can regularly observe the emergence of new heuristics which contribute to the performance on only a narrow subset of instances. 
-Such approaches can be seen as complementary to the best average solvers.
-In order to highlight such insular progress, one can evaluate solvers on projections of the instance set, e.g., under projection to a certain family of instances.
-Another possibility to capture this kind of progress is to consider the marginal contributions of solvers to the performance of a solver portfolio.
-Portfolios are sets of solvers, from which one solver is chosen for each SAT instance.
+Another observation is an ongoing emergence of new heuristics which contribute to the performance on narrow subsets of instances. 
+Such approaches are complementary to solvers with the best average behavior.
+In order to highlight such insular progress, one can evaluate solvers on projections of the instance set, e.g., projections to a certain family of instances.
+Another possibility to capture this kind of progress %KB: Es liest sich, als wären beide Alternativen gleich gut. Die erste ist aber nur reißerisch, die zweite ist seriöser. Vermutlich sehen Sie das auch so. Das sollte explizit gesagt werden.
+is to consider the marginal contributions of solvers to the performance of a solver portfolio. %KB: Hier ist die Reihenfolge komisch. Stattdessen: "Another possibility is relate to so-called portfolios, which are ... (Vielleicht sollten auch die folgenden Einlassungen zu Portfolios ("It has been shown that ...") hier gleich kommen. bzw. die Erklärungen von Portfolios gesamthaft vor dem 'emergence'-Text.) One cann now quantify the improvement coming from a new solver as ..." 
+Portfolios are sets of solvers, from which one solver is chosen for each SAT instance. %KB: Vielleicht noch zu kurz. Wer choost? (Oder ist hier alles erlaubt?) Wann wird gechoost? 
 
-It has been shown in the past that combining several SAT solvers with a complex solver selection process which also involves runtime prediction models can considerably outperform single best solvers~\cite{xu2008satzilla}.
-Such complex portfolios usually lack of explainability of their performance gains. 
-Moreover, they compete with the ongoing and considerable performance gains through research on singular solvers. 
+It has been shown that combining several SAT solvers following a complex solver selection process which also involves runtime prediction models can considerably outperform single best solvers~\cite{xu2008satzilla}. %KB: Hier dann aber gleich sagen, was die Limitierungen beispielsweise dieser Studie sind, nicht es erst weiter unten andeuten.
+%KB: Selbst wenn sie schneller sind, ist aber der Rechenaufwand vermutlich deutlich höher, stimmt das? Wenn ja, würde ich das hier explizit sagen, auch um das, was folgt, gut zu motivieren.
+Such complex portfolios usually lack of explainability of their performance gains. %KB: Was ist der Unterschied zwischen 'portfolio' und 'complex portfolio'? -- Explainability kommt hier unmotiviert -- warum will man es hier?
+Moreover, they compete with the ongoing and considerable performance gains through research on singular solvers. %KB: Den Satz verstehe ich nicht.
 
 \paragraph{Problem Statement}
 
-SAT solving is a very active area of research such that complex handcrafted portfolios can be quickly outdated and lack to capture the state-of-the-art. 
-We want to find out how much portfolios with just a few state-of-the-art solvers are already sufficient to improve solving performance. 
+SAT solving is a very active area of research such that complex handcrafted portfolios can be quickly outdated %KB: Das hier gehört nach vorn, zu dem 'Emergence'-Text. hier nicht noch einmal ansetzen bitte.
+and lack to capture the state-of-the-art. 
+We want to find out to which extent portfolios with just a few state-of-the-art solvers are sufficient to improve solving performance. 
 In particular, we study $k$-portfolios of SAT solvers, i.e., portfolios composed of exactly $k$ SAT solvers, and systematically analyze the impact of the portfolio size $k$ on portfolio performance. 
 
 Determination of the optimal, i.e., best performing, portfolio of size $k$ in a given set of $n$ solvers is an NP-hard optimization problem such that exhaustive search quickly becomes infeasible.
