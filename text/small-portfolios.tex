@@ -111,8 +111,10 @@ We make all our code and data available online.
 For both datasets, we observe similar effects.
 First, we see that adding solvers to a portfolio has diminishing returns, i.e., portfolio performance improves most when adding the first few solvers.
 Additionally, the portfolios found heuristically by \emph{beam search} have very similar performance to the optimal solution, even for minimal beam width $w=1$, while beam search has a computational advantage.
-We also observe that the prediction models exhibit a rather low prediction performance in our experiments, which might be related to the instance features available in our dataset.
-Thus, actual portfolio performance cannot benefit from the theoretical improvement over $k$. 
+We also observe that the prediction models exhibit a rather low \emph{prediction performance} in our experiments, which might be related to the instance features available in our dataset.
+Therefore, the \emph{actual runtime} of portfolios with predictive models is not even close to the theoretical improvement we could have with a perfect oracle. 
+In fact, the marginal returns through adding solvers are stagnating quickly, such that beyond portfolio sizes of $k=3$ in \texttt{SC2020} ($k=4$ in \texttt{SC2021}), the runtimes of portfolios with predictive models does not improve further. 
+
 
 \paragraph{Outline}
 
@@ -220,7 +222,7 @@ The simplest way to solve the \emph{K-Portfolio Problem} is by exhaustively sear
 Since there are $\binom{n}{k}$ possible portfolios to search, this becomes infeasible for sufficiently large $n$ and $k \gg 1$ as well as $k \ll n$.
 For example, with $n=48$ solvers in the SAT~Competition~2020, there are $1128$ portfolios for $k=2$, but roughly $6.54 * 10^9$ portfolios for $k=10$.
 
-\subsection{MIP Search (exact)}
+\subsection{Integer Programming (exact)}
 
 The \emph{K-Portfolio Problem} is not linear due to the use of the $\min$ function.
 However, one can make it an integer linear problem by introducing additional variables.
