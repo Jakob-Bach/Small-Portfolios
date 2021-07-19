@@ -71,7 +71,7 @@ Evaluation of solvers is commonly based on compilations of benchmark instances w
 An important design objective behind new SAT solvers is \emph{stability}, i.e., good performance on many types of instances. 
 
 At the same time, we observe a recurrent emergence of new heuristics and methods which yield improved performance on only a narrow subset of instances. 
-Such approaches have a merit nevertheless -- one can see them as complementary to solvers with good average behavior. %KB: Hier ist mir die Akzentuierung, die Sie wollten, nicht ganz klar. Passt das so?
+Such approaches have a merit nevertheless -- one can see them as complementary to solvers with good average behavior. 
 To make such narrow progress explicit, one tends to evaluate solvers exclusively on specific problem types and instances.
 
 \begin{example}[Crypto Track in SAT Competition 2021]
@@ -91,36 +91,42 @@ The best performing pair of solvers in terms of their VBS contains the solver \e
 \end{example}
 
 Yet another tweak when it comes to performance gains from sets of solvers is as follows: Combining a portfolio with a solver-election process which includes runtime prediction models can outperform individual best solvers by much~\cite{xu2008satzilla}. 
-However, a downside is that respective constructions are complex and quite time-consuming, so comparative studies in SAT solving more often than not do not implementations applying this principle to state-of-the-art solvers.
+However, a downside is that respective constructions are complex and quite time-consuming, so comparative studies in SAT solving more often do not include implementations applying this principle to state-of-the-art solvers.
 
 Given the situation sketched so far, the following questions are important when it comes to the design of portfolios and their evaluation. 
-First, one must decide how many solvers to put in a portfolio, and which ones. 
+First of all, one must decide how many solvers to put in a portfolio, and which ones. 
 A $k$-portfolio is a set of $k$ solvers drawn from a given set of $n \geq k$ solvers $S$. 
 A $k$-portfolio is optimal if its VBS outperforms that of all other $k$-portfolios which can be drawn from $S$. 
-The \emph{$K$-Portfolio Problem}, which is to determine an optimal $k$-portfolio, is an NP-hard optimization problem~\cite{nof2020real}. %KB: Vielleicht sollte hier das Wort 'search' explizit auftauchen, damit weiter unten der Bezug klar ist. Auch der Begriff 'solution', den Sie nachher benutzen, sollte hier in gleicher Weise verankert werden.
-Second, putting together a dataset which contains instance features as well as runtime data, the training of instance classifiers and runtime prediction models requires a considerable amount of computation time. %KB: Hier vielleicht sprechend. Mir ist unklar, warum es diesen Satz gibt, bzw. was Sie hier sagen wollen.
+The \emph{$K$-Portfolio Problem} is to determine an optimal $k$-portfolio. 
+Searching for a solution to the \emph{$K$-Portfolio Problem} is an NP-hard optimization problem~\cite{nof2020real}. 
+
+Only after answering the previous questions, one can concretely design the solver selection process. 
+This includes the selection of instance features, the selection of the prediction models to be used, and their training. 
 
 
 \paragraph{Contributions}
 
 This current article features a study which \emph{captures and evaluates} the state-of-the-art in SAT solving in terms of portfolio performance. It is based on very recent datasets which contain the runtimes of solvers having participated in SAT~Competitions~2020 and~2021. Our study is unique in that it addresses all points raised so far, as follows:
 We systematically construct $k$-portfolios and analyze the impact of the portfolio size $k$ on portfolio performance. 
-For exact search, we encode the K-Portfolio Problem as an \emph{integer optimization problem}. %KB: Das scheint neu zu sein, wenn ich Sie richtig verstanden habe. Wenn ja, sollten Sie das hier explizit sagen, und auch kurz, warum das besser ist als die Alternativen.
-Spurred by the complexity of the problem, we also analyze the quality of various approximate and random solutions.  
+For exact search, we encode the K-Portfolio Problem as an \emph{integer optimization problem} which was faster than alternative approaches evaluated in preliminary experiments. 
+Spurred by the complexity of the problem, we also analyze the quality of various approximate and random solutions. 
 An important takeaway of our study is that it gives way to the \emph{creation of optimal portfolios} in an ad-hoc manner. 
 In a subsequent step, we study the prediction quality of solver runtimes which one can achieve with \emph{simple} models.
-For each portfolio size $k$, we train such models using random forests, use the widely known instance feature records of SATzilla~2012~\cite{xu2012satzilla2012} to this end, and then use the predictions to select portfolio members automatically in a straightforward manner. 
+For each portfolio size $k$, we train such models using random forests, using the widely known instance feature records of SATzilla~2012~\cite{xu2012satzilla2012} to this end, and then use the predictions to select portfolio members automatically in a straightforward manner. 
 Our code and data are available online.
 
 
 \paragraph{Results}
-While it is expected that the limit utility decreases with portfolio size, we did not expect the decrease to be so early -- values of $k$ larger than $3$ did not yield any benefit in our experiments. 
+Our evaluation leads to meaningful results regarding the order of magnitude of reasonable portfolio sizes. 
+While it is expected that the limit utility decreases with portfolio size, we did not expect the decrease to be so early. 
+In particular, for portfolios of size 5 and larger, the marginal gain in VBS performance decreases to less than 100 seconds by adding more solvers. 
 Another interesting observation is that well-known \emph{beam search} has given way to the best approximate solutions to the $K$-Portfolio Problem. 
-These solutions happen to perform very similarly to the optimal ones, even for a minimal beam width of one. 
+These solutions happen to perform very similarly to the optimal ones, even for a minimal beam width of one, in contrast to other approaches which have been used in previous studies (\emph{K-Best}, in particular). 
 On the other side, relying on a simple prediction model has been a mixed bag according to our experiments: On the negative side, \emph{prediction performance} has been rather low. 
 The \emph{actual runtime} of portfolios with predictive models is not even close to the theoretical improvement one could have with a perfect oracle.
 We take this as an indication that more research is necessary; our hypothesis is that the instance features available in our dataset are not sufficiently conclusive. 
-On the positive side, we have observed considerably performance improvements with runtime prediction for $k$-portfolios up to portfolios of size $k = 4$. %KB: Verglichen womit? Bitte explizit sagen.
+On the positive side, we have observed considerable performance gains over single-best solver performance with runtime prediction for $3$-portfolios in both competition datasets. 
+In the SAT Competition~2021 dataset, performance can be further improved with $k = 4$. %MI: need to find better formulation 
 For larger $k$, the runtimes of portfolios with predictive models does not improve further. 
 We take this as a further indication that it might not be beneficial to combine very many solvers to a portfolio. 
 
