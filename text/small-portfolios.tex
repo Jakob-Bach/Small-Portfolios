@@ -116,7 +116,7 @@ In particular, this includes the selection of instance features used to learn a 
 This current article features a study which captures and evaluates the state-of-the-art in SAT solving in terms of portfolio performance. 
 Our study is unique in that it addresses all points raised so far, as follows:
 We systematically construct $k$-portfolios and analyze the impact of the portfolio size $k$ on portfolio performance. 
-For exact search, we encode the K-Portfolio Problem as an integer optimization problem. 
+For exact search, we encode the \emph{K-Portfolio Problem} as an integer optimization problem. 
 This has been faster than alternative approaches, according to preliminary experiments of ours. 
 Spurred by the complexity of the problem, we also analyze the quality of various approximate and random solutions. 
 An important takeaway of our study is that it gives way to the creation of optimal portfolios in an ad-hoc manner. %KB: Hier fragt man sich beim Lesen ja schon, wie also die ad-hoc creation-Methode aussieht. Der Results-Absatz, der folgt, erklärt das aber nicht wirklich. (Der Rumpf des Artikels sagt es eigentlich auch nicht explizit.) Da ich die Einleitung jetzt deswegen nicht großartig umbauen will, würde ich vorschlagen, hier zu schreiben "... in an ad-hoc manner, as explained momentarily", und Sie fügen dann in Results nich einen Satz ein, der das dann explizit sagt.
@@ -130,7 +130,7 @@ Our code and data are available online.
 Our evaluation yields insightful results regarding the various questions. 
 While it is expected that the limit utility decreases with portfolio size, we did not expect the decrease to be so early. 
 In particular, for portfolios of size 5 and larger, the marginal gain in VBS performance decreases to less than 100 seconds by adding more solvers. 
-Another interesting observation is that well-known \emph{beam search} has given way to the best approximate solutions to the $K$-Portfolio Problem. 
+Another interesting observation is that well-known \emph{beam search} has given way to the best approximate solutions to the \emph{K-Portfolio Problem}. 
 These solutions happen to perform very similarly to the optimal ones, even for a minimal beam width of one, in contrast to other approaches, which have been used in previous studies (\emph{k-best} in particular). 
 According to our experiments however, relying on a simple prediction model has been a mixed bag:
 On the negative side, prediction performance has been rather low. 
@@ -154,6 +154,7 @@ We conclude with Section~\ref{sec:conclusion}.
 
 In this section, we provide an overview of approaches that deal with portfolios of SAT solvers. 
 We begin with studies that use portfolios to evaluate the state-of-the-art. 
+%JB: state-of-the-art of what?
 We then review instance-specific solver selection techniques, including approaches to automatically configure and analyze such techniques. 
 Finally, we discuss related work on systematic investigation of $k$-portfolios. 
 
@@ -161,8 +162,9 @@ Solver complementarity regarding the runtime of solver portfolios has been exami
 They show that significant contributions to the runtime of a portfolio often come from solvers which are not competitive when evaluated as a standalone solver. 
 This however depends on the dataset under evaluation. 
 In fact, the best $k$-portfolios ($k \in [1,3]$) drawn from solvers participating in SAT~Competition~2020 contain solvers which actually received an award in the standalone evaluation \cite{SC2020:AIJ}.
-In particular, the best performing $2$-portfolio of solvers consists of the winners of the SAT and UNSAT tracks. 
-This has been markedly different in SAT~Competition~2021. Here, a solver which was not competitive in the standalone evaluation has been part of the best performing $2$-portfolio (drawn from the solvers in that competition). 
+In particular, the best performing $2$-portfolio of solvers consists of the winners of the SAT and UNSAT Tracks. 
+This has been markedly different in SAT~Competition~2021.
+Here, a solver which was not competitive in the standalone evaluation has been part of the best performing $2$-portfolio (drawn from the solvers in that competition). 
 All this underlines the importance of portfolio analysis for good stable solvers. Here, progress often manifests itself through complex hybridization of methods. 
 
 Instance-specific solver selection approaches bring in another perspective on solver complementarity.
@@ -170,7 +172,6 @@ One of the best-known complex solver-selection approaches is SATzilla, of which 
 They combine instance classification with runtime prediction models in a so-called mixture-of-experts approach in order to select a solver in their portfolio. 
 Additional components of SATzilla are so-called \emph{pre-solvers}, which are only run for a short time to solve easy instances, and a \emph{backup solver}, which is responsible for instances where computing features for the prediction models takes too long.
 Overall, portfolio approaches can become quite complex, and it is unclear which elements of the portfolio are really necessary to achieve a good performance 
-
 Other instance-specific solver selection approaches are ISAC, which is based on clustering in the instance feature space~\cite{Kadioglu:2010:ISAC}, and SNNAP, which combines the ISAC approach with runtime prediction models~\cite{Collautti:2013:SNNAP}.
 %Besides complex portfolio approaches, there are also simple ones, e.g., selecting a solver nearest-neighbor-based, without training a prediction model~\cite{malitsky2011non, nikolic2013simple, samulowitz2013snappy}.%MI: what are they doing?
 A recent survey on algorithm-selection approaches -- also beyond SAT -- is provided by Kerschke et al.~\cite{kerschke2019automated}.
@@ -184,8 +185,8 @@ They evaluate $k$-portfolios of CSP solvers in terms of their average runtime an
 They compare several classification methods within portfolios, next to adapting complex SAT portfolio approaches like SATzilla. 
 Amadini et al.\ focus on different instances and solvers than this current study, though the evaluation procedure has some similarities.
 %Our evaluation is less broad in terms of classification models, but instead we analyze feature importances to find out what drives the models' predictions.MI: really?
-While \cite{amadini2014empirical} only uses heuristic search algorithms, 
-our study features a broad comparison of different search strategies for portfolios, including an \emph{exact solution}, several \emph{approximate solutions}, and \emph{random sampling}. 
+While \cite{amadini2014empirical} only uses heuristic search algorithms, our study features a broad comparison of different search strategies for portfolios, including an \emph{exact} solution, several \emph{approximate} solutions, and \emph{random sampling}. 
+% JB: "several" == two
 
 Nof and Strichman formalize the \emph{K-Portfolio Problem} in the form of two maximization problems with different objective functions and prove their submodularity and NP-completeness~\cite{nof2020real}. 
 They solve the \emph{K-Portfolio Problem} optimally with an SMT solver and use \emph{greedy search} to generate approximate solutions.
@@ -403,9 +404,9 @@ We evaluate prediction performance in two ways:
 \subsection{Dataset}
 
 In our experiments, we use two datasets.
-The first one, \texttt{SC2020}, contains $|S| = 48$ solvers and $400$ instances from the Main track of the SAT~Competition~2020\footnote{\url{https://satcompetition.github.io/2020/}}~\cite{balyo2020proceedings, SC2020:AIJ}.
+The first one, \texttt{SC2020}, contains $|S| = 48$ solvers and $400$ instances from the Main Track of the SAT~Competition~2020\footnote{\url{https://satcompetition.github.io/2020/}}~\cite{balyo2020proceedings, SC2020:AIJ}.
 We filtered out those instances where no solver finished in time, resulting in a dataset of $|I| = 316$ instances. 
-The second dataset, \texttt{SC2021}, contains $|S| = 46$ solvers and $400$ instances from the Main track of the SAT~Competition~2021\footnote{\url{https://satcompetition.github.io/2021/}}.
+The second dataset, \texttt{SC2021}, contains $|S| = 46$ solvers and $400$ instances from the Main Track of the SAT~Competition~2021\footnote{\url{https://satcompetition.github.io/2021/}}.
 Again, we filtered out those instances where no solver finished in time, resulting in a dataset of $|I| = 325$ instances.
 
 For predictions, we make use of 143 features to characterize instances, of which 
