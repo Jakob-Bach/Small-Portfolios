@@ -624,24 +624,27 @@ Together with the low prediction performance, this indicates that our dataset la
 
 \section{Conclusions and Future Work}
 \label{sec:conclusion}
+%KB: Hier würde sich ein einleitender Satz gut machen, also dass über das Zusammenwirken von Solvern bisher noch vergleichsweise wenig bekannt ist, obwohl es sich bei SAT Solving um ein reifes Gebiet handelt, oder so ähnlich.
+SAT solvers are often complementary, i.e, some solvers are good on some instances, and others are on other instances.
+This has lead to the notion of portfolios, i.e., combination of several solvers. %KB: Ab hier haben die Conclusions in etwa das gleiche Problem wie die Einleitung. Die einzelnen Punkte werden etwas lieblos (so wirkt es halt) aufgezählt, ohne dass die Wichtigkeit der einzelnen Einsichten erklärt wird. Ich würde erst einmal sagen, dass der ARtikel eine vergleichende Studie zu Portfolios ist, die in mehrerlei Hinsicht über das hinausgegangen ist, was bisherige Arbeiten geleistet haben. Es muss auch nicht unbedingt alles aufgezählt werden -- hier reichen dann die Highlights (aus Ihrer Sicht).
+We have analyzed such portfolios with runtime data from the SAT~Competitions~2020 and 2021. %KB: Vielleicht: "One feature of our study is that it includes the latest ..."
+In particular, we focused on portfolios with the number of solvers limited to $k$. %KB: Nicht gut formuliert. "We have studied the important question how large portfolios should actually be, and have observed that ..." vielleicht stattdessen.
 
-SAT solvers are often complementary, i.e, they are particularly good on some instances and less good on other instances.
-Thus, one combines several solvers into portfolios.
-We analyzed such portfolios with runtime data from the SAT~Competitions~2020 and 2021.
-In particular, we focused on portfolios with the number of solvers limited to $k$.
-
-We analyzed an integer optimization problem to find $k$-portfolios exactly as well as a \emph{beam search} approach to find $k$-portfolios fast.
+We analyzed an integer optimization problem %KB: Wording passt hier nicht.
+to find $k$-portfolios exactly as well as a \emph{beam search} approach to find $k$-portfolios fast. %KB: Da Sie integer optimization mit nichts anderem (zum Finden der exakten Lösung) verglichen haben, wäre ich hier diesbezüglich zurückhaltender.
+%KB: Dass Beam search so gut funktioniert, wid hier gsar nicht klar.
+%KB: Die folgenden Aussagen dann etwas nach oben. Ich würde nicht zweimal anfangen mit einzelnen Aspekten der Studie.
 Regarding portfolio size, we saw a strong improvement in objective value for adding solvers to portfolios with small $k$, but a small impact once the portfolio reaches a certain size.
 
 Regarding the solution approach, we found that \emph{beam search} yields close-to-optimal solutions.
 After determining portfolios, we combined them with prediction models that made instance-specific solver recommendations.
 However, these models performed not satisfactorily on the given dataset, such that the objective value of portfolios with predictions did not continuously improve with the portfolio size.
 
-In future work, we want to improve prediction performance, in particular, by adapting the set of instance features.
-Recent results in the empirical analysis of solver portfolios indicate that features which describe the community structure of graph representations of SAT instances correlate well with solver performance. 
+In future work, we want to improve prediction performance, in particular, by adapting the set of instance features. %KB: Nicht "we want to", das klingt zu wenig objektiv. Stattdessen: "Regarding future work, there is room for improvement regarding ..." oder "As future work, it is necessary to improve ..."
+Recent results in the empirical analysis of solver portfolios indicate that features which describe the community structure of graph representations of SAT instances correlate well with solver performance. %KB: Dieser Satz liest sich, als hätten wir dem Leser die ganze Zeit gewisse Forschungsergebnisse vorenthalten. Was sind das für recent results?
 Among those are features describing their hierarchical community structure, such as community leaf size, community degree, and the number of inter-community edges~\cite{Li:2021:HCS}. 
-Also, we want to integrate our portfolio-search functionality into the Python package~\emph{gbd-tools}, so it can be directly used in queries to the database GBD.
-
+Also, we want to integrate our portfolio-search functionality %KB: Nicht ganz klar welche. Beam search?
+into the Python package~\emph{gbd-tools}, so it can be directly used in queries to the database GBD. %KB: Das hier klingt nicht nach Forschung. Sie sollten also mindestens sagen, was der Rest der Welt von dieser Integration hat.
 \section*{Acknowledgments}
 
 \todo{check if Jakob and/or Markus need to add stuff here}
