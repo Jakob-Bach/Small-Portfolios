@@ -60,7 +60,7 @@ Propositional Satisfiability, Solver Portfolios, Runtime Prediction, Machine Lea
 \section{Introduction}
 \label{sec:introduction}
 
-\paragraph{Motivation} %KB: DAs Layout mit a), b) usw. zur Gliederung der Einleitung ist mMn sehr unüblich, nicht?
+\paragraph{Motivation} %KB: DAs Layout mit a), b) usw. zur Gliederung der Einleitung ist mMn sehr unüblich, nicht? %MI: ist wohl so vorgegeben, könnten zu subsections wechseln, was aber platz kostet (->hartes page-limit von 8 seiten incl. refs)
 
 SAT solving is the archetypal NP-complete problem.
 Its practical applications abound, e.g., verification of hardware and software~\cite{Kaufmann:2021:Amulet,Buning:2020:QPRVerify}, product configuration~\cite{Janota:2014:Configuration}, cryptanalysis~\cite{Nejati:2020:CDCLCrypto}, or planning~\cite{Schreiber:2021:Lilotane}.
@@ -127,7 +127,7 @@ Our code and data are available online.
 
 Our evaluation yields insightful results regarding the various questions. 
 While it is expected that the limit utility decreases with portfolio size, we did not expect the decrease to be so early. 
-In particular, for portfolios of size 5 and larger, the marginal gain in VBS performance decreases to less than 100 seconds by adding more solvers. 
+In particular, for portfolios of size 5 and larger, the marginal gain in VBS performance decreases to less than 100 seconds by adding more solvers.  
 Another interesting observation is that well-known \emph{beam search} has given way to the best approximate solutions to the \emph{K-Portfolio Problem}. 
 These solutions happen to perform very similarly to the optimal ones, even for a minimal beam width of one, in contrast to other approaches, which have been used in previous studies (\emph{k-best} in particular). 
 According to our experiments however, relying on a simple prediction model has been a mixed bag:
@@ -135,7 +135,7 @@ On the negative side, prediction performance has been rather low.
 The actual runtime of portfolios with predictive models is not even close to the theoretical improvement one could have with a perfect oracle.
 We take this as an indication that more research is necessary; our hypothesis is that the instance features available in our dataset are not sufficiently conclusive. 
 On the positive side, we have observed considerable performance gains over single-best solver performance with runtime prediction for $3$-portfolios in both competition datasets. 
-With the SAT Competition~2021 dataset, performance is even better with $k = 4$. %MI: need to find better formulation 
+For the solvers in the SAT Competition~2021 dataset, we observe a further gain in performance for $k = 4$. 
 For larger $k$, the runtimes of portfolios with predictive models does not improve further. 
 We take this as a further indication that it might not be beneficial to combine very many solvers to a portfolio. 
 
