@@ -234,15 +234,13 @@ $$
 \argmin\limits_{P \subseteq S, |P| = k} c_{T}(P)
 $$
 Note that the portfolio cost function decreases monotonically under the addition of solvers: $\forall s \in S, c_{T}(P \cup \{s\}) \leq c_{T}(P)$. 
-In the following, we outline four approaches for either \emph{exact} or \emph{approximate} determination of solutions to that function. 
+In the following, we outline three solution approaches. 
+The first one determines exact solutions using \emph{integer programming} (Section~\ref{sec:approach:ip}). 
+We then present two approximation methods, namely \emph{beam search} (Section~\ref{sec:approach:beam}) and \emph{k-best} (Section~\ref{sec:approach:k-best}). 
 
-\subsection{Exhaustive Search (exact)}
 
-The simplest way to solve the \emph{K-Portfolio Problem} is by exhaustively searching all portfolios with $k$ solvers. 
-Since there are $\binom{n}{k}$ possible portfolios to search, this becomes infeasible for sufficiently large $n$ and $k \gg 1$ as well as $k \ll n$.
-For example, with $n=48$ solvers in the SAT~Competition~2020, there are $1128$ portfolios for $k=2$, but roughly $6.54 * 10^9$ portfolios for $k=10$.
-
-\subsection{Integer Programming (exact)}
+\subsection{Integer Programming}
+\label{sec:approach:ip}
 
 The \emph{K-Portfolio Problem} is not linear due to the use of the $\min$ function.
 However, one can make it an integer linear problem by introducing additional variables.
@@ -262,8 +260,10 @@ Ultimately, Equation~\ref{eq:ip4} specifies the optimization target.%
 	\min_{x,y} \quad & \frac{1}{|I|} \cdot \sum_{i \in I} \sum_{s \in S} r_T(i,s) \cdot x_{i,s} \label{eq:ip4}
 \end{align}
 
-\subsection{Beam Search (approximate)}
 
+\subsection{Beam Search}
+\label{sec:approach:beam}
+%
 % IEEE wants algorithms as figures, not separate floats (as "algorithm2e" does), so we need some hacking: https://tex.stackexchange.com/questions/147598/how-to-use-the-algorithm2e-package-with-ieeetran-class
 \begin{figure}[t]
 \makeatletter
@@ -295,8 +295,8 @@ Ultimately, Equation~\ref{eq:ip4} specifies the optimization target.%
 \end{algorithm}
 \caption{\emph{Beam search} algorithm.}
 \label{al:beam-search}
-\end{figure}
-
+\end{figure}%
+%
 \emph{Beam search} is a greedy algorithm that finds portfolios in an iterative manner.
 Figure~\ref{al:beam-search} specifies the approach. 
 In each iteration, the algorithm combines the portfolios from the previous iteration with individual solvers which are not part of these portfolios. 
@@ -331,11 +331,14 @@ This can be transformed into an upper bound on the cost of a portfolio found by 
 	\label{eq:upper-bound}
 \end{equation}
 
-\subsection{K-Best (approximate)}
 
-This is a baseline used in~\cite{nof2020real}.
+\subsection{K-Best}
+\label{sec:approach:k-best}
+
+This is a baseline used in~\cite{nof2020real} and is one of the most obvious naive approaches. 
 It sorts all solvers by their individual performance and then picks the top $k$ from this list.
 Unlike \emph{beam search}, it does not consider how solvers within a portfolio interact, i.e., if they complement each other.
+
 
 \section{Experimental Design}
 \label{sec:experimental-design}
@@ -345,20 +348,18 @@ In particular, we are interested in the performance improvements achievable with
 
 \subsection{Solution Approaches}
 
-We employ the four solution approaches from Section~\ref{sec:approach} to search for portfolios:
+We employ the three solution approaches from Section~\ref{sec:approach} to determine $k$-portfolios for each $k \in \{1, \dots, |S|\}$. 
+We also generate an additional baseline via random sampling of $k$-portfolios.
 
 \begin{itemize}
-	\item \emph{Random sampling}:
-	To get an idea how the performance of arbitrary portfolios is distributed, we randomly sample 1000 portfolios for each $k$.
-	Exhaustively evaluating all portfolios for all sizes $k$ would have been too expensive in our scenario.
 	\item \emph{Optimal solution}:
-	We solve the \emph{K-Portfolio Problem} as an integer optimization problem to exactly determine the best portfolio for each $k \in \{1, \dots, |S|\}$.
+	We solve the \emph{K-Portfolio Problem} as an integer optimization problem to exactly determine the best portfolio.
 	\item \emph{Beam search}: 
-	We use this approach to search for good portfolios heuristically.
-	We evaluate all $k \in \{1, \dots, |S|\}$ and also vary the beam width $w \in \{1, 2, \dots, 10, 20, \dots, 100\}$.
+	We use this approach to search for good portfolios heuristically with varying beam widths $w \in \{1, 2, \dots, 10, 20, \dots, 100\}$.
 	\item \emph{K-best}:
 	We use this approach to have a simple baseline for \emph{beam search}.
-	We evaluate all $k \in \{1, \dots, |S|\}$.
+	\item \emph{Random sampling}:
+	To get an idea how the performance of arbitrary portfolios is distributed, we randomly sample 1000 portfolios for each $k$.
 \end{itemize}
 
 The optimization goal for all approaches is the PAR-2 score $c_T(P)$.
@@ -405,7 +406,7 @@ Again, we filtered out those instances where no solver finished in time, resulti
 
 For predictions, we make use of 143 features to characterize instances, of which 
 $138$ features are from the feature extractor of SATzilla~2012~\cite{xu2008satzilla, xu2012satzilla2012} and five features are from a gate-recognition approach~\cite{Iser:2015:GateRecognition}. 
-Feature values which are missing due to the feature extractor having exceeded time- or memory limits are replaced with the mean of their training set. %KB: Unter uns -- am Artikel selbst würde ich nichts ändern: Ist das eigentlich eine gute Idee? Offensichtlich sind diese Merkmale ja extrem ausgeprägt, sonst könnte man sie ja berechnen. Stattdessen den Mittelwert zu nehmen ist doch irreführend?!? Wie oft ist das eigentlich passiert?
+Feature values which are missing due to the feature extractor having exceeded time- or memory limits are replaced with the mean of their training set. %KB: Unter uns -- am Artikel selbst würde ich nichts ändern: Ist das eigentlich eine gute Idee? Offensichtlich sind diese Merkmale ja extrem ausgeprägt, sonst könnte man sie ja berechnen. Stattdessen den Mittelwert zu nehmen ist doch irreführend?!? Wie oft ist das eigentlich passiert? %MI: Ich würde einen Wert nehmen, der weit außerhalb des benutzten Wertebereichs liegt, um Timeouts zu "markieren"
 
 \subsection{Implementation}
 
