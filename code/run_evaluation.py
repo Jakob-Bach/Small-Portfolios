@@ -57,7 +57,7 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
     print('How often is a solver fastest in SC2021?')
     print(runtimes2021.idxmin(axis='columns').value_counts())
 
-    # ----Overall Trend / Test-Set Performance----
+    # ----General Trend / Test-Set Performance----
 
     # Figures 2 and 3: Performance of search approaches over k (Figure 1 is pseudo-code, not created here)
     data = search_results.loc[(search_results['algorithm'] != 'beam_search') | (search_results['w'] == 1)]

@@ -250,7 +250,6 @@ In the following, we outline three solution approaches.
 The first one determines exact solutions using \emph{integer programming} (Section~\ref{sec:approach:ip}). 
 We then present two approximation methods, namely \emph{beam search} (Section~\ref{sec:approach:beam}) and \emph{k-best} (Section~\ref{sec:approach:k-best}). 
 
-
 \subsection{Integer Programming}
 \label{sec:approach:ip}
 
@@ -271,7 +270,6 @@ Ultimately, Equation~\ref{eq:ip4} specifies the optimization target.%
 	\forall_{s \in S} \sum_{i \in I} x_{i,s} &\leq |I| \cdot y_s \label{eq:ip3}\\
 	\min_{x,y} \quad & \frac{1}{|I|} \cdot \sum_{i \in I} \sum_{s \in S} r_T(i,s) \cdot x_{i,s} \label{eq:ip4}
 \end{align}
-
 
 \subsection{Beam Search}
 \label{sec:approach:beam}
@@ -344,7 +342,6 @@ This can be transformed into an upper bound on the cost of a portfolio found by 
 	\label{eq:upper-bound}
 \end{equation}
 
-
 \subsection{K-Best}
 \label{sec:approach:k-best}
 
@@ -352,12 +349,11 @@ This is a baseline used in~\cite{nof2020real} and is one of the most obvious nai
 It sorts all solvers by their individual performance and then picks the top $k$ from this list.
 Unlike \emph{beam search}, it does not consider how solvers within a portfolio interact, i.e., if they complement each other.
 
-
 \section{Experimental Design}
 \label{sec:experimental-design}
 
 In our experiments, we evaluate the solution approaches just presented and analyze their relationship to prediction approaches for $k$-portfolios. 
-In particular, we are interested in the performance improvements achievable with increasing values of Parameter $k$. 
+In particular, we are interested in the performance improvements achievable with increasing values of parameter $k$. 
 
 \subsection{Solution Approaches}
 
@@ -380,7 +376,6 @@ In preliminary experiments, we also analyzed two slightly different objectives, 
 However, overall trends in the results were similar to those with PAR-2 score, so we stick to the latter.
 We conduct five-fold cross-validation over SAT instances and average evaluation metrics over these folds. 
 
-
 \subsection{Prediction Approaches}
 
 We also analyze the performance of the previously determined $k$-portfolios if they use a prediction model to select a solver. 
@@ -392,7 +387,7 @@ As models, we use random forests %~\cite{breiman2001random}, which are ensembles
 which are also used in the well-known portfolio approach SATzilla2012~\cite{xu2012satzilla2012}. 
 
 To analyze if prediction performance improves due to ensembling, we train models with one, ten, and 100 trees.
-The prediction approach in SATzilla2012 has two differences compared ours:
+The prediction approach in SATzilla2012 has two differences compared to ours:
 First, it trains a classifier for each pair of solvers in the portfolio, while we only train one classifier, making a multi-class prediction.
 Second, it weights instances based on the runtime difference between solvers, while we go for an unweighted approach.
 However, none of these changes has helped to improve prediction performance according to preliminary experiments of ours, so we opt for the simpler approach instead. %KB: Nicht ganz klar, was also der simpler approach ist.
@@ -552,13 +547,13 @@ We also evaluate the PAR-2 score of these portfolios with prediction model. %KB:
 \subsubsection{Matthews Correlation Coefficient}
 
 \begin{figure}[t]
-\centering
-\includegraphics[width=.9\columnwidth]{plots/prediction-test-mcc.pdf}
-\caption{Test-set MCC for \emph{random sampling} portfolios, using random forests with 100 trees.	For readability reasons, we do not plot outlier points.
-%(MCC is 0 for random or constant prediction and it is 1 for perfect prediction.)
-%MI: imo belongs into text
-}
-\label{fig:prediction-test-mcc}
+	\centering
+	\includegraphics[width=.9\columnwidth]{plots/prediction-test-mcc.pdf}
+	\caption{
+		Test-set MCC for \emph{random sampling} portfolios, using random forests with 100 trees.
+		For readability reasons, we do not plot outlier points.
+	}
+	\label{fig:prediction-test-mcc}
 \end{figure}
 
 Figure~\ref{fig:prediction-test-mcc} graphs the test-set classification performance of random forests with 100 trees, using the portfolios from \emph{random sampling}.
@@ -580,8 +575,9 @@ For small $k$, the prediction performance varies stronger between portfolios tha
 	\includegraphics[width=0.9\columnwidth]{plots/prediction-test-objective-beam-2020.pdf}
 	\qquad
 	\includegraphics[width=0.9\columnwidth]{plots/prediction-test-objective-beam-2021.pdf}
-	\caption{Portfolio performance for \emph{beam search} portfolios with $w=100$ for the \texttt{SC2020} dataset (left) and the \texttt{SC2021} dataset (right), comparing the performance scores of the portfolio's virtual best solver (VBS), single best solver (SBS), and score with prediction model, i.e., random forests with 100 trees. 
-The performance of the the global SBS, i.e., not only considering solvers from the portfolio, is shown as horizontal line.
+	\caption{
+		Portfolio performance for \emph{beam search} portfolios with $w=100$ for the \texttt{SC2020} dataset (left) and the \texttt{SC2021} dataset (right), comparing the performance scores of the portfolio's virtual best solver (VBS), single best solver (SBS), and score with prediction model, i.e., random forests with 100 trees. 
+		The performance of the the global SBS, i.e., not only considering solvers from the portfolio, is shown as horizontal line.
 	}
 	\label{fig:prediction-test-objective-beam}
 \end{figure*}
@@ -605,7 +601,10 @@ In addition, for $k > 2$ the model-based portfolios are better than the global s
 \begin{figure}[t]
 	\centering
 	\includegraphics[width=0.9\columnwidth]{plots/prediction-test-objective-optimal-2020.pdf}
-	\caption{Portfolio performance for \emph{optimal solution} portfolios, comparing the portfolio's virtual best solver (VBS), single best solver (SBS), and score with prediction model, i.e., random forests with 100 trees, for the \texttt{SC2020} dataset. The performance of the the global SBS, i.e., not only considering solvers from the portfolio, is shown as horizontal line.}
+	\caption{
+		Portfolio performance for \emph{optimal solution} portfolios, comparing the portfolio's virtual best solver (VBS), single best solver (SBS), and score with prediction model, i.e., random forests with 100 trees, for the \texttt{SC2020} dataset.
+		The performance of the the global SBS, i.e., not only considering solvers from the portfolio, is shown as horizontal line.
+	}
 	\label{fig:prediction-test-objective-optimal-2020}
 \end{figure}
 
@@ -642,7 +641,6 @@ Regarding future work, there is room for improvement regarding prediction perfor
 Among those are features describing the hierarchical community structure of graph representations of SAT instances, such as community leaf size, community degree, and the number of inter-community edges~\cite{Li:2021:HCS}. 
 
 In order to facilitate portfolio analysis for evaluation purpose and ad-hoc portfolio generation, we integrate our exact portfolio-search approach into the Python package~\emph{gbd-tools}, so it can be directly used in queries to the database GBD. 
-
 
 \section*{Acknowledgments}
 
