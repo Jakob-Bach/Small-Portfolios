@@ -407,9 +407,8 @@ We filtered out those instances where no solver finished in time, resulting in a
 The second dataset, \texttt{SC2021}, contains $|S| = 46$ solvers and $400$ instances from the Main Track of the SAT~Competition~2021\footnote{\url{https://satcompetition.github.io/2021/}}.
 Again, we filtered out those instances where no solver finished in time, resulting in a dataset of $|I| = 325$ instances.
 
-For predictions, we make use of 143 features to characterize instances, of which 
-$138$ features are from the feature extractor of SATzilla~2012~\cite{xu2008satzilla, xu2012satzilla2012} and five features are from a gate-recognition approach~\cite{Iser:2015:GateRecognition}. 
-Feature values which are missing due to the feature extractor having exceeded time- or memory limits are replaced with the mean of their training set. %KB: Unter uns -- am Artikel selbst würde ich nichts ändern: Ist das eigentlich eine gute Idee? Offensichtlich sind diese Merkmale ja extrem ausgeprägt, sonst könnte man sie ja berechnen. Stattdessen den Mittelwert zu nehmen ist doch irreführend?!? Wie oft ist das eigentlich passiert? %MI: Ich würde einen Wert nehmen, der weit außerhalb des benutzten Wertebereichs liegt, um Timeouts zu "markieren"
+For predictions, we make use of 143 features to characterize instances, of which $138$ features are from the feature extractor of SATzilla~2012~\cite{xu2008satzilla, xu2012satzilla2012} and five features are from a gate-recognition approach~\cite{Iser:2015:GateRecognition}. 
+Feature values which are missing due to the feature extractor having exceeded time- or memory limits are replaced with a constant value which is out of the range of the features.
 
 \subsection{Implementation}
 
@@ -426,6 +425,7 @@ To solve the \emph{K-Portfolio Problem} exactly, we use the package \emph{mip}~\
 \section{Evaluation}
 \label{sec:evaluation}
 
+\todo{Update to imputation with out-of-range value (probably small impact)}
 In the following, we evaluate the performance of the exact and approximate solutions to the \emph{K-Portfolio Problem}. 
 We then relate the performance of such optimal $k$-portfolios to the performance of an actual prediction model for instance-specific solver selection. 
 In particular, we are interested in the influence of the portfolio size $k$ on performance. 
@@ -497,7 +497,7 @@ This indicates that building a portfolio of complementary solvers, rather than p
 \end{figure}
 
 Figure~\ref{fig:search-test-objective-2020} shows test-set portfolio cost for the different solution approaches.
-Here, we take the portfolios found on the training set, but evaluate them with the test-set instance.
+Here, we take the portfolios found on the training set, but evaluate them with the test-set instances.
 The overall trends are the same as on the training set in Figure~\ref{fig:search-train-objective}.
 A notable exception is that \emph{beam search}, \emph{k-best}, and the \emph{optimal solution} show similar performance on the test data of \texttt{SC2020}.
 In particular, there is no clear winner, and the \emph{optimal solution} can even perform worse than those found by the approximate approaches. 
@@ -584,7 +584,7 @@ However, we do not show this upper bound on PAR-2 score here.
 As discussed earlier, the VBS score decreases with $k$.
 In theory, this also allows portfolios with prediction model to improve their performance.
 However, in our case, the PAR-2 score of model-based portfolios remains rather stable with increasing values of $k$, with the biggest improvement from $k=2$ to $k=3$.
-This implies that the prediction model does not improves its selection of solvers even if the portfolio grows.
+This implies that the prediction model does not improve its selection of solvers even if the portfolio grows.
 Given the low prediction performance in terms of MCC, as seen in Figure~\ref{fig:prediction-test-mcc}, this has been expected.
 As a consequence, the gap between VBS and the predicted solver grows with $k$.
 However, model-based portfolios tend to be better than the single best solver from these portfolios, i.e., the prediction models can discriminate between solvers to some extent.

@@ -22,7 +22,10 @@ N_ESTIMATORS = [1, 10, 100]
 # solvers. Return data frame with evaluation metrics, including feature importances.
 def predict_and_evaluate(runtimes_train: pd.DataFrame, runtimes_test: pd.DataFrame,
                          features_train: pd.DataFrame, features_test: pd.DataFrame) -> pd.DataFrame:
-    imputer = sklearn.impute.SimpleImputer(strategy='mean')
+    # Replace missing values with out-of-range value (sorry, a bit hacky, but easier than
+    # considering the natural (domain-specific) range of each feature):
+    impute_value = min(features_train.min().min(), features_test.min().min()) - 1
+    imputer = sklearn.impute.SimpleImputer(strategy='constant', fill_value=impute_value)
     X_train = pd.DataFrame(imputer.fit_transform(X=features_train), columns=list(features_train))
     X_test = pd.DataFrame(imputer.transform(X=features_test), columns=list(features_test))
     # Find fastest solver for each row (instance), but use positions instead of solver names as
