@@ -72,7 +72,7 @@ Propositional Satisfiability, Solver Portfolios, Runtime Prediction, Machine Lea
 \section{Introduction}
 \label{sec:introduction}
 
-\paragraph{Motivation} %KB: DAs Layout mit a), b) usw. zur Gliederung der Einleitung ist mMn sehr unüblich, nicht? %MI: ist wohl so vorgegeben, könnten zu subsections wechseln, was aber platz kostet (->hartes page-limit von 8 seiten incl. refs)
+\subsubsection{Motivation}
 
 SAT solving is the archetypal NP-complete problem.
 Its practical applications abound, e.g., verification of hardware and software~\cite{Kaufmann:2021:Amulet,Buning:2020:QPRVerify}, product configuration~\cite{Janota:2014:Configuration}, cryptanalysis~\cite{Nejati:2020:CDCLCrypto}, or planning~\cite{Schreiber:2021:Lilotane}.
@@ -121,7 +121,7 @@ Searching for a solution to the \emph{K-Portfolio Problem} is an NP-hard optimiz
 Second, only after answering the previous question, one can design a solver-selection process based on performance predictions. 
 In particular, this includes the selection of instance features used to learn a prediction model as well as of the model type. 
 
-\paragraph{Contributions}
+\subsubsection{Contributions}
 
 This current article features a study which captures and evaluates the state-of-the-art in SAT solving in terms of portfolio performance. 
 Our study is unique in that it addresses all points raised so far, as follows:
@@ -135,7 +135,7 @@ For each portfolio size $k$, we train models using random forests, using the wid
 Our study is based on very recent datasets which contain the runtimes of solvers having participated in SAT~Competitions~2020 and~2021. 
 Our code and data are available online.
 
-\paragraph{Results}
+\subsubsection{Results}
 
 Our evaluation yields insightful results regarding the various questions. 
 While it is expected that the limit utility decreases with portfolio size, we did not expect the decrease to be so early. 
@@ -151,7 +151,7 @@ For the solvers in the SAT Competition~2021 dataset, we observe a further gain i
 For larger $k$, the runtimes of portfolios with predictive models does not improve further. 
 We take this as a further indication that it might not be beneficial to combine very many solvers to a portfolio. 
 
-\paragraph{Outline}
+\subsubsection{Outline}
 
 In Section~\ref{sec:related-work}, we review related work. 
 Preliminaries are given in Section~\ref{sec:preliminaries}. 
@@ -182,7 +182,6 @@ They combine instance classification with runtime prediction models in a so-call
 Additional components of SATzilla are so-called \emph{pre-solvers}, which are only run for a short time to solve easy instances, and a \emph{backup solver}, which is responsible for instances where computing features for the prediction models takes too long.
 Overall, portfolio approaches can become quite complex, and it is unclear which elements of the portfolio are really necessary to achieve a good performance 
 Other instance-specific solver selection approaches are ISAC, which is based on clustering in the instance feature space~\cite{Kadioglu:2010:ISAC}, and SNNAP, which combines the ISAC approach with runtime prediction models~\cite{Collautti:2013:SNNAP}.
-%Besides complex portfolio approaches, there are also simple ones, e.g., selecting a solver nearest-neighbor-based, without training a prediction model~\cite{malitsky2011non, nikolic2013simple, samulowitz2013snappy}.%MI: what are they doing?
 A recent survey on algorithm-selection approaches -- also beyond SAT -- is provided by Kerschke et al.~\cite{kerschke2019automated}.
 
 Many portfolio approaches have several stages and configuration options, which makes configuring and selecting the best portfolio approach difficult.
@@ -193,7 +192,6 @@ A systematic analysis of portfolios with varying size~$k$, which has some simila
 They evaluate $k$-portfolios of CSP solvers in terms of their average runtime and solved instances. 
 They compare several classification methods within portfolios, next to adapting complex SAT portfolio approaches like SATzilla. 
 Amadini et al.\ focus on different instances and solvers than this current study, though the evaluation procedure has some similarities.
-%Our evaluation is less broad in terms of classification models, but instead we analyze feature importances to find out what drives the models' predictions.MI: really?
 While \cite{amadini2014empirical} only uses heuristic search algorithms, our study features a broad comparison of different search strategies for portfolios, including an \emph{exact} solution, two \emph{approximate} solutions, and \emph{random sampling}. 
 
 Nof and Strichman formalize the \emph{K-Portfolio Problem} in the form of two maximization problems with different objective functions and prove their submodularity and NP-completeness~\cite{nof2020real}. 
@@ -379,19 +377,14 @@ We conduct five-fold cross-validation over SAT instances and average evaluation 
 \subsection{Prediction Approaches}
 
 We also analyze the performance of the previously determined $k$-portfolios if they use a prediction model to select a solver. 
-%We train such prediction models for all portfolios found by our solution approaches described earlier. %KB: "for" --Y "with", ist das gemeint? %MI: eher, dass jedes k-portfolio sein eigenes vorhersagemodell bekommt
-For each instance, the prediction target is the best solver out of the given $k$-portfolio. %KB: Das Folgende ist kein Korrekturvorschlag zum Artikel: Ich habe mich gefragt, warum wir das so machen. Wäre es nicht vielleicht sinnvoll, die Laufzeiten vorherzusagen, d. h. das Ganze als Regressionsproblem zu modellieren? Der Vorteil wäre, dass man stets eine Zahl bekommt, wie weit man von der tatsächlichen Lösung weg ist.
-As models, we use random forests %~\cite{breiman2001random}, which are ensembles of decision trees. 
-%Preliminary experiments with individual decision trees~\cite{breiman1984classification} of different depths have yielded worse prediction performance. %KB: Irreführende Citations, hat nichts mit SAT Solvern zu tun. Vielleicht möchten Sie den Satz auch einfach weglassen. Entweder weiß jemand, was Ensembles sind, oder wir können ihm oder ihr hier jetzt halt auch nicht helfen.
-%Random forests 
-which are also used in the well-known portfolio approach SATzilla2012~\cite{xu2012satzilla2012}. 
-
+For each instance, the prediction target is the best solver out of the given $k$-portfolio.
+As models, we use random forests~\cite{breiman2001random}, which are also used in the well-known portfolio approach SATzilla2012~\cite{xu2012satzilla2012}. 
 To analyze if prediction performance improves due to ensembling, we train models with one, ten, and 100 trees.
-The prediction approach in SATzilla2012 has two differences compared to ours:
-First, it trains a classifier for each pair of solvers in the portfolio, while we only train one classifier, making a multi-class prediction.
-Second, it weights instances based on the runtime difference between solvers, while we go for an unweighted approach.
-However, none of these changes has helped to improve prediction performance according to preliminary experiments of ours, so we opt for the simpler approach instead. %KB: Nicht ganz klar, was also der simpler approach ist.
-%MI: Instanz-Klassifikation ist noch ein wichtiges Merkmal von SATzilla!
+
+In preliminary experiments, we also tried two adaptations of the prediction approach, which are part of SATzilla2012:
+First, one can train a classifier for each pair of solvers in the portfolio instead of training one classifier that makes a multi-class prediction.
+Second, one can weight instances based on the runtime difference between solvers instead of using an unweighted training set.
+However, none of these changes has helped to improve prediction performance in our preliminary experiments.
 
 We evaluate prediction performance in two ways:
 
@@ -439,8 +432,7 @@ In particular, we are interested in the influence of the portfolio size $k$ on p
 
 \subsection{Optimization Results}
 
-The datasets seem promising for portfolios. %KB: Den Satz verstehe ich nicht. Was wollen Sie sagen?
-In both datasets, there is no single solver which is fastest for all or even for a majority of the instances.
+The datasets seem promising for portfolios, as in both datasets, there is no single solver which is fastest for all or even for a majority of the instances.
 For the $316$ instances in \texttt{SC2020}, the three overall fastest solvers win on only 46, 38, and 26 instances, respectively.
 For the $325$ instances in \texttt{SC2021}, the three overall fastest solvers win on only 25, 22, and 20 instances, respectively.
 This indicates that combining solvers in portfolios can improve overall runtime.
@@ -462,7 +454,7 @@ The \emph{optimal solution} is the exact optimum.
 \emph{k-best} stands for the performance of portfolios which are comprised by the top $k$ single-best solvers. 
 For \emph{random sampling}, we average over repeated samples.
 The \emph{upper bound} limits costs of \emph{greedy search} according to Equation~\ref{eq:upper-bound}.
-If we report numbers in the following, we refer to the training dataset for which the optimization problems are solved. %KB: Den Satz verstehe ich nicht.
+If we report numbers for the solution approaches in the following, we refer to the training dataset, as the solution approaches conduct their search on the training set.
 
 For all approaches and both datasets, the PAR-2 score improves rapidly for the first few $k$, but marginal gains become smaller with increasing $k$.
 For the dataset \texttt{SC2020}, the optimal $1$-portfolio has a penalized runtime $5.51$ times as high as the $48$-portfolio.
@@ -490,13 +482,12 @@ Thus, carefully selecting the solvers for a portfolio makes the biggest differen
 \subsubsection{K-Best}
 
 The baseline \emph{k-best} is worse than \emph{greedy search} on the training data, but better than \emph{random sampling}.
-While \emph{greedy search} always is quite close to the \emph{optimal solution}, the performance gap of \emph{k-best} widens after the first few $k$ and only becomes smaller for large $k$ later. %KB: gap to what? Say it explicitly.
+While \emph{greedy search} always is quite close to the \emph{optimal solution}, the performance gap between \emph{k-best} and the \emph{optimal solution} widens after the first few $k$ and only becomes smaller for large $k$ later.
 The performance of \emph{k-best} relative to the other approaches also differs between \texttt{SC2020} and \texttt{SC2021}.
 For \texttt{SC2020}, \emph{k-best} is closer to the optimal solution, while for \texttt{SC2021}, \emph{k-best} is closer to the expected value of \emph{random sampling}.
 This indicates that building a portfolio of complementary solvers, rather than picking the best individual solvers, may be more important. 
 
-
-\subsubsection{Test-Set Performance} %KB: Vermutlich sollten Sie den Unterschied zwischen training-set performance und test-set performance zu Beginn dieser Section explizit erklären.
+\subsubsection{Test-Set Performance}
 
 \begin{figure}[t]
 	\centering
@@ -506,6 +497,7 @@ This indicates that building a portfolio of complementary solvers, rather than p
 \end{figure}
 
 Figure~\ref{fig:search-test-objective-2020} shows test-set portfolio cost for the different solution approaches.
+Here, we take the portfolios found on the training set, but evaluate them with the test-set instance.
 The overall trends are the same as on the training set in Figure~\ref{fig:search-train-objective}.
 A notable exception is that \emph{beam search}, \emph{k-best}, and the \emph{optimal solution} show similar performance on the test data of \texttt{SC2020}.
 In particular, there is no clear winner, and the \emph{optimal solution} can even perform worse than those found by the approximate approaches. 
@@ -542,7 +534,7 @@ Overall, this means that the influence of single solvers on portfolio performanc
 \subsection{Prediction Results}
 
 In this section, we evaluate the prediction performance for instance-specific solver predictions in the portfolios computed earlier. 
-We also evaluate the PAR-2 score of these portfolios with prediction model. %KB: Mir nicht ganz klar, was hier gemacht wird.
+We also evaluate the performance of these portfolios with prediction model, i.e., the PAR-2 score of the predicted solvers.
 
 \subsubsection{Matthews Correlation Coefficient}
 
@@ -585,14 +577,14 @@ For small $k$, the prediction performance varies stronger between portfolios tha
 Figure~\ref{fig:prediction-test-objective-beam} shows test-set PAR-2 scores for portfolios from \emph{beam search} with $w=100$.
 The plot compares the PAR-2 score of portfolios with prediction model to two competitors without prediction model, computed on the same portfolios.
 The virtual best solver (VBS) provides a lower bound, as its portfolio performance can only be achieved with perfect prediction.
-The single best solver (SBS) of each portfolio serves as a baseline, corresponding to a constant prediction. %KB: Ich sehe nicht, wieso SBS einer 'constant prediction' entspricht.
+The single best solver (SBS) of each portfolio serves as a baseline, corresponding to always predicting the same solver.
 Note that the portfolio performance with prediction models can even be worse than the SBS, e.g., when always predicting the slowest solver for each instance.
 However, we do not show this upper bound on PAR-2 score here.
 
 As discussed earlier, the VBS score decreases with $k$.
 In theory, this also allows portfolios with prediction model to improve their performance.
 However, in our case, the PAR-2 score of model-based portfolios remains rather stable with increasing values of $k$, with the biggest improvement from $k=2$ to $k=3$.
-This implies that the prediction model cannot help to benefit the larger amount of solvers in the portfolio with increasing $k$. %KB: Was ist gemeint? Dass die Vorhersagen nicht helfen bei der Auswahl der Solver, wenn k größer wird? Wenn ja, schreiben Sie das doch bitte so.
+This implies that the prediction model does not improves its selection of solvers even if the portfolio grows.
 Given the low prediction performance in terms of MCC, as seen in Figure~\ref{fig:prediction-test-mcc}, this has been expected.
 As a consequence, the gap between VBS and the predicted solver grows with $k$.
 However, model-based portfolios tend to be better than the single best solver from these portfolios, i.e., the prediction models can discriminate between solvers to some extent.
