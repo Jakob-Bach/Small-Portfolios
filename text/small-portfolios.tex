@@ -200,17 +200,17 @@ They contain runtimes of actual state-of-the-art SAT solvers for a very diverse 
 \section{Preliminaries}
 \label{sec:preliminaries}
 
-Let a set of solvers $S = \{s_1, \dots, s_n\}$, a set of SAT instances $I = \{i_1, \dots, i_m\}$ and solver runtimes $r:~S \times I \rightarrow [0, T]$ with a fixed timeout $T$ be given.
+Let a set of solvers $S = \{s_1, \dots, s_n\}$, a set of SAT instances $I = \{i_1, \dots, i_m\}$ and solver runtimes $r:~I \times S \rightarrow [0, T]$ with a fixed timeout $T$ be given.
 A scoring function $c_T : S \rightarrow \mathbb{N}$ is used to estimate solver performance. 
 To score a solver, we use the frequently used penalized average runtime with a penalization factor of two (PAR-2 Score). 
 This score is a trade-off between solver runtime and the number of solved instances.
 It is defined as follows.%
 \begin{align}
-r_T(s,i) &:= \begin{cases}
-	2 \cdot T & \text{if }r(s,i) = T\\
-	r(s,i) & \text{otherwise}
+r_T(i,s) &:= \begin{cases}
+	2 \cdot T & \text{if }r(i,s) = T\\
+	r(i,s) & \text{otherwise}
 \end{cases} \tag*{Penalized Runtimes}\\[.5em]
-c_T(s) &:= \frac{1}{|I|} \sum_{i \in I}{r_T(s,i)} \tag*{PAR-2 Score}
+c_T(s) &:= \frac{1}{|I|} \sum_{i \in I}{r_T(i,s)} \tag*{PAR-2 Score}
 \end{align}
 
 A portfolio $P \subseteq S$ is a \emph{non-empty} set of solvers.
@@ -218,7 +218,7 @@ To score a solver portfolio $P$, we assume to have an oracle that always selects
 This construction is commonly referred to as the virtual best solver (VBS) for $P$. 
 Accordingly, we extend the scoring function as follows.%
 $$
-	c_{T}(P) := \frac{1}{|I|} \sum\limits_{i \in I}{\min\{r_T(s,i) \mid s \in P\}}
+	c_{T}(P) := \frac{1}{|I|} \sum\limits_{i \in I}{\min\{r_T(i,s) \mid s \in P\}}
 $$
 In the following, we refer to $c_{T}(P)$ as the \emph{cost} of $P$. 
 
@@ -254,16 +254,16 @@ This allows to obtain an exact solution for the problem with an off-the-shelf in
 
 We introduce two sets of binary decision variables. 
 The binary variables $y_s$ indicate whether a solver $s \in S$ is in the portfolio, and 
-the binary variables $x_{s,i}$ indicate whether solver $s \in S$ is selected for instance $i \in I$. 
+the binary variables $x_{i,s}$ indicate whether solver $s \in S$ is selected for instance $i \in I$. 
 Equation~\ref{eq:ip1} specifies the cardinality constraint on the number of solvers. 
 Equation~\ref{eq:ip2} stipulates that exactly one solver is chosen for each instance. 
 Equation~\ref{eq:ip3} ensures that a solver can only be chosen for an instance if it is part of the portfolio. 
 Ultimately, Equation~\ref{eq:ip4} specifies the optimization target.%
 \begin{align}
 	\sum_{s \in S} y_s &\leq k \label{eq:ip1}\\
-	\forall_{i\in I} \sum_{s \in S} x_{s,i} &= 1 \label{eq:ip2}\\
-	\forall_{s \in S} \sum_{i \in I} x_{s,i} &\leq |I| \cdot y_s \label{eq:ip3}\\
-	\min_{x,y} \quad & \frac{1}{|I|} \cdot \sum_{i \in I} \sum_{s \in S} r_T(s,i) \cdot x_{s,i} \label{eq:ip4}
+	\forall_{i\in I} \sum_{s \in S} x_{i,s} &= 1 \label{eq:ip2}\\
+	\forall_{s \in S} \sum_{i \in I} x_{i,s} &\leq |I| \cdot y_s \label{eq:ip3}\\
+	\min_{x,y} \quad & \frac{1}{|I|} \cdot \sum_{i \in I} \sum_{s \in S} r_T(i,s) \cdot x_{i,s} \label{eq:ip4}
 \end{align}
 
 \subsection{Beam Search (approximate)}
