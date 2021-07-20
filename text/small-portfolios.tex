@@ -117,8 +117,8 @@ We systematically construct $k$-portfolios and analyze the impact of the portfol
 For exact search, we encode the \emph{K-Portfolio Problem} as an integer optimization problem. 
 This has been faster than alternative approaches, according to preliminary experiments of ours. 
 Spurred by the complexity of the problem, we also analyze the quality of various approximate and random solutions. 
-An important takeaway of our study is that it gives way to the creation of optimal portfolios in an ad-hoc manner. %KB: Hier fragt man sich beim Lesen ja schon, wie also die ad-hoc creation-Methode aussieht. Der Results-Absatz, der folgt, erklärt das aber nicht wirklich. (Der Rumpf des Artikels sagt es eigentlich auch nicht explizit.) Da ich die Einleitung jetzt deswegen nicht großartig umbauen will, würde ich vorschlagen, hier zu schreiben "... in an ad-hoc manner, as explained momentarily", und Sie fügen dann in Results nich einen Satz ein, der das dann explizit sagt.
-In a subsequent step, we answer the question whether the quality of predictions of solver runtimes which one can achieve with simple models is sufficient. %KB: Was war doch gleich das Problem bei den anderen Ansätzen? Dass die Modelle von Hand getunt waren? Vielleicht sollte das hier dann deutlich werden: "... with simple models, i.e., off-the-shelf model types and instance features, without any tuning" oder so ähnlich.
+An important takeaway of our study is that it gives way to the creation of optimal portfolios in an ad-hoc manner, as explained momentarily. 
+In a subsequent step, we analyze the quality of solver runtime prediction which one can achieve with simple models, i.e., off-the-shelf model types and instance features, without any tuning.
 For each portfolio size $k$, we train models using random forests, using the widely known instance feature records of SATzilla~2012~\cite{xu2012satzilla2012}, and then use the predictions to select portfolio members automatically in a straightforward manner. 
 Our study is based on very recent datasets which contain the runtimes of solvers having participated in SAT~Competitions~2020 and~2021. 
 Our code and data are available online.
@@ -151,8 +151,7 @@ We conclude with Section~\ref{sec:conclusion}.
 \label{sec:related-work}
 
 In this section, we provide an overview of approaches that deal with portfolios of SAT solvers. 
-We begin with studies that use portfolios to evaluate the state-of-the-art. 
-%JB: state-of-the-art of what?
+We begin with studies that use portfolios to evaluate the state-of-the-art of SAT solving. 
 We then review instance-specific solver selection techniques, including approaches to automatically configure and analyze such techniques. 
 Finally, we discuss related work on systematic investigation of $k$-portfolios. 
 
@@ -635,6 +634,7 @@ Together with the low prediction performance, this indicates that our dataset la
 
 \section{Conclusions and Future Work}
 \label{sec:conclusion}
+%MI: +satz zu ad-hoc portfolios
 
 %KB: Hier würde sich ein einleitender Satz gut machen, also dass über das Zusammenwirken von Solvern bisher noch vergleichsweise wenig bekannt ist, obwohl es sich bei SAT Solving um ein reifes Gebiet handelt, oder so ähnlich.
 SAT solvers are often complementary, i.e, some solvers are good on some instances, and others are on other instances.
