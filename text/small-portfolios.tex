@@ -24,7 +24,7 @@
 
 \begin{document}
 
-\title{Analyzing k-Portfolios of SAT Solvers}
+\title{Analyzing k-Portfolios of SAT Solvers} %KB: Ich finde den Titel noch nicht ideal. "Analyzing" kann wirklich alles, aber auch gar nichts bedeuten. Vielleicht "A Comprehensive Study of the Performance of k-Portfolios of SAT Solvers" stattdessen, oder halt so ähnlich? Es kommt darauf an, was aus Ihrer Sicht wichtig ist und hängenbleiben soll.
 
 \author{\IEEEauthorblockN{Jakob Bach}
 \IEEEauthorblockA{\textit{KIT Department of Informatics} \\
@@ -42,15 +42,17 @@ markus.iser@kit.edu}
 \maketitle
 
 \begin{abstract}
-Successful approaches that tackle hard combinatorial problems such as propositional satisfiability are often complementary, i.e., an approach only works best on some problem instances, but not on a great many of them. 
-Parallel portfolios and instance-specific algorithm selection try to exploit this.
-However, portfolio approaches are in competition with the progressive improvements of individual solvers.
-It therefore remains an open question to what extent complementarity can be exploited in recent solvers. 
-In this paper, we present a systematic analysis of portfolios of recent SAT solvers using runtime measurements from the SAT~Competitions~2020 and~2021. 
-First, we present and compare search approaches to find good portfolios of limited size~$k$.
-Second, we use prediction models to make instance-specific solver recommendations within the portfolios and evaluate this approach as well.
-We show that greedy solutions for finding good portfolios in practice compete well with optimal solutions. 
-We also show that the marginal returns of adding more solvers diminish with increasing portfolio size, which becomes particularly evident in combination with prediction models.
+Hard combinatorial problems such as propositional satisfiability are ubiquitous. 
+Successful approaches that tackle such problems often are complementary, i.e., an approach only works well on some problem instances, but not on a great many of them. 
+Portfolios and instance-specific algorithm selection harness this effect.
+However, portfolio approaches are in competition with the progressive improvements of individual solvers. %KB: So stimmt es vermutlich wohl nicht. Vielleicht: "However, in the presence of continuous improvements of individual solvers, putting together portfolios of solvers needs to be efficient. In particular, it remains an open question ..." 
+It therefore remains an open question how well portfolios can exploit the complementarity of existing solvers. 
+This paper features a comprehensive analysis of portfolios of recent SAT solvers, the ones from the SAT~Competitions~2020 and~2021. 
+First, we present and compare search approaches to find good portfolios of limited size~$k$. %KB: Es geht doch gar nicht darum, die Portfolios wirklich zu finden, sondern darum, zu Aussagen zu kommen, wie man das entsprechende k wohl wählen sollte.
+Second, we use prediction models to make instance-specific solver recommendations within the portfolios and evaluate this approach as well. %KB: Nicht "we use", stattdessen sinngemäß: Wir untersuchen, wie wirksam einfache predction models für instance-specific solver recommendations sind.
+One result or ours is that greedy solutions to find good portfolios in practice compete well with optimal solutions. %KB: "compete well" ersetzen mit "are just as good as ... in practice". Ich finde auch nicht, dass "greedy solutions" hier gut passt, das ist zu allgemein. Stattdessen "a greedy solution proposed in this current article ..."
+We also observe that the marginal returns of adding more solvers diminish with increasing portfolio size, %KB: Das ist eigentlich erwartet, ich würde das im Abstract nicht in der Form bringen. Oder Sie schreiben, dass der Effekt früher einsetzt als erwartet (falls Sie das so sehen).
+which becomes particularly evident in combination with prediction models. %KB: Was wollen Sie hier sagen? Dass die Verwendung von prediction models den Effekt verstärkt?
 \end{abstract}
 
 \begin{IEEEkeywords}
