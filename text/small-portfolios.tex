@@ -67,8 +67,8 @@ Its practical applications abound, e.g., verification of hardware and software~\
 SAT solvers are not only used to solve hard combinatorial problems in industry, but also previously open problems in mathematics~\cite{Heule:2016:Pyth,Heule:2018:Schur}. 
 
 Nowadays, one can observe continuous progress regarding SAT solving methods, heuristics, and their implementations in SAT solvers. 
-Evaluation of solvers is commonly based on compilations of benchmark instances which represent \emph{diverse} interesting application scenarios. 
-An important design objective behind new SAT solvers is \emph{stability}, i.e., good performance on many types of instances. 
+Evaluation of solvers is commonly based on compilations of benchmark instances which represent diverse interesting application scenarios. 
+An important design objective behind new SAT solvers is stability, i.e., good performance on many types of instances. 
 
 At the same time, we observe a recurrent emergence of new heuristics and methods which improve performance on only a narrow subset of instances. 
 Such approaches have a merit nevertheless -- one can see them as complementary to solvers with good average behavior. 
@@ -103,22 +103,22 @@ Given the circumstances sketched so far, the following questions are important w
 First, one must decide how many solvers to put in a portfolio, and which ones. 
 A $k$-portfolio is a set of $k$ solvers drawn from a given set of $n \geq k$ solvers $S$. 
 A $k$-portfolio is optimal if its VBS outperforms that of all other $k$-portfolios which one can draw from $S$. 
-The \emph{$K$-Portfolio Problem} is to determine an optimal $k$-portfolio. 
-Searching for a solution to the \emph{$K$-Portfolio Problem} is an NP-hard optimization problem~\cite{nof2020real}. 
+The \emph{K-Portfolio Problem} is to determine an optimal $k$-portfolio. 
+Searching for a solution to the \emph{K-Portfolio Problem} is an NP-hard optimization problem~\cite{nof2020real}. 
 
 Second, only after answering the previous question, one can design a solver-selection process based on performance predictions. 
 In particular, this includes the selection of instance features used to learn a prediction model as well as of the model type. %KB: Hier geringfügige Änderungen am Wording -- OK für Sie?
 
 \paragraph{Contributions}
 
-This current article features a study which \emph{captures and evaluates} the state-of-the-art in SAT solving in terms of portfolio performance. 
+This current article features a study which captures and evaluates the state-of-the-art in SAT solving in terms of portfolio performance. 
 Our study is unique in that it addresses all points raised so far, as follows:
 We systematically construct $k$-portfolios and analyze the impact of the portfolio size $k$ on portfolio performance. 
-For exact search, we encode the K-Portfolio Problem as an \emph{integer optimization problem}. 
+For exact search, we encode the K-Portfolio Problem as an integer optimization problem. 
 This has been faster than alternative approaches, according to preliminary experiments of ours. 
 Spurred by the complexity of the problem, we also analyze the quality of various approximate and random solutions. 
-An important takeaway of our study is that it gives way to the \emph{creation of optimal portfolios} in an ad-hoc manner. %KB: Hier fragt man sich beim Lesen ja schon, wie also die ad-hoc creation-Methode aussieht. Der Results-Absatz, der folgt, erklärt das aber nicht wirklich. (Der Rumpf des Artikels sagt es eigentlich auch nicht explizit.) Da ich die Einleitung jetzt deswegen nicht großartig umbauen will, würde ich vorschlagen, hier zu schreiben "... in an ad-hoc manner, as explained momentarily", und Sie fügen dann in Results nich einen Satz ein, der das dann explizit sagt.
-In a subsequent step, we answer the question whether the quality of predictions of solver runtimes which one can achieve with \emph{simple models} is sufficient. %KB: Was war doch gleich das Problem bei den anderen Ansätzen? Dass die Modelle von Hand getunt waren? Vielleicht sollte das hier dann deutlich werden: "... with \emph{simple} models, i.e., off-the-shelf model types and instance features, without any tuning" oder so ähnlich.
+An important takeaway of our study is that it gives way to the creation of optimal portfolios in an ad-hoc manner. %KB: Hier fragt man sich beim Lesen ja schon, wie also die ad-hoc creation-Methode aussieht. Der Results-Absatz, der folgt, erklärt das aber nicht wirklich. (Der Rumpf des Artikels sagt es eigentlich auch nicht explizit.) Da ich die Einleitung jetzt deswegen nicht großartig umbauen will, würde ich vorschlagen, hier zu schreiben "... in an ad-hoc manner, as explained momentarily", und Sie fügen dann in Results nich einen Satz ein, der das dann explizit sagt.
+In a subsequent step, we answer the question whether the quality of predictions of solver runtimes which one can achieve with simple models is sufficient. %KB: Was war doch gleich das Problem bei den anderen Ansätzen? Dass die Modelle von Hand getunt waren? Vielleicht sollte das hier dann deutlich werden: "... with simple models, i.e., off-the-shelf model types and instance features, without any tuning" oder so ähnlich.
 For each portfolio size $k$, we train models using random forests, using the widely known instance feature records of SATzilla~2012~\cite{xu2012satzilla2012}, and then use the predictions to select portfolio members automatically in a straightforward manner. 
 Our study is based on very recent datasets which contain the runtimes of solvers having participated in SAT~Competitions~2020 and~2021. 
 Our code and data are available online.
@@ -129,10 +129,10 @@ Our evaluation yields insightful results regarding the various questions.
 While it is expected that the limit utility decreases with portfolio size, we did not expect the decrease to be so early. 
 In particular, for portfolios of size 5 and larger, the marginal gain in VBS performance decreases to less than 100 seconds by adding more solvers. 
 Another interesting observation is that well-known \emph{beam search} has given way to the best approximate solutions to the $K$-Portfolio Problem. 
-These solutions happen to perform very similarly to the optimal ones, even for a minimal beam width of one, in contrast to other approaches, which have been used in previous studies (\emph{K-Best} in particular). 
+These solutions happen to perform very similarly to the optimal ones, even for a minimal beam width of one, in contrast to other approaches, which have been used in previous studies (\emph{k-best} in particular). 
 According to our experiments however, relying on a simple prediction model has been a mixed bag:
-On the negative side, \emph{prediction performance} has been rather low. 
-The \emph{actual runtime} of portfolios with predictive models is not even close to the theoretical improvement one could have with a perfect oracle.
+On the negative side, prediction performance has been rather low. 
+The actual runtime of portfolios with predictive models is not even close to the theoretical improvement one could have with a perfect oracle.
 We take this as an indication that more research is necessary; our hypothesis is that the instance features available in our dataset are not sufficiently conclusive. 
 On the positive side, we have observed considerable performance gains over single-best solver performance with runtime prediction for $3$-portfolios in both competition datasets. 
 With the SAT Competition~2021 dataset, performance is even better with $k = 4$. %MI: need to find better formulation 
@@ -183,7 +183,7 @@ They evaluate $k$-portfolios of CSP solvers in terms of their average runtime an
 They compare several classification methods within portfolios, besides adapting complex SAT portfolio approaches like SATzilla. 
 Amadini et al. focus on different instances and solvers than this current study, though the evaluation procedure has some similarities.
 %Our evaluation is less broad in terms of classification models, but instead we analyze feature importances to find out what drives the models' predictions.MI: really?
-While \cite{amadini2014empirical} only uses heuristic search algorithms, our study features a broad comparison of different search strategies for portfolios, including an \emph{exact solution}, several \emph{approximate solutions}, and \emph{random sampling}. 
+While \cite{amadini2014empirical} only uses heuristic search algorithms, our study features a broad comparison of different search strategies for portfolios, including an \emph{exact} solution, several \emph{approximate} solutions, and \emph{random sampling}. 
 % JB: "several" == two
 
 Nof and Strichman formalize the \emph{K-Portfolio Problem} in the form of two maximization problems with different objective functions, and prove their submodularity and NP-completeness~\cite{nof2020real}. 
@@ -632,6 +632,7 @@ Together with the low prediction performance, this indicates that our dataset la
 
 \section{Conclusions and Future Work}
 \label{sec:conclusion}
+
 %KB: Hier würde sich ein einleitender Satz gut machen, also dass über das Zusammenwirken von Solvern bisher noch vergleichsweise wenig bekannt ist, obwohl es sich bei SAT Solving um ein reifes Gebiet handelt, oder so ähnlich.
 SAT solvers are often complementary, i.e, some solvers are good on some instances, and others are on other instances.
 This has lead to the notion of portfolios, i.e., combination of several solvers. %KB: Ab hier haben die Conclusions in etwa das gleiche Problem wie die Einleitung. Die einzelnen Punkte werden etwas lieblos (so wirkt es halt) aufgezählt, ohne dass die Wichtigkeit der einzelnen Einsichten erklärt wird. Ich würde erst einmal sagen, dass der ARtikel eine vergleichende Studie zu Portfolios ist, die in mehrerlei Hinsicht über das hinausgegangen ist, was bisherige Arbeiten geleistet haben. Es muss auch nicht unbedingt alles aufgezählt werden -- hier reichen dann die Highlights (aus Ihrer Sicht).
