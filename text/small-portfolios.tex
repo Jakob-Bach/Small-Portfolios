@@ -385,18 +385,20 @@ We conduct five-fold cross-validation over SAT instances and average evaluation 
 
 \subsection{Prediction Approaches}
 
-We also analyze the performance of portfolios which use a prediction model to select a solver. 
-We train such prediction models for all portfolios found by our solution approaches described earlier. %KB: "for" --Y "with", ist das gemeint?
-
+We also analyze the performance of the previously determined $k$-portfolios if they use a prediction model to select a solver. 
+%We train such prediction models for all portfolios found by our solution approaches described earlier. %KB: "for" --Y "with", ist das gemeint? %MI: eher, dass jedes k-portfolio sein eigenes vorhersagemodell bekommt
 For each instance, the prediction target is the best solver out of the given $k$-portfolio. %KB: Das Folgende ist kein Korrekturvorschlag zum Artikel: Ich habe mich gefragt, warum wir das so machen. Wäre es nicht vielleicht sinnvoll, die Laufzeiten vorherzusagen, d. h. das Ganze als Regressionsproblem zu modellieren? Der Vorteil wäre, dass man stets eine Zahl bekommt, wie weit man von der tatsächlichen Lösung weg ist.
-As models, we use random forests~\cite{breiman2001random}, which are ensembles of decision trees. 
-Preliminary experiments with individual decision trees~\cite{breiman1984classification} of different depths have yielded worse prediction performance. %KB: Irreführende Citations, hat nichts mit SAT Solvern zu tun. Vielleicht möchten Sie den Satz auch einfach weglassen. Entweder weiß jemand, was Ensembles sind, oder wir können ihm oder ihr hier jetzt halt auch nicht helfen.
-Random forests are also used in the well-known portfolio approach SATzilla2012~\cite{xu2012satzilla2012}. 
+As models, we use random forests %~\cite{breiman2001random}, which are ensembles of decision trees. 
+%Preliminary experiments with individual decision trees~\cite{breiman1984classification} of different depths have yielded worse prediction performance. %KB: Irreführende Citations, hat nichts mit SAT Solvern zu tun. Vielleicht möchten Sie den Satz auch einfach weglassen. Entweder weiß jemand, was Ensembles sind, oder wir können ihm oder ihr hier jetzt halt auch nicht helfen.
+%Random forests 
+which are also used in the well-known portfolio approach SATzilla2012~\cite{xu2012satzilla2012}. 
+
 To analyze if prediction performance improves due to ensembling, we train models with one, ten, and 100 trees.
 The prediction approach in SATzilla2012 has two differences compared ours:
 First, it trains a classifier for each pair of solvers in the portfolio, while we only train one classifier, making a multi-class prediction.
 Second, it weights instances based on the runtime difference between solvers, while we go for an unweighted approach.
 However, none of these changes has helped to improve prediction performance according to preliminary experiments of ours, so we opt for the simpler approach instead. %KB: Nicht ganz klar, was also der simpler approach ist.
+%MI: Instanz-Klassifikation ist noch ein wichtiges Merkmal von SATzilla!
 
 We evaluate prediction performance in two ways:
 
