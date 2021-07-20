@@ -1,7 +1,7 @@
 """Run evaluation
 
-Evaluation pipeline, creating plots for the paper and printing interesting statistics.
-Should be run after the experimental pipeline.
+Evaluation pipeline, creating plots for the paper and printing statistics which are used in the
+paper as well. Should be run after the experimental pipeline.
 
 Usage: python -m run_evaluation --help
 """
@@ -61,7 +61,7 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
 
     # Figures 2 and 3: Performance of search approaches over k (Figure 1 is pseudo-code, not created here)
     data = search_results.loc[(search_results['algorithm'] != 'beam_search') | (search_results['w'] == 1)]
-    bound_data = data[data['algorithm'] == 'mip_search'].copy()
+    bound_data = data[data['algorithm'] == 'mip_search'].copy()  # bounds computed from exact solution
     bound_data['algorithm'] = 'upper_bound'
     for problem in data['problem'].unique():
         bound_data.loc[bound_data['problem'] == problem, 'train_objective'] =\
@@ -127,13 +127,13 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
             ).reset_index().pivot(index='k', columns='problem').round(3))
 
     print(f'Standard deviation of objective value of top {w=} portfolios in beam search:')
-    print(data.loc[data['algorithm'] == 'beam_search'].groupby(['problem', 'k'])['train_objective'].std(
-        ).reset_index().pivot(index='k', columns='problem').round(2))
+    print(data.loc[data['algorithm'] == 'beam_search'].groupby(['problem', 'k', 'fold_id'])['train_objective'].std(
+        ).groupby(['problem', 'k']).mean().reset_index().pivot(index='k', columns='problem').round(2))
 
     print('Standard deviation of objective value for random search:')
     data = search_results[search_results['algorithm'] == 'random_search']
-    print(data.groupby(['problem', 'k'])['train_objective'].std().reset_index().pivot(
-        columns='problem', index='k').round(2))
+    print(data.groupby(['problem', 'k', 'fold_id'])['train_objective'].std().groupby(['problem', 'k']).mean(
+        ).reset_index().pivot(columns='problem', index='k').round(2))
 
     # ----Portfolio Composition----
 

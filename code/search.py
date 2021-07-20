@@ -1,7 +1,8 @@
 """Portfolio search
 
-Algorithms to search for k-portfolios. All algorithms return a list of portfolios and objective
-values.
+Algorithms to search for k-portfolios. All algorithms take a data frame of runtimes, portfolio size k,
+and potentially further parameters. They return a list of portfolios and objective values.
+Not all algorithms are actually used in the experimental pipeline.
 """
 
 import itertools
@@ -37,7 +38,7 @@ def mip_search(runtimes: pd.DataFrame, k: int) -> List[Tuple[List[str], float]]:
     model.max_mip_gap = 0  # without this, solutions might be slightly sub-optimal
     instance_solver_vars = [[model.add_var(f'x_{i}_{j}', var_type=mip.BINARY)
                              for j in range(runtimes.shape[1])] for i in range(runtimes.shape[0])]
-    solver_vars = [model.add_var(f'y_{j}', var_type=mip.BINARY)for j in range(runtimes.shape[1])]
+    solver_vars = [model.add_var(f'y_{j}', var_type=mip.BINARY) for j in range(runtimes.shape[1])]
     for var_list in instance_solver_vars:  # per-instance constraints
         model.add_constr(mip.xsum(var_list) == 1)
     for j in range(runtimes.shape[1]):  # per-solver-constraints
@@ -78,8 +79,9 @@ def smt_search(runtimes: pd.DataFrame, k: int) -> List[Tuple[List[str], float]]:
 # (C++ implementation, creates an SMT-LIB file; code: https://doi.org/10.5281/zenodo.3841422 ) for
 # the paper Nof, Y., & Strichman, O. (2020). Real-time solving of computationally hard problems
 # using optimal algorithm portfolios.
-# "cardinality_encoding" enables a special encoding for cardinality constraints, which is used in
-# "nchoosek", but which might be slower than using Z3's native AtMost constraint.
+# "cardinality_encoding" enables a special encoding for the cardinality constraint, which is used
+# in the implementation of "nchoosek", but which might be slower than using Z3's native AtMost
+# constraint.
 def smt_search_nof(runtimes: pd.DataFrame, k: int, cardinality_encoding: bool = True) -> List[Tuple[List[str], float]]:
     instance_vars = [z3.Real(f'v{i}') for i in range(runtimes.shape[0])]
     solver_vars = [z3.Bool(f'e{j}') for j in range(runtimes.shape[1])]
@@ -97,8 +99,8 @@ def smt_search_nof(runtimes: pd.DataFrame, k: int, cardinality_encoding: bool = 
             constraints.append(z3.Implies(instance_vars[i] == value, z3.Or(affected_solvers)))
     optimizer.add(z3.And(constraints))
     if cardinality_encoding:
-        # Cardinality constraint with cardinality encoding from Sinz, C. (2005, October). Towards
-        # an optimal CNF encoding of boolean cardinality constraints. (see page 2)
+        # Cardinality constraint with cardinality encoding from Sinz, C. (2005). Towards an
+        # optimal CNF encoding of boolean cardinality constraints. (see page 2, Sequential Counter)
         constraints = []
         solver_choice_vars = [[z3.Bool(f's{j+1}_{s+1}') for s in range(k)]
                               for j in range(runtimes.shape[1])]

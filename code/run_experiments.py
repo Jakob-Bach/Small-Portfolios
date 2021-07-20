@@ -1,6 +1,8 @@
 """Run experiments
 
-Main experimental pipeline. Runs different portfolio-search algorithms with different parameters.
+Main experimental pipeline. Runs different portfolio-search algorithms with different parameters,
+trains prediction models with the portfolios, and stores lots of evaluation data.
+Execution might take a while, but you can simply reduce the experimental design for testing.
 
 Usage: python -m run_experiments --help
 """
@@ -24,8 +26,8 @@ import search
 CV_FOLDS = 5
 
 
-# Create a list of search algorithms and their parametrization.
-# Adapt them to datasets given by "problems".
+# Create a list of search algorithms and their parametrization. Adapt them to the datasets given by
+# "problems" (e.g., maximum k is dataset-dependent).
 def define_experimental_design(problems: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     results = []
     for problem in problems:
@@ -34,10 +36,11 @@ def define_experimental_design(problems: List[Dict[str, Any]]) -> List[Dict[str,
             results.append({**problem, 'search_func': 'random_search', 'search_args': {'k': k, 'w': 1000}})
         for k in range(1, max_k + 1):
             results.append({**problem, 'search_func': 'mip_search', 'search_args': {'k': k}})
+        # Beam search and k-best also save intermediate results if run up to max_k:
         for w in list(range(1, 11)) + list(range(20, 101, 10)):
             results.append({**problem, 'search_func': 'beam_search', 'search_args': {'k': max_k, 'w': w}})
         results.append({**problem, 'search_func': 'kbest_search', 'search_args': {'k': max_k}})
-    for i, result in enumerate(results):
+    for i, result in enumerate(results):  # identify combinations of problems and settings
         result['settings_id'] = i
     return results
 
@@ -52,7 +55,7 @@ def add_portfolio_performance(search_result: pd.DataFrame, runtimes_train: pd.Da
     search_result['test_objective'] = search_result['solvers'].apply(
             lambda x: runtimes_test[x].min(axis='columns').mean())  # test set VBS
     search_result['train_portfolio_vws'] = search_result['solvers'].apply(
-        lambda x: runtimes_train[x].max(axis='columns').mean())  # lower bound for model-based portfolio
+        lambda x: runtimes_train[x].max(axis='columns').mean())  # upper bound for model-based portfolio
     search_result['test_portfolio_vws'] = search_result['solvers'].apply(
         lambda x: runtimes_test[x].max(axis='columns').mean())
     search_result['train_portfolio_sbs'] = search_result['solvers'].apply(
@@ -72,7 +75,7 @@ def add_portfolio_performance(search_result: pd.DataFrame, runtimes_train: pd.Da
 # evaluation metrics.
 # - "problem_name" should identify the dataset; is just copied to output.
 # - "search_func" and "search_args" should allow a function call (see module "search").
-# - "settings_id" should identify the experimental run; is just copied to output.
+# - "settings_id" should identify the search run; is just copied to output.
 # - "runtimes" and "features" are the dataset (with features only being necessary for predictions,
 # not for search).
 # Return two data frames, one with search results and one with prediction results (can be joined).
@@ -118,7 +121,8 @@ def search_and_evaluate(problem_name: str, search_func: str, search_args: Dict[s
 
 
 # Run all experiments and save results.
-def run_experiments(data_dir: pathlib.Path, results_dir: pathlib.Path, n_processes: Optional[int] = None) -> None:
+def run_experiments(data_dir: pathlib.Path, results_dir: pathlib.Path,
+                    n_processes: Optional[int] = None) -> None:
     if not data_dir.is_dir():
         raise FileNotFoundError('Data directory does not exist.')
     if not results_dir.is_dir():
@@ -149,7 +153,8 @@ def run_experiments(data_dir: pathlib.Path, results_dir: pathlib.Path, n_process
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
-        description='Runs the experimental pipeline.', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+        description='Runs the experimental pipeline. Might take a while.',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-d', '--data', type=pathlib.Path, default='data/', dest='data_dir',
                         help='Directory with input data, i.e., runtimes and instance features.')
     parser.add_argument('-r', '--results', type=pathlib.Path, default='data/', dest='results_dir',

@@ -87,15 +87,22 @@ From the directory `code`, run
 python -m prepare_dataset
 ```
 
-to download and pre-process the datasets.
+to download and pre-process the SAT Competition datasets from the [GBD website](https://gbd.iti.kit.edu/).
 Next, start the pipeline with
 
 ```bash
 python -m run_experiments
 ```
 
+Depending on your hardware, this might take several hours or even days.
 To create the plots for the paper, run
 
 ```bash
 python -m run_evaluation
+```
+
+All scripts have a few command line options, which you can see by running the scripts like
+
+```bash
+python -m prepare_dataset --help
 ```

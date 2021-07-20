@@ -1,6 +1,7 @@
 """Prediction
 
-Prediction-model-based portfolio evaluation (instead of just VBS-based one).
+Prediction-model-based portfolio evaluation, using the prediction model to make instance-specific
+solver recommendations within a portfolio.
 """
 
 import itertools
@@ -10,7 +11,6 @@ import pandas as pd
 import sklearn.ensemble
 import sklearn.impute
 import sklearn.metrics
-import sklearn.model_selection
 
 
 MODELS = {'Random forest': sklearn.ensemble.RandomForestClassifier}
@@ -22,8 +22,6 @@ N_ESTIMATORS = [1, 10, 100]
 # solvers. Return data frame with evaluation metrics, including feature importances.
 def predict_and_evaluate(runtimes_train: pd.DataFrame, runtimes_test: pd.DataFrame,
                          features_train: pd.DataFrame, features_test: pd.DataFrame) -> pd.DataFrame:
-    # Filter warnings from MCC computation:
-    warnings.filterwarnings(action='ignore', message='invalid value encountered in double_scalars')
     imputer = sklearn.impute.SimpleImputer(strategy='mean')
     X_train = pd.DataFrame(imputer.fit_transform(X=features_train), columns=list(features_train))
     X_test = pd.DataFrame(imputer.transform(X=features_test), columns=list(features_test))
@@ -41,8 +39,11 @@ def predict_and_evaluate(runtimes_train: pd.DataFrame, runtimes_test: pd.DataFra
         pred_train = model.predict(X_train)
         pred_test = model.predict(X_test)
         result = {'model': model_name, 'n_estimators': n_estimators}
-        result['train_pred_mcc'] = sklearn.metrics.matthews_corrcoef(y_true=y_train, y_pred=pred_train)
-        result['test_pred_mcc'] = sklearn.metrics.matthews_corrcoef(y_true=y_test, y_pred=pred_test)
+        with warnings.catch_warnings():
+            # Filter warnings which occur if there only is one class in true or pred:
+            warnings.filterwarnings(action='ignore', message='invalid value encountered in double_scalars')
+            result['train_pred_mcc'] = sklearn.metrics.matthews_corrcoef(y_true=y_train, y_pred=pred_train)
+            result['test_pred_mcc'] = sklearn.metrics.matthews_corrcoef(y_true=y_test, y_pred=pred_test)
         # To compute objective value, we need to extract runtime of predicted solver for each
         # instance; as "runtimes.values" is "ndarray" (not "DataFrame"), following syntax works:
         result['train_pred_objective'] = runtimes_train.values[range(len(runtimes_train)), pred_train].mean()
