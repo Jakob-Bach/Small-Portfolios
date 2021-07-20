@@ -42,16 +42,15 @@ markus.iser@kit.edu}
 
 \begin{abstract}
 Hard combinatorial problems such as propositional satisfiability are ubiquitous. 
-Successful approaches that tackle such problems often are complementary, i.e., an approach only works well on some problem instances, but not on a great many of them. 
-Portfolios and instance-specific algorithm selection harness this effect.
-However, portfolio approaches are in competition with the progressive improvements of individual solvers. %KB: So stimmt es vermutlich wohl nicht. Vielleicht: "However, in the presence of continuous improvements of individual solvers, putting together portfolios of solvers needs to be efficient. In particular, it remains an open question ..." 
-It therefore remains an open question how well portfolios can exploit the complementarity of existing solvers. 
-This paper features a comprehensive analysis of portfolios of recent SAT solvers, the ones from the SAT~Competitions~2020 and~2021. 
-First, we present and compare search approaches to find good portfolios of limited size~$k$. %KB: Es geht doch gar nicht darum, die Portfolios wirklich zu finden, sondern darum, zu Aussagen zu kommen, wie man das entsprechende k wohl wählen sollte.
-Second, we use prediction models to make instance-specific solver recommendations within the portfolios and evaluate this approach as well. %KB: Nicht "we use", stattdessen sinngemäß: Wir untersuchen, wie wirksam einfache predction models für instance-specific solver recommendations sind.
-One result or ours is that greedy solutions to find good portfolios in practice compete well with optimal solutions. %KB: "compete well" ersetzen mit "are just as good as ... in practice". Ich finde auch nicht, dass "greedy solutions" hier gut passt, das ist zu allgemein. Stattdessen "a greedy solution proposed in this current article ..."
-We also observe that the marginal returns of adding more solvers diminish with increasing portfolio size, %KB: Das ist eigentlich erwartet, ich würde das im Abstract nicht in der Form bringen. Oder Sie schreiben, dass der Effekt früher einsetzt als erwartet (falls Sie das so sehen).
-which becomes particularly evident in combination with prediction models. %KB: Was wollen Sie hier sagen? Dass die Verwendung von prediction models den Effekt verstärkt?
+In general, one looks for stable methods that show good performance on all problem instances. 
+However, new approaches emerge regularly some of which behave complementary to stable solvers in that they only run faster on some instances, but not on many others. 
+In the presence of continuous improvements of individual solvers, putting together portfolios of solvers needs to be efficient. 
+In particular, it remains an open question how well portfolios can exploit the complementarity of existing solvers. 
+This paper features a comprehensive analysis of portfolios of recent SAT solvers, the ones from the SAT Competitions~2020 and~2021. 
+We determine optimal portfolios with exact and approximate approaches and study the impact of the portfolio size $k$ on its performance. 
+Subsequently, we investigate how effective simple prediction models are for instance-specific solver recommendations.
+One result of ours is that the solutions found by an approximate approach proposed in this current article is just as good as the optimal solution in practice. 
+We also observe that marginal returns decrease very quickly when adding more solvers, and our simple predictive models do not gain further performance beyond very small portfolio sizes. 
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -108,7 +107,7 @@ The \emph{K-Portfolio Problem} is to determine an optimal $k$-portfolio.
 Searching for a solution to the \emph{K-Portfolio Problem} is an NP-hard optimization problem~\cite{nof2020real}. 
 
 Second, only after answering the previous question, one can design a solver-selection process based on performance predictions. 
-In particular, this includes the selection of instance features used to learn a prediction model as well as of the model type. %KB: Hier geringfügige Änderungen am Wording -- OK für Sie?
+In particular, this includes the selection of instance features used to learn a prediction model as well as of the model type. 
 
 \paragraph{Contributions}
 
@@ -184,8 +183,7 @@ They evaluate $k$-portfolios of CSP solvers in terms of their average runtime an
 They compare several classification methods within portfolios, next to adapting complex SAT portfolio approaches like SATzilla. 
 Amadini et al.\ focus on different instances and solvers than this current study, though the evaluation procedure has some similarities.
 %Our evaluation is less broad in terms of classification models, but instead we analyze feature importances to find out what drives the models' predictions.MI: really?
-While \cite{amadini2014empirical} only uses heuristic search algorithms, our study features a broad comparison of different search strategies for portfolios, including an \emph{exact} solution, several \emph{approximate} solutions, and \emph{random sampling}. 
-% JB: "several" == two
+While \cite{amadini2014empirical} only uses heuristic search algorithms, our study features a broad comparison of different search strategies for portfolios, including an \emph{exact} solution, two \emph{approximate} solutions, and \emph{random sampling}. 
 
 Nof and Strichman formalize the \emph{K-Portfolio Problem} in the form of two maximization problems with different objective functions and prove their submodularity and NP-completeness~\cite{nof2020real}. 
 They solve the \emph{K-Portfolio Problem} optimally with an SMT solver and use \emph{greedy search} to generate approximate solutions.
