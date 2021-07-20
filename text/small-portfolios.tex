@@ -270,6 +270,7 @@ Ultimately, Equation~\ref{eq:ip4} specifies the optimization target.%
 \let\@latex@error\@gobble
 \makeatother
 \begin{algorithm}[H]
+\small
 \DontPrintSemicolon
 	\KwIn{Solvers $S$, Portfolio Size $k$, Portfolio Cost $c_T$}
 	\KwIn{Beam Width $w$}
@@ -490,10 +491,8 @@ This indicates that building a portfolio of complementary solvers, rather than p
 
 \begin{figure}[t]
 	\centering
-	\includegraphics[width=0.98\columnwidth]{plots/search-test-objective-2020.pdf}
-	\caption{
-		Test-set portfolio performance for different $k$ and search algorithms for the \texttt{SC2020} dataset.
-	}
+	\includegraphics[width=0.9\columnwidth]{plots/search-test-objective-2020.pdf}
+	\caption{Test-set portfolio performance for different $k$ and search algorithms for the \texttt{SC2020} dataset.}
 	\label{fig:search-test-objective-2020}
 \end{figure}
 
@@ -539,14 +538,13 @@ We also evaluate the PAR-2 score of these portfolios with prediction model. %KB:
 \subsubsection{Matthews Correlation Coefficient}
 
 \begin{figure}[t]
-	\centering
-	\includegraphics[width=\columnwidth]{plots/prediction-test-mcc.pdf}
-	\caption{
-		Test-set MCC for \emph{random sampling} portfolios, using random forests with 100 trees.
-		(MCC is 0 for random or constant prediction and it is 1 for perfect prediction.)
-		For readability reasons, we do not plot outlier points.
-	}
-	\label{fig:prediction-test-mcc}
+\centering
+\includegraphics[width=.9\columnwidth]{plots/prediction-test-mcc.pdf}
+\caption{Test-set MCC for \emph{random sampling} portfolios, using random forests with 100 trees.	For readability reasons, we do not plot outlier points.
+%(MCC is 0 for random or constant prediction and it is 1 for perfect prediction.)
+%MI: imo belongs into text
+}
+\label{fig:prediction-test-mcc}
 \end{figure}
 
 Figure~\ref{fig:prediction-test-mcc} graphs the test-set classification performance of random forests with 100 trees, using the portfolios from \emph{random sampling}.
@@ -565,19 +563,11 @@ For small $k$, the prediction performance varies stronger between portfolios tha
 
 \begin{figure*}[t]
 	\centering
-	\subfloat[\texttt{SC2020} dataset.]{
-		\includegraphics[width=0.98\columnwidth]{plots/prediction-test-objective-beam-2020.pdf}
-		\label{fig:prediction-test-objective-beam-2020}
-	}
-	\hfil
-	\subfloat[\texttt{SC2021} dataset.]{
-		\includegraphics[width=0.98\columnwidth]{plots/prediction-test-objective-beam-2021.pdf}
-		\label{fig:prediction-test-objective-beam-2021}
-	}
-	\caption{
-		Portfolio performance for \emph{beam search} portfolios with $w=100$, comparing the portfolio's virtual best solver (VBS), single best solver (SBS), and score with prediction model.
-		Prediction model: random forests with 100 trees.
-		The performance of the the global SBS, i.e., not only considering solvers from the portfolio, is shown as horizontal line.
+	\includegraphics[width=0.9\columnwidth]{plots/prediction-test-objective-beam-2020.pdf}
+	\qquad
+	\includegraphics[width=0.9\columnwidth]{plots/prediction-test-objective-beam-2021.pdf}
+	\caption{Portfolio performance for \emph{beam search} portfolios with $w=100$ for the \texttt{SC2020} dataset (left) and the \texttt{SC2021} dataset (right), comparing the performance scores of the portfolio's virtual best solver (VBS), single best solver (SBS), and score with prediction model, i.e., random forests with 100 trees. 
+The performance of the the global SBS, i.e., not only considering solvers from the portfolio, is shown as horizontal line.
 	}
 	\label{fig:prediction-test-objective-beam}
 \end{figure*}
@@ -600,12 +590,8 @@ In addition, for $k > 2$ the model-based portfolios are better than the global s
 
 \begin{figure}[t]
 	\centering
-	\includegraphics[width=0.98\columnwidth]{plots/prediction-test-objective-optimal-2020.pdf}
-	\caption{
-		Portfolio performance for \emph{optimal solution} portfolios, comparing the portfolio's virtual best solver (VBS), single best solver (SBS), and score with prediction model for the \texttt{SC2020} dataset.
-		Prediction model: random forests with 100 trees.
-		The performance of the the global SBS, i.e., not only considering solvers from the portfolio, is shown as horizontal line.
-	}
+	\includegraphics[width=0.9\columnwidth]{plots/prediction-test-objective-optimal-2020.pdf}
+	\caption{Portfolio performance for \emph{optimal solution} portfolios, comparing the portfolio's virtual best solver (VBS), single best solver (SBS), and score with prediction model, i.e., random forests with 100 trees, for the \texttt{SC2020} dataset. The performance of the the global SBS, i.e., not only considering solvers from the portfolio, is shown as horizontal line.}
 	\label{fig:prediction-test-objective-optimal-2020}
 \end{figure}
 
