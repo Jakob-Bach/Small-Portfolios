@@ -81,20 +81,10 @@ SAT solvers are not only used to solve hard combinatorial problems in industry, 
 Nowadays, one can observe continuous progress regarding SAT solving methods, heuristics, and their implementations in SAT solvers. 
 Evaluation of solvers is commonly based on compilations of benchmark instances which represent diverse interesting application scenarios. 
 An important design objective behind new SAT solvers is stability, i.e., good performance on many types of instances. 
-
 At the same time, we observe a recurrent emergence of new heuristics and methods which improve performance on only a narrow subset of instances. 
 Such approaches have a merit nevertheless -- one can see them as complementary to solvers with good average behavior. 
-%JB: to save space, I would remove the following sentence and example, and directly go to portfolios (finding + evaluating specialized solvers is not a topic of this article; portfolios are the only topic, and not just "Another possibility" for something)
-To make such narrow progress explicit, one tends to evaluate the respective solvers on specific problem types and instances.
 
-\begin{example}[Crypto Track in SAT Competition 2021]
-Recently, an application track where the participating solvers are evaluated on a large benchmark set from only one specific domain has been introduced in SAT Competitions.
-This has uncovered the following phenomenon:
-The SAT Solver \emph{SLIME} has not been competitive in the evaluations on the diverse set of instances in the Main Track of SAT Competition~2021. 
-But \emph{SLIME} achieved the best score in the Crypto Track where SAT solvers were evaluated on a set of $200$ instances exclusively from cryptographic applications. 
-\end{example}
-
-Another possibility to quantify the progress in SAT solving beyond measuring the average performance of solvers exists as well; it is based on portfolios. 
+One way to leverage complementary solvers is with portfolios.
 Portfolios are sets of solvers.  
 One can combine a solver portfolio with a perfect oracle which then selects the fastest solver from the portfolio for each instance in the benchmark set. 
 This construction is commonly referred to as the \emph{Virtual Best Solver} (VBS). 
