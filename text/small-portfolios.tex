@@ -390,6 +390,16 @@ We evaluate prediction performance in two ways:
 	The value zero occurs with both random guessing and always guessing the same solver.
 \end{itemize}
 
+% Figure belongs to "Evaluation" ("General Trend"), but placed here for better distribution of figures in paper
+\begin{figure*}[t]
+	\centering
+	\includegraphics[width=0.9\columnwidth]{plots/search-train-objective-2020.pdf}
+	\qquad
+	\includegraphics[width=0.9\columnwidth]{plots/search-train-objective-2021.pdf}
+	\caption{Training-set portfolio performance for different $k$ and solution approaches for the \texttt{SC2020} dataset (left) and the \texttt{SC2021} dataset (right).}
+	\label{fig:search-train-objective}
+\end{figure*}
+
 \subsection{Dataset}
 
 In our experiments, we use two datasets.
@@ -424,15 +434,6 @@ For the $325$ instances in \texttt{SC2021}, the three overall fastest solvers wi
 This indicates that combining solvers in portfolios can improve overall runtime.
 
 \subsubsection{General Trend}
-
-\begin{figure*}[t]
-	\centering
-	\includegraphics[width=0.9\columnwidth]{plots/search-train-objective-2020.pdf}
-	\qquad
-	\includegraphics[width=0.9\columnwidth]{plots/search-train-objective-2021.pdf}
-	\caption{Training-set portfolio performance for different $k$ and solution approaches for the \texttt{SC2020} dataset (left) and the \texttt{SC2021} dataset (right).}
-	\label{fig:search-train-objective}
-\end{figure*}
 
 Figure~\ref{fig:search-train-objective} displays the cost in terms of the PAR-2 function of the best $k$-portfolios for the different solution approaches. 
 The \emph{optimal solution} is the exact optimum.
@@ -534,6 +535,19 @@ We also evaluate the portfolio performance, i.e., the PAR-2 score of the predict
 	\label{fig:prediction-test-mcc}
 \end{figure}
 
+% Figure belongs to "Portfolio Performance", but placed here for better distribution of figures in paper
+\begin{figure*}[t]
+	\centering
+	\includegraphics[width=0.9\columnwidth]{plots/prediction-test-objective-beam-2020.pdf}
+	\qquad
+	\includegraphics[width=0.9\columnwidth]{plots/prediction-test-objective-beam-2021.pdf}
+	\caption{
+		Portfolio performance for \emph{beam search} portfolios with $w=100$ for the \texttt{SC2020} dataset (left) and the \texttt{SC2021} dataset (right), comparing the performance scores of the portfolio's virtual best solver (VBS), single best solver (SBS), and score with prediction model, i.e., random forests with 100 trees. 
+		The performance of the the global SBS, i.e., not only considering solvers from the portfolio, is shown as horizontal line.
+	}
+	\label{fig:prediction-test-objective-beam}
+\end{figure*}
+
 Figure~\ref{fig:prediction-test-mcc} graphs the test-set classification performance of random forests with 100 trees, using the portfolios from \emph{random sampling}.
 Performance with fewer trees is worse, on the training set as well as on the test set.
 We use \emph{random sampling} results here, to show the variation of prediction performance over many portfolios.
@@ -547,18 +561,6 @@ This could cause a bad \mbox{PAR-2} value for model-based portfolios, and we wil
 For small $k$, the prediction performance varies stronger between portfolios than for larger $k$.
 
 \subsubsection{Portfolio Performance}
-
-\begin{figure*}[t]
-	\centering
-	\includegraphics[width=0.9\columnwidth]{plots/prediction-test-objective-beam-2020.pdf}
-	\qquad
-	\includegraphics[width=0.9\columnwidth]{plots/prediction-test-objective-beam-2021.pdf}
-	\caption{
-		Portfolio performance for \emph{beam search} portfolios with $w=100$ for the \texttt{SC2020} dataset (left) and the \texttt{SC2021} dataset (right), comparing the performance scores of the portfolio's virtual best solver (VBS), single best solver (SBS), and score with prediction model, i.e., random forests with 100 trees. 
-		The performance of the the global SBS, i.e., not only considering solvers from the portfolio, is shown as horizontal line.
-	}
-	\label{fig:prediction-test-objective-beam}
-\end{figure*}
 
 Figure~\ref{fig:prediction-test-objective-beam} shows test-set PAR-2 scores for portfolios from \emph{beam search} with $w=100$.
 The plot compares the PAR-2 score of portfolios with prediction model to two competitors without prediction model, computed on the same portfolios.
