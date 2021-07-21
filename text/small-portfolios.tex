@@ -55,14 +55,14 @@
 \begin{abstract}
 Hard combinatorial problems such as propositional satisfiability are ubiquitous. 
 In general, one looks for stable methods that show good performance on all problem instances. 
-However, new approaches emerge regularly some of which behave complementary to stable solvers in that they only run faster on some instances, but not on many others. 
+However, new approaches emerge regularly, some of which behave complementary to stable solvers in that they only run faster on some instances, but not on many others. 
 In the presence of continuous improvements of individual solvers, putting together portfolios of solvers needs to be efficient. 
 In particular, it remains an open question how well portfolios can exploit the complementarity of existing solvers. 
 This paper features a comprehensive analysis of portfolios of recent SAT solvers, the ones from the SAT Competitions~2020 and~2021. 
 We determine optimal portfolios with exact and approximate approaches and study the impact of the portfolio size $k$ on its performance. 
-Subsequently, we investigate how effective simple prediction models are for instance-specific solver recommendations.
+Subsequently, we investigate how effective off-the-shelf prediction models are for instance-specific solver recommendations.
 One result of ours is that the solutions found by an approximate approach proposed in this current article is just as good as the optimal solution in practice. 
-We also observe that marginal returns decrease very quickly when adding more solvers, and our simple predictive models do not gain further performance beyond very small portfolio sizes. 
+We also observe that marginal returns decrease very quickly when adding more solvers, and our prediction models do not gain further performance beyond very small portfolio sizes. 
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -84,6 +84,7 @@ An important design objective behind new SAT solvers is stability, i.e., good pe
 
 At the same time, we observe a recurrent emergence of new heuristics and methods which improve performance on only a narrow subset of instances. 
 Such approaches have a merit nevertheless -- one can see them as complementary to solvers with good average behavior. 
+%JB: to save space, I would remove the following sentence and example, and directly go to portfolios (finding + evaluating specialized solvers is not a topic of this article; portfolios are the only topic, and not just "Another possibility" for something)
 To make such narrow progress explicit, one tends to evaluate the respective solvers on specific problem types and instances.
 
 \begin{example}[Crypto Track in SAT Competition 2021]
@@ -97,10 +98,10 @@ Another possibility to quantify the progress in SAT solving beyond measuring the
 Portfolios are sets of solvers.  
 One can combine a solver portfolio with a perfect oracle which then selects the fastest solver from the portfolio for each instance in the benchmark set. 
 This construction is commonly referred to as the \emph{Virtual Best Solver} (VBS). 
-One can then derive a ranking of solvers based on their marginal contribution to the VBS, cf.~\cite{Xu:2012:EvalContribVBS}. 
+One can then derive a ranking of solvers based on their marginal contribution to the VBS~\cite{Xu:2012:EvalContribVBS}. 
 
 \begin{example}[Special Price in SAT Competition 2021]
-In SAT Competition 2021, the performance of the VBS of all portfolios of size two over the entirety of participating solvers has been evaluated. 
+In the SAT Competition 2021, the performance of the VBS of all portfolios of size two over the entirety of participating solvers has been evaluated. 
 The best pair of solvers in terms of their VBS contains the solver \emph{CaDiCaL\_PriPro}.
 This solver has not been competitive in the overall evaluation.
 But due to that achievement, it has been awarded the new \emph{Special Innovation Price}.
@@ -116,9 +117,8 @@ First, one must decide how many solvers to put in a portfolio, and which ones.
 A $k$-portfolio is a set of $k$ solvers drawn from a given set of $n \geq k$ solvers $S$. 
 A $k$-portfolio is optimal if its VBS outperforms that of all other $k$-portfolios which one can draw from $S$. 
 The \emph{K-Portfolio Problem} is to determine an optimal $k$-portfolio. 
-Searching for a solution to the \emph{K-Portfolio Problem} is an NP-hard optimization problem~\cite{nof2020real}. 
-
-Second, only after answering the previous question, one can design a solver-selection process based on performance predictions. 
+Searching for a solution to the \emph{K-Portfolio Problem} is an NP-complete optimization problem~\cite{nof2020real}. 
+Second, one can design a solver-selection process based on performance predictions. 
 In particular, this includes the selection of instance features used to learn a prediction model as well as of the model type. 
 
 \subsubsection{Contributions}
@@ -130,26 +130,30 @@ For exact search, we encode the \emph{K-Portfolio Problem} as an integer optimiz
 This has been faster than alternative approaches, according to preliminary experiments of ours. 
 Spurred by the complexity of the problem, we also analyze the quality of various approximate and random solutions. 
 An important takeaway of our study is that it gives way to the creation of optimal portfolios in an ad-hoc manner, as explained momentarily. 
-In a subsequent step, we analyze the quality of solver runtime prediction which one can achieve with simple models, i.e., off-the-shelf model types and instance features, without any tuning.
+%JB: I don't fully understand this and it's kind of vague (not clear what "ad hoc" means in this context)
+In a subsequent step, we analyze the quality of solver runtime prediction which one can achieve with off-the-shelf models and instance features, without any tuning.
 For each portfolio size $k$, we train models using random forests, using the widely known instance feature records of SATzilla~2012~\cite{xu2012satzilla2012}, and then use the predictions to select portfolio members automatically in a straightforward manner. 
+%JB: might be a bit misleading, one could think we predict what to put into a portfolio, instead of predicting which solver to use from a given portfolio
 Our study is based on very recent datasets which contain the runtimes of solvers having participated in SAT~Competitions~2020 and~2021. 
 Our code and data are available online.
 
 \subsubsection{Results}
 
 Our evaluation yields insightful results regarding the various questions. 
-While it is expected that the limit utility decreases with portfolio size, we did not expect the decrease to be so early. 
+While it is expected that the marginal utility decreases with portfolio size, we did not expect the decrease to be so early. 
 In particular, for portfolios of size 5 and larger, the marginal gain in VBS performance decreases to less than 100 seconds by adding more solvers.  
 Another interesting observation is that well-known \emph{beam search} has given way to the best approximate solutions to the \emph{K-Portfolio Problem}. 
 These solutions happen to perform very similarly to the optimal ones, even for a minimal beam width of one, in contrast to other approaches, which have been used in previous studies (\emph{k-best} in particular). 
-According to our experiments however, relying on a simple prediction model has been a mixed bag:
+%JB: unfair, as far as I know, k-best was only used in the study of Nof and Strichman, and they only included it as a baseline to greedy search
+According to our experiments however, relying on an off-the-shelf prediction model has been a mixed bag:
+%JB: transition a bit strange, there is no direct contrast ("however"), as we simpy switch to describing results from the 2nd part of our experiments
 On the negative side, prediction performance has been rather low. 
-The actual runtime of portfolios with predictive models is not even close to the theoretical improvement one could have with a perfect oracle.
-We take this as an indication that more research is necessary; our hypothesis is that the instance features available in our dataset are not sufficiently conclusive. 
+The actual runtime of portfolios with prediction models is not even close to the theoretical improvement one could have with a perfect oracle.
+We take this as an indication that more research is necessary; our hypothesis is that the instance features available in our dataset are not sufficiently discriminative. 
 On the positive side, we have observed considerable performance gains over single-best solver performance with runtime prediction for $3$-portfolios in both competition datasets. 
 For the solvers in the SAT Competition~2021 dataset, we observe a further gain in performance for $k = 4$. 
-For larger $k$, the runtimes of portfolios with predictive models does not improve further. 
-We take this as a further indication that it might not be beneficial to combine very many solvers to a portfolio. 
+For larger $k$, the runtimes of portfolios with prediction models do not improve further. 
+We take this as a further indication that it might not be beneficial to combine many solvers to a portfolio. 
 
 \subsubsection{Outline}
 
@@ -167,7 +171,7 @@ We begin with studies that use portfolios to evaluate the state-of-the-art of SA
 We then review instance-specific solver selection techniques, including approaches to automatically configure and analyze such techniques. 
 Finally, we discuss related work on systematic investigation of $k$-portfolios. 
 
-Solver complementarity regarding the runtime of solver portfolios has been examined in Xu et al.~\cite{Xu:2012:EvalContribVBS}. 
+Solver complementarity regarding the runtime of solver portfolios has been examined by Xu et al.~\cite{Xu:2012:EvalContribVBS}. 
 They show that significant contributions to the runtime of a portfolio often come from solvers which are not competitive when evaluated as a standalone solver. 
 This however depends on the dataset under evaluation. 
 In fact, the best $k$-portfolios ($k \in [1,3]$) drawn from solvers participating in SAT~Competition~2020 contain solvers which actually received an award in the standalone evaluation \cite{SC2020:AIJ}.
@@ -175,12 +179,13 @@ In particular, the best performing $2$-portfolio of solvers consists of the winn
 This has been markedly different in SAT~Competition~2021.
 Here, a solver which was not competitive in the standalone evaluation has been part of the best performing $2$-portfolio (drawn from the solvers in that competition). 
 All this underlines the importance of portfolio analysis for good stable solvers. Here, progress often manifests itself through complex hybridization of methods. 
+%JB: "complex hybridization" is both a complicated and a vague term
 
 Instance-specific solver selection approaches bring in another perspective on solver complementarity.
 One of the best-known complex solver-selection approaches is SATzilla, of which multiple versions exist~\cite{xu2008satzilla, xu2012satzilla2012}. 
-They combine instance classification with runtime prediction models in a so-called mixture-of-experts approach in order to select a solver in their portfolio. 
+They combine instance classification with runtime prediction models in order to select a solver in their portfolio. 
+%JB: what is the instance classification?
 Additional components of SATzilla are so-called \emph{pre-solvers}, which are only run for a short time to solve easy instances, and a \emph{backup solver}, which is responsible for instances where computing features for the prediction models takes too long.
-Overall, portfolio approaches can become quite complex, and it is unclear which elements of the portfolio are really necessary to achieve a good performance 
 Other instance-specific solver selection approaches are ISAC, which is based on clustering in the instance feature space~\cite{Kadioglu:2010:ISAC}, and SNNAP, which combines the ISAC approach with runtime prediction models~\cite{Collautti:2013:SNNAP}.
 A recent survey on algorithm-selection approaches -- also beyond SAT -- is provided by Kerschke et al.~\cite{kerschke2019automated}.
 
@@ -198,9 +203,9 @@ Nof and Strichman formalize the \emph{K-Portfolio Problem} in the form of two ma
 They solve the \emph{K-Portfolio Problem} optimally with an SMT solver and use \emph{greedy search} to generate approximate solutions.
 They evaluate their approach on anytime search algorithms for an allocation problem, focusing on solution quality after a timeout of one second or less. 
 While we build on the theoretical results of Nof and Strichman, our evaluation is broader. 
-In addition to the high variety of search algorithms, we also analyze portfolios with prediction models.
+In addition to including more search algorithms, we also analyze portfolios with prediction models.
 
-A feature of our current study, which sets it apart from the existing ones, is that it is based on two most recent datasets of SAT~Competitions~2020 and~2021. 
+A feature of our current study, which sets it apart from the existing ones, is that it is based on two most recent datasets of the SAT~Competitions~2020 and~2021. 
 They contain runtimes of actual state-of-the-art SAT solvers for a very diverse set of hard SAT instances, which are measured with a timeout of 5000~seconds.
 
 \section{Preliminaries}
@@ -617,22 +622,22 @@ Together with the low prediction performance, this indicates that our dataset la
 \section{Conclusions and Future Work}
 \label{sec:conclusion}
 
-Solution methods for the propositional satisfiability problem are a mature area of research where we regularly observe advances in methods, heuristics, and their implementations in SAT solvers. 
-New SAT solvers which can only achieve improved performance on a limited subset of benchmark instances can gain visibility through portfolio analysis. 
+Solution methods for the propositional satisfiability problem are an active area of research where we regularly observe advances in methods, heuristics, and their implementations in SAT solvers. 
+New SAT solvers that only improve performance on a limited subset of benchmark instances can gain visibility through portfolio analysis. 
 Their complementary performance can be exploited with the help of runtime prediction models. 
 
 We have presented a comparative study of portfolios that goes beyond what previous work has done in several respects.
 One feature of our study is that it includes the latest runtime data of SAT solvers from the SAT~Competitions~2020 and~2021. 
 We examined the important question of how large portfolios should actually be, and observed a strong improvement in the objective value for small portfolios, but a small impact once the portfolio reaches a certain size.
 
-Regarding the solution approach, we found that \emph{beam search} yields close-to-optimal solutions.
+We found that \emph{beam search}, an approximate solution approach, yields close-to-optimal solutions.
 After determining portfolios, we combined them with prediction models that made instance-specific solver recommendations.
 However, these models performed not satisfactorily on the given dataset, such that the objective value of portfolios with predictions did not continuously improve with the portfolio size.
 
-Regarding future work, there is room for improvement regarding prediction performance, in particular, by adapting the set of instance features. 
-Among those are features describing the hierarchical community structure of graph representations of SAT instances, such as community leaf size, community degree, and the number of inter-community edges~\cite{Li:2021:HCS}. 
+Regarding future work, there is room for improvement regarding prediction performance, in particular, by adapting the set of instance features,
+e.g., using features describing the hierarchical community structure of graph representations of SAT instances, such as community leaf size, community degree, and the number of inter-community edges~\cite{Li:2021:HCS}. 
 
-In order to facilitate portfolio analysis for evaluation purpose and ad-hoc portfolio generation, we integrate our exact portfolio-search approach into the Python package~\emph{gbd-tools}, so it can be directly used in queries to the database GBD. 
+In order to facilitate portfolio analysis for evaluation purposes and ad-hoc portfolio generation, we want to integrate our exact portfolio-search approach into the Python package~\emph{gbd-tools}, so it can be directly used in queries to the database GBD~\cite{iser2020collaborative}. 
 
 \section*{Acknowledgments}
 
