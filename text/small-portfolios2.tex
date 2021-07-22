@@ -105,7 +105,6 @@ In some cases they are even only evaluated on random instances~\cite{Kadioglu:20
 One downside is that such constructions are complex and quite time-consuming. 
 More often than not, comparative studies in SAT solving do not include implementations applying this principle to state-of-the-art solvers for recent instance families of interest.
 
-
 Given the circumstances sketched so far, the following questions are important when it comes to the design of portfolios and their evaluation. 
 First, one must decide how many solvers to put in a portfolio, and which ones. 
 A $k$-portfolio is a set of $k$ solvers drawn from a given set of $n \geq k$ solvers $S$. 
@@ -133,7 +132,6 @@ The benchmarks in these SAT Competitions represent a balanced mix of families of
 Note that for application instances, performance gains through instance-specific solver selection are much harder to achieve. 
 In that category, runtimes of different solvers are more correlated and their VBS improves much less relative to the performance of the single best solver~\cite{Collautti:2013:SNNAP}. 
 Our code\footnote{\todo{URL}} and data\footnote{\url{https://www.ipd.kit.edu/mitarbeiter/bach/k-portfolio-data.tar.gz}} are available online.
-
 
 \subsubsection{Results}
 
@@ -421,7 +419,7 @@ Feature values which are missing due to the feature extractor having exceeded ti
 
 \subsection{Implementation}
 
-We implement our experimental design in Python and make our code available online\footnote{\url{https://github.com/Jakob-Bach/Small-Portfolios}}.
+We implement our experimental design in Python and make our code available online\footnote{\todo{\url{https://github.com/Jakob-Bach/Small-Portfolios}}}.
 The code also allows to download and prepare the datasets.
 Additionally, we publish the full experimental data, including results\footnote{\url{https://www.ipd.kit.edu/mitarbeiter/bach/k-portfolio-data.tar.gz}}.
 
