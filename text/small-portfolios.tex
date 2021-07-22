@@ -141,10 +141,9 @@ Our evaluation yields insightful results regarding the various questions.
 While it is expected that the marginal utility decreases with portfolio size, we did not expect the decrease to be so early. 
 In particular, for portfolios of size 5 and larger, the marginal gain in VBS performance decreases to less than 100 seconds by adding more solvers.  
 Another interesting observation is that well-known \emph{beam search} has given way to the best approximate solutions to the \emph{K-Portfolio Problem}. 
-These solutions happen to perform very similarly to the optimal ones, even for a minimal beam width of one, in contrast to other approaches, which have been used in previous studies (\emph{k-best} in particular). 
-%JB: unfair, as far as I know, k-best was only used in the study of Nof and Strichman, and they only included it as a baseline to greedy search
-According to our experiments however, relying on an off-the-shelf prediction model has been a mixed bag:
-%JB: transition a bit strange, there is no direct contrast ("however"), as we simpy switch to describing results from the 2nd part of our experiments
+These solutions happen to perform very similarly to the optimal ones, even for a minimal beam width of one, in contrast to the otherwise popular \emph{k-best} approach. 
+
+Relying on an off-the-shelf prediction model has been a mixed bag. 
 On the negative side, prediction performance has been rather low. 
 The actual runtime of portfolios with prediction models is not even close to the theoretical improvement one could have with a perfect oracle.
 We take this as an indication that more research is necessary; our hypothesis is that the instance features available in our dataset are not sufficiently discriminative. 
@@ -176,13 +175,12 @@ In fact, the best $k$-portfolios ($k \in [1,3]$) drawn from solvers participatin
 In particular, the best performing $2$-portfolio of solvers consists of the winners of the SAT and UNSAT Tracks. 
 This has been markedly different in SAT~Competition~2021.
 Here, a solver which was not competitive in the standalone evaluation has been part of the best performing $2$-portfolio (drawn from the solvers in that competition). 
-All this underlines the importance of portfolio analysis for good stable solvers. Here, progress often manifests itself through complex hybridization of methods. 
-%JB: "complex hybridization" is both a complicated and a vague term
+All this underlines the importance of portfolio analysis for good stable solvers. Here, progress often manifests itself through hybridization of methods, e.g., combined approaches for determination of branching order, or multi-tier clause forgetting heuristics~\cite{Oh:2015:satunsat}. 
 
 Instance-specific solver selection approaches bring in another perspective on solver complementarity.
 One of the best-known complex solver-selection approaches is SATzilla, of which multiple versions exist~\cite{xu2008satzilla, xu2012satzilla2012}. 
 They combine instance classification with runtime prediction models in order to select a solver in their portfolio. 
-%JB: what is the instance classification?
+%JB: what is the instance classification? %MI: 6 Klassen = 3 Kategorien x {SAT, UNSAT}
 Additional components of SATzilla are so-called \emph{pre-solvers}, which are only run for a short time to solve easy instances, and a \emph{backup solver}, which is responsible for instances where computing features for the prediction models takes too long.
 Other instance-specific solver selection approaches are ISAC, which is based on clustering in the instance feature space~\cite{Kadioglu:2010:ISAC}, and SNNAP, which combines the ISAC approach with runtime prediction models~\cite{Collautti:2013:SNNAP}.
 A recent survey on algorithm-selection approaches -- also beyond SAT -- is provided by Kerschke et al.~\cite{kerschke2019automated}.
