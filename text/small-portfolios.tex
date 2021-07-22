@@ -132,6 +132,7 @@ Our study is based on very recent datasets which contain the runtimes of solvers
 The benchmarks in these SAT Competitions represent a balanced mix of families of interest which have been drawn from the application and crafted instance categories. 
 Note that for application instances, performance gains through instance-specific solver selection are much harder to achieve. 
 In that category, runtimes of different solvers are more correlated and their VBS improves much less relative to the performance of the single best solver~\cite{Collautti:2013:SNNAP}. 
+%% Kommt später noch:
 Our code\footnote{\todo{URL}} and data\footnote{\url{https://www.ipd.kit.edu/mitarbeiter/bach/k-portfolio-data.tar.gz}} are available online.
 
 
@@ -409,9 +410,9 @@ We evaluate prediction performance in two ways:
 \subsection{Dataset}
 
 In our experiments, we use two datasets.
-The first one, \texttt{SC2020}, contains $|S| = 48$ solvers and $400$ instances from the Main Track of the SAT~Competition~2020\footnote{\url{https://satcompetition.github.io/2020/}}~\cite{balyo2020proceedings, SC2020:AIJ}.
+The first one, \texttt{SC2020}, contains $|S| = 48$ solvers and $400$ instances from the Main Track of the SAT~Competition~2020~\cite{balyo2020proceedings, SC2020:AIJ}.
 We filtered out those instances where no solver finished in time, resulting in a dataset of $|I| = 316$ instances. 
-The second dataset, \texttt{SC2021}, contains $|S| = 46$ solvers and $400$ instances from the Main Track of the SAT~Competition~2021\footnote{\url{https://satcompetition.github.io/2021/}}.
+The second dataset, \texttt{SC2021}, contains $|S| = 46$ solvers and $400$ instances from the Main Track of the SAT~Competition~2021.
 Again, we filtered out those instances where no solver finished in time, resulting in a dataset of $|I| = 325$ instances.
 
 For predictions, we use 143 features to characterize instances, of which $138$ features are from the feature extractor of SATzilla~2012~\cite{xu2008satzilla, xu2012satzilla2012} and five features are from a gate-recognition approach~\cite{Iser:2015:GateRecognition}. 
