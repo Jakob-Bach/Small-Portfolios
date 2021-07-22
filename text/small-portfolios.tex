@@ -123,17 +123,15 @@ We systematically construct $k$-portfolios and analyze the impact of the portfol
 For exact search, we encode the \emph{K-Portfolio Problem} as an integer optimization problem. 
 This has been faster than alternative approaches, according to preliminary experiments of ours. 
 Spurred by the complexity of the problem, we also analyze the quality of various approximate and random solutions. 
-An important takeaway of our study is that it gives way to the creation of optimal portfolios in an ad-hoc manner, as explained momentarily. 
-%JB: I don't fully understand this and it's kind of vague (not clear what "ad hoc" means in this context)
+An important takeaway of our study is that it gives way to the creation of optimal portfolios from recent datasets in an ad-hoc manner, as explained momentarily. 
+%JB: I don't fully understand this and it's kind of vague (not clear what "ad hoc" means in this context) %MI: hope "recent datasets" clarifies the mode of "ad hoc" more
 In a subsequent step, we analyze the quality of solver runtime prediction which one can achieve with off-the-shelf models and instance features, without any tuning.
-For each portfolio size $k$, we train models using random forests, using the widely known instance feature records of SATzilla~2012~\cite{xu2012satzilla2012}, and then use the predictions to select portfolio members automatically in a straightforward manner. 
-%JB: might be a bit misleading, one could think we predict what to put into a portfolio, instead of predicting which solver to use from a given portfolio
+For each portfolio size $k$, we train models using random forests, using the widely known instance feature records of SATzilla~2012~\cite{xu2012satzilla2012} for solver prediction, and then use the predictions to select portfolio members automatically in a straightforward manner. 
 Our study is based on very recent datasets which contain the runtimes of solvers having participated in SAT~Competitions~2020 and~2021. 
 The benchmarks in these SAT Competitions represent a balanced mix of families of interest which have been drawn from the application and crafted instance categories. 
 Note that for application instances, performance gains through instance-specific solver selection are much harder to achieve. 
 In that category, runtimes of different solvers are more correlated and their VBS improves much less relative to the performance of the single best solver~\cite{Collautti:2013:SNNAP}. 
-%% Kommt später noch:
-Our code\footnote{\todo{URL}} and data\footnote{\url{https://www.ipd.kit.edu/mitarbeiter/bach/k-portfolio-data.tar.gz}} are available online.
+Our code and data are available online (cf. Section~\ref{sec:impl}).
 
 
 \subsubsection{Results}
@@ -419,6 +417,7 @@ For predictions, we use 143 features to characterize instances, of which $138$ f
 Feature values which are missing due to the feature extractor having exceeded time- or memory limits are replaced with a constant value which is out of the range of the features.
 
 \subsection{Implementation}
+\label{sec:impl}
 
 We implement our experimental design in Python and make our code available online\footnote{\url{https://github.com/Jakob-Bach/Small-Portfolios}}.
 The code also allows to download and prepare the datasets.
