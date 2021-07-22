@@ -398,9 +398,9 @@ We evaluate prediction performance in two ways:
 % Figure belongs to "Evaluation" ("General Trend"), but placed here for better distribution of figures in paper
 \begin{figure*}[t]
 	\centering
-	\includegraphics[width=0.9\columnwidth]{plots/search-train-objective-2020.pdf}
+	\includegraphics[width=0.9\columnwidth, trim=0 15 0 10, clip]{plots/search-train-objective-2020.pdf}
 	\qquad
-	\includegraphics[width=0.9\columnwidth]{plots/search-train-objective-2021.pdf}
+	\includegraphics[width=0.9\columnwidth, trim=0 15 0 10, clip]{plots/search-train-objective-2021.pdf}
 	\caption{Training-set portfolio performance for different $k$ and solution approaches for the \texttt{SC2020} dataset (left) and the \texttt{SC2021} dataset (right).}
 	\label{fig:search-train-objective}
 \end{figure*}
@@ -484,7 +484,7 @@ This indicates that building a portfolio of complementary solvers, rather than p
 
 \begin{figure}[t]
 	\centering
-	\includegraphics[width=0.9\columnwidth]{plots/search-test-objective-2020.pdf}
+	\includegraphics[width=0.9\columnwidth, trim=0 15 0 10, clip]{plots/search-test-objective-2020.pdf}
 	\caption{Test-set portfolio performance for different $k$ and solution approaches for the \texttt{SC2020} dataset.}
 	\label{fig:search-test-objective-2020}
 \end{figure}
@@ -533,7 +533,7 @@ We also evaluate the portfolio performance, i.e., the PAR-2 score of the predict
 
 \begin{figure}[t]
 	\centering
-	\includegraphics[width=.9\columnwidth]{plots/prediction-test-mcc.pdf}
+	\includegraphics[width=.9\columnwidth, trim=0 15 0 10, clip]{plots/prediction-test-mcc.pdf}
 	\caption{
 		Test-set MCC for \emph{random sampling} portfolios, using random forests with 100 trees.
 		For readability reasons, we do not plot outlier points.
@@ -544,9 +544,9 @@ We also evaluate the portfolio performance, i.e., the PAR-2 score of the predict
 % Figure belongs to "Portfolio Performance", but placed here for better distribution of figures in paper
 \begin{figure*}[t]
 	\centering
-	\includegraphics[width=0.9\columnwidth]{plots/prediction-test-objective-beam-2020.pdf}
+	\includegraphics[width=0.9\columnwidth, trim=0 15 0 10, clip]{plots/prediction-test-objective-beam-2020.pdf}
 	\qquad
-	\includegraphics[width=0.9\columnwidth]{plots/prediction-test-objective-beam-2021.pdf}
+	\includegraphics[width=0.9\columnwidth, trim=0 15 0 10, clip]{plots/prediction-test-objective-beam-2021.pdf}
 	\caption{
 		Portfolio performance for \emph{beam search} portfolios with $w=100$ for the \texttt{SC2020} dataset (left) and the \texttt{SC2021} dataset (right), comparing the performance scores of the portfolio's virtual best solver (VBS), single best solver (SBS), and score with prediction model, i.e., random forests with 100 trees. 
 		The performance of the the global SBS, i.e., not only considering solvers from the portfolio, is shown as horizontal line.
@@ -586,7 +586,7 @@ In addition, for $k > 2$ the model-based portfolios are better than the global s
 
 \begin{figure}[t]
 	\centering
-	\includegraphics[width=0.9\columnwidth]{plots/prediction-test-objective-optimal-2020.pdf}
+	\includegraphics[width=0.9\columnwidth, trim=0 15 0 10, clip]{plots/prediction-test-objective-optimal-2020.pdf}
 	\caption{
 		Portfolio performance for \emph{optimal solution} portfolios, comparing the portfolio's virtual best solver (VBS), single best solver (SBS), and score with prediction model, i.e., random forests with 100 trees, for the \texttt{SC2020} dataset.
 		The performance of the the global SBS, i.e., not only considering solvers from the portfolio, is shown as horizontal line.
