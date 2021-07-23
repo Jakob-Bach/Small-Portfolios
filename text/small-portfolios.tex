@@ -98,10 +98,9 @@ But due to that achievement, it has been awarded the new \emph{Special Innovatio
 
 Yet another tweak when it comes to performance gains from sets of solvers is as follows:
 Combining a portfolio with a solver-selection process that includes runtime predictions usually outperforms individual best solvers by much~\cite{xu2008satzilla}. 
-However, the relative performance gains of such approaches on instances in the very diverse \emph{application} category are usually much smaller than the gains in the categories of \emph{crafted} or \emph{random} instances~\cite{Xu:2012:EvalContribVBS,Collautti:2013:SNNAP}. %KB: Wie kann es nicht besonders gut sein in der Kategorie 'very diverse applications', wenn es in der Kategorie 'random' gut ist? Ist das nicht im Grunde das gleiche? 
-In some cases, they are even evaluated on random instances only~\cite{Kadioglu:2010:ISAC}. %KB: Ich glaube, das trifft es nicht ganz. Ihr Punkt war doch, dass eine Evaluierung über random Instanzen, die man manchmal antrifft, die Ansätze leistungsfähiger erscheinen lassen, als sie in der wirklichkeit dann sind?!? Vielleicht: "We argue that evaluations confined to random instances, such as the one in \cite{Kadioglu:2010:ISAC}, let the solvers appear in a better light than ones covering various domains." Oder so ähnlich.
-Moreover, such constructions %KB: Unklarer Bezug: Welche Konstruktionen? Hier vielleicht: "such constructions (prediction-based solver selection) are complex ..."?
-are complex and quite time-consuming.
+However, the relative performance gains of such approaches on instances in the very diverse \emph{application} category are usually much smaller than the gains in the categories of \emph{crafted} or \emph{randomly generated} instances~\cite{Xu:2012:EvalContribVBS,Collautti:2013:SNNAP}. 
+We argue that evaluations confined to only a few, very specific set of instances, such as the one in \cite{Kadioglu:2010:ISAC}, let the solvers appear in a better light than ones covering various domains. 
+Moreover, the construction of a prediction-based solver selection process is complex and quite time-consuming.
 In consequence, more often than not, comparative studies in SAT solving do not include implementations applying this principle to state-of-the-art solvers and recent benchmarks of interest.
 
 Given the circumstances sketched so far, the following questions are important when it comes to the design of portfolios and their evaluation. 
@@ -130,8 +129,7 @@ Our code and data are available online (cf. Section~\ref{sec:experimental-design
 
 Our evaluation yields insightful results regarding the various questions. 
 While it is expected that the marginal utility decreases with portfolio size, we did not expect the decrease to be so early. 
-For portfolios of size 5 and larger, the marginal gain in VBS performance decreases to less than 100 seconds by adding more solvers.  
-%JB: probaly should use a ratio etc. rather than a an absolute difference, because without context (without knowing solver runtimes), this number is difficult to assess
+Portfolios of size five already achieve more than 70\% of the maximum possible performance gain over the single best solver, so marginal performance gains from adding single additional solvers becomes very small in each case. 
 Another interesting observation is that well-known \emph{beam search} has given way to good approximate solutions to the \emph{K-Portfolio Problem}. 
 These solutions happen to perform very similarly to the optimal ones, even for a minimal beam width of one.
 
