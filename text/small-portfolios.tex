@@ -99,8 +99,8 @@ But due to that achievement, it has been awarded the new \emph{Special Innovatio
 Yet another tweak when it comes to performance gains from sets of solvers is as follows:
 Combining a portfolio with a solver-selection process that includes runtime predictions usually outperforms individual best solvers by much~\cite{xu2008satzilla}. 
 However, the relative performance gains of such approaches on instances in the very diverse \emph{application} category are usually much smaller than the gains in the categories of \emph{crafted} or \emph{randomly generated} instances~\cite{Xu:2012:EvalContribVBS,Collautti:2013:SNNAP}. 
-We argue that evaluations confined to only a few, very specific set of instances, such as the one in \cite{Kadioglu:2010:ISAC}, let the solvers appear in a better light than ones covering various domains. 
-Moreover, the construction of a prediction-based solver selection process is complex and quite time-consuming.
+We argue that evaluations confined to only a few, very specific sets of instances, such as the one in \cite{Kadioglu:2010:ISAC}, let the solvers appear in a better light than ones covering various domains. 
+Moreover, the construction of a prediction-based solver-selection process is complex and quite time-consuming.
 In consequence, more often than not, comparative studies in SAT solving do not include implementations applying this principle to state-of-the-art solvers and recent benchmarks of interest.
 
 Given the circumstances sketched so far, the following questions are important when it comes to the design of portfolios and their evaluation. 
@@ -129,7 +129,7 @@ Our code and data are available online (cf. Section~\ref{sec:experimental-design
 
 Our evaluation yields insightful results regarding the various questions. 
 While it is expected that the marginal utility decreases with portfolio size, we did not expect the decrease to be so early. 
-Portfolios of size five already achieve more than 70\% of the maximum possible performance gain over the single best solver, so marginal performance gains from adding single additional solvers becomes very small in each case. 
+Portfolios of size five already achieve more than 70\% of the maximum possible performance gain over the single best solver, so marginal performance gains from adding single additional solvers become very small in each case. 
 Another interesting observation is that well-known \emph{beam search} has given way to good approximate solutions to the \emph{K-Portfolio Problem}. 
 These solutions happen to perform very similarly to the optimal ones, even for a minimal beam width of one.
 
@@ -165,7 +165,7 @@ This has been markedly different in SAT~Competition~2021, in which an otherwise 
 All this underlines the importance of portfolio analysis for a complete evaluation of the state-of-the-art. 
 This in turn can also support the development of better stable solvers.
 
-Instance-specific solver selection approaches bring in another perspective on solver complementarity.
+Instance-specific solver-selection approaches bring in another perspective on solver complementarity.
 One of the best-known complex solver-selection approaches is SATzilla, of which multiple versions exist~\cite{xu2008satzilla, xu2012satzilla2012}. 
 In SATZilla, multiple prediction models guide the selection of a solver from their portfolio. 
 Additional components of SATzilla are so-called \emph{pre-solvers}, which are only run for a short time to solve easy instances, and a \emph{backup solver}, which is responsible for instances where computing features for the prediction models takes too long.
