@@ -1,8 +1,8 @@
-# An Extensive Study of k-Portfolios of Recent SAT Solvers
+# A Comprehensive Study of k-Portfolios of Recent SAT Solvers
 
 This repository contains the code and text of the paper
 
-> Bach, Jakob, Markus Iser, and Klemens Böhm. "An Extensive Study of k-Portfolios of Recent SAT Solvers"
+> Bach, Jakob, Markus Iser, and Klemens Böhm. "A Comprehensive Study of k-Portfolios of Recent SAT Solvers"
 
 This document describes the repo structure and the steps to reproduce the experiments.
 
