@@ -1,18 +1,17 @@
-\documentclass[conference]{IEEEtran}
+\documentclass[runningheads]{llncs}
 
-%\usepackage[style=ieee, backend=bibtex]{biblatex} % handled by IEEE template at the moment
-\usepackage[linesnumbered,vlined]{algorithm2e} % pseudo-code; use of package discouraged by IEEE, but hacked in in a (hopefully acceptable) way
+%\usepackage[style=ieee, backend=bibtex]{biblatex} % handled by LNCS template at the moment
+\usepackage[ruled,linesnumbered,vlined]{algorithm2e} % pseudo-code
 \usepackage{amsmath} % mathematical symbols
 \usepackage{amssymb} % mathematical symbols
-\usepackage{amsthm} % mathematical theorems
-\usepackage{balance} % balance columns on the last page
+%\usepackage{amsthm} % mathematical theorems; handled by LNCS template at the moment
 \usepackage{graphicx} % plots
+\usepackage{subcaption} % figures with multiple sub-figures and sub-captions
 \usepackage{hyperref} % links and URLs; should be loaded last
 
-%\addbibresource{references.bib} % handled by IEEE template at the moment
+%\addbibresource{references.bib} % handled by LNCS template at the moment
 
-\newtheorem{definition}{Definition}
-\newtheorem{example}{Example}
+%\newtheorem{example}{Example} % also defined in LNCS template
 
 \DeclareMathOperator*{\argmax}{arg\,max}
 \DeclareMathOperator*{\argmin}{arg\,min}
@@ -22,29 +21,16 @@
 \title{A Comprehensive Study of k-Portfolios\\ of Recent SAT Solvers}
 
 \author{
-	\IEEEauthorblockN{Jakob Bach}
-	\IEEEauthorblockA{
-		\textit{KIT Department of Informatics} \\
-		\textit{Karlsruhe Institute of Technology}\\
-		Karlsruhe, Germany \\
-		jakob.bach@kit.edu
-	}
-	\and
-	\IEEEauthorblockN{Markus Iser}
-	\IEEEauthorblockA{
-		\textit{KIT Department of Informatics} \\
-		\textit{Karlsruhe Institute of Technology}\\
-		Karlsruhe, Germany \\
-		markus.iser@kit.edu
-	}
-	\and
-	\IEEEauthorblockN{Klemens Böhm}
-	\IEEEauthorblockA{
-		\textit{KIT Department of Informatics} \\
-		\textit{Karlsruhe Institute of Technology}\\
-		Karlsruhe, Germany \\
-		klemens.boehm@kit.edu
-	}
+	Jakob Bach\inst{1}\orcidID{0000-0003-0301-2798} \and % ORCID will be rendered as icon in published version
+	Markus Iser\inst{1} \and
+	Klemens Böhm\inst{1}
+}
+
+\authorrunning{J. Bach et al.} % should use "et al." for more than two authors
+
+\institute{
+	Karlsruhe Institute of Technology (KIT), Karlsruhe, Germany\\
+	\email{\{jakob.bach,markus.iser,klemens.boehm\}@kit.edu}
 }
 
 \maketitle
@@ -60,11 +46,9 @@ We determine optimal portfolios with exact and approximate approaches and study 
 We also investigate how effective off-the-shelf prediction models are for instance-specific solver recommendations.
 One result is that the portfolios found with an approximate approach are as good as the optimal solution in practice. 
 We also observe that marginal returns decrease very quickly with larger $k$, and our prediction models do not give way to better performance beyond very small portfolio sizes. 
-\end{abstract}
 
-\begin{IEEEkeywords}
-Propositional Satisfiability, Solver Portfolios, Runtime Prediction, Machine Learning
-\end{IEEEkeywords}
+\keywords{Propositional satisfiability \and Solver portfolios \and Runtime prediction \and Machine Learning}
+\end{abstract}
 
 \section{Introduction}
 \label{sec:introduction}
@@ -163,7 +147,7 @@ All this underlines the importance of portfolio analysis for a complete evaluati
 This in turn can also support the development of better stable solvers.
 
 Instance-specific solver-selection approaches bring in another perspective on solver complementarity.
-One of the best-known complex solver-selection approaches is SATzilla, of which multiple versions exist~\cite{xu2008satzilla, xu2012satzilla2012}. 
+One of the best-known complex solver-selection approaches is SATzilla, of which multiple versions exist~\cite{xu2008satzilla,xu2012satzilla2012}. 
 In SATZilla, multiple prediction models guide the selection of a solver from their portfolio. 
 Additional components of SATzilla are so-called \emph{pre-solvers}, which are only run for a short time to solve easy instances, and a \emph{backup solver}, which is responsible for instances where computing features for the prediction models takes too long.
 Other instance-specific solver selection approaches are ISAC, which is based on clustering in the instance feature space~\cite{Kadioglu:2010:ISAC}, and SNNAP, which combines the ISAC approach with runtime prediction models~\cite{Collautti:2013:SNNAP}.
@@ -173,7 +157,7 @@ Many portfolio approaches have several stages and configuration options, which m
 To cope with this, Autofolio by Lindauer et al.\ provides an automatic configurator~\cite{lindauer2015autofolio}.
 One can also analyze the impact of configuration options with tools such as CAVE~\cite{biedenkapp2018cave}.
 
-A systematic analysis of portfolios with varying size~$k$, which has some similarities to our study, is conducted by Amadini et al.~\cite{amadini2014empirical, amadini2016extensive}.
+A systematic analysis of portfolios with varying size~$k$, which has some similarities to our study, is conducted by Amadini et al.~\cite{amadini2014empirical,amadini2016extensive}.
 They evaluate $k$-portfolios of CSP solvers in terms of their average runtime and solved instances. 
 They compare several classification methods within portfolios, next to adapting complex SAT portfolio approaches like SATzilla. 
 Amadini et al.\ focus on different instances and solvers than this current study, though the evaluation procedure has some similarities.
@@ -255,13 +239,7 @@ Ultimately, Equation~\ref{eq:ip4} specifies the optimization target.%
 \subsection{Beam Search}
 \label{sec:approach:beam}
 %
-% IEEE wants algorithms as figures, not separate floats (as "algorithm2e" does), so we need some hacking: https://tex.stackexchange.com/questions/147598/how-to-use-the-algorithm2e-package-with-ieeetran-class
-\begin{figure}[t]
-\makeatletter
-\let\@latex@error\@gobble
-\makeatother
-\begin{algorithm}[H]
-	\small
+\begin{algorithm}[htb]
 	\DontPrintSemicolon
 	\KwIn{Solvers $S$, Portfolio size $k$, Portfolio cost $c_T$}
 	\KwIn{Beam width $w$}
@@ -283,10 +261,9 @@ Ultimately, Equation~\ref{eq:ip4} specifies the optimization target.%
 		}
 	}
 	\Return $\argmin\limits_{P \in T_k}{c_{T}(P)}$\;
-\end{algorithm}
-\caption{\emph{Beam search} algorithm.}
-\label{al:beam-search}
-\end{figure}%
+	\caption{\emph{Beam search} algorithm.}
+	\label{al:beam-search}
+\end{algorithm}%
 %
 \emph{Beam search} is an approximate method that finds portfolios in an iterative manner.
 Figure~\ref{al:beam-search} specifies the approach. 
@@ -310,7 +287,7 @@ In this transformation, $c_W$ is an upper bound on portfolio cost, the single wo
 $$
 c_W := \max\{c_T(s) \mid s \in S\}
 $$
-As $u_{T}(P)$ is non-negative, monotone, and submodular, we get a lower bound on the utility of a portfolio found by \emph{greedy search} $P_k^{greedy}$~\cite{nemhauser1978analysis, krause2014submodular}:%
+As $u_{T}(P)$ is non-negative, monotone, and submodular, we get a lower bound on the utility of a portfolio found by \emph{greedy search} $P_k^{greedy}$~\cite{nemhauser1978analysis,krause2014submodular}:%
 $$
 	u_{T}(P_k^{greedy}) \geq (1 - \frac{1}{e}) \cdot \max_{|P| \leq k}{u_{T}(P)}
 $$
@@ -373,31 +350,21 @@ We evaluate prediction performance in two ways:
 	\item \emph{Objective value}:
 	We evaluate the prediction models with respect to the objective value, i.e., the runtime cost function $c_{T}(m,P)$ (cf. Section~\ref{sec:preliminaries}). 
 	\item \emph{MCC}:
-	We evaluate the predictions with Matthews correlation coefficient (MCC)~\cite{matthews1975comparison, gorodkin2004comparing}.
+	We evaluate the predictions with Matthews correlation coefficient (MCC)~\cite{matthews1975comparison,gorodkin2004comparing}.
 	This does not take into account how fast the recommended solvers actually are, but only if the fastest solver is recommended or not.
 	We use MCC instead of simpler metrics like accuracy, as the class labels might be imbalanced, i.e., one solver might be the fastest for most of the instances, and always predicting this solver would already yield a high accuracy.
 	MCC has a range of $[-1,1]$. 
 	The value zero occurs with both random guessing and always guessing the same solver.
 \end{itemize}
 
-% Figure belongs to "Evaluation" ("General Trend"), but placed here for better distribution of figures in paper
-\begin{figure*}[t]
-	\centering
-	\includegraphics[width=0.9\columnwidth, trim=0 15 0 10, clip]{plots/search-train-objective-2020.pdf}
-	\qquad
-	\includegraphics[width=0.9\columnwidth, trim=0 15 0 10, clip]{plots/search-train-objective-2021.pdf}
-	\caption{Training-set VBS performance of $k$-portfolios determined by different approaches, for the \texttt{SC2020} dataset (left) and the \texttt{SC2021} dataset (right).}
-	\label{fig:search-train-objective}
-\end{figure*}
-
 \subsection{Dataset}
 
 In our experiments, we use two datasets. 
-The first one, \texttt{SC2020}, contains the runtime data of $48$ solvers on $400$ instances from the Main Track of SAT~Competition~2020~\cite{balyo2020proceedings, SC2020:AIJ}.
+The first one, \texttt{SC2020}, contains the runtime data of $48$ solvers on $400$ instances from the Main Track of SAT~Competition~2020~\cite{balyo2020proceedings,SC2020:AIJ}.
 The second dataset, \texttt{SC2021}, contains the runtime data of $46$ solvers on $400$ instances from the Main Track of SAT~Competition~2021. 
 In both datasets, we filtered out those instances where no solver finished in time, such that runtimes for $316$ instances remained in \texttt{SC2020} and for $325$ instances in \texttt{SC2021}.
 
-For predictions, we use 143 features to characterize instances, of which $138$ features are from the feature extractor of SATzilla~2012~\cite{xu2008satzilla, xu2012satzilla2012} and five features are from a gate-recognition approach~\cite{Iser:2015:GateRecognition}. 
+For predictions, we use 143 features to characterize instances, of which $138$ features are from the feature extractor of SATzilla~2012~\cite{xu2008satzilla,xu2012satzilla2012} and five features are from a gate-recognition approach~\cite{Iser:2015:GateRecognition}. 
 Feature values which are missing due to the feature extractor having exceeded time- or memory limits are replaced with a constant value which is out of the range of the features.
 
 \subsection{Implementation}
@@ -423,6 +390,23 @@ For the $325$ instances in \texttt{SC2021}, the three overall fastest solvers wi
 This indicates that combining solvers in portfolios can improve overall runtime.
 
 \subsubsection{General Trend}
+
+\begin{figure}[htb]
+	\centering
+	\begin{subfigure}{0.49\columnwidth}
+		\centering
+		\includegraphics[width=\columnwidth, trim=0 15 0 10, clip]{plots/search-train-objective-2020.pdf}
+		\caption{\texttt{SC2020} dataset.}
+	\end{subfigure}
+	\hfil
+	\begin{subfigure}{0.49\columnwidth}
+		\centering
+		\includegraphics[width=\columnwidth, trim=0 15 0 10, clip]{plots/search-train-objective-2021.pdf}
+		\caption{\texttt{SC2021} dataset.}
+	\end{subfigure}
+	\caption{Training-set VBS performance of $k$-portfolios determined by different approaches.}
+	\label{fig:search-train-objective}
+\end{figure}
 
 Figure~\ref{fig:search-train-objective} displays the cost in terms of the PAR-2 score of the best $k$-portfolios for the different solution approaches. 
 The \emph{optimal solution} is the exact optimum.
@@ -465,9 +449,9 @@ This indicates that building a portfolio of complementary solvers, rather than p
 
 \subsubsection{Test-Set Performance}
 
-\begin{figure}[t]
+\begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.9\columnwidth, trim=0 15 0 10, clip]{plots/search-test-objective-2020.pdf}
+	\includegraphics[width=0.5\columnwidth, trim=0 15 0 10, clip]{plots/search-test-objective-2020.pdf}
 	\caption{Test-set VBS performance of $k$-portfolios determined by different approaches (\texttt{SC2020} dataset).}
 	\label{fig:search-test-objective-2020}
 \end{figure}
@@ -514,27 +498,14 @@ We also evaluate the portfolio performance, i.e., the PAR-2 score of the predict
 
 \subsubsection{Matthews Correlation Coefficient}
 
-\begin{figure}[t]
+\begin{figure}[htb]
 	\centering
-	\includegraphics[width=.9\columnwidth, trim=0 15 0 10, clip]{plots/prediction-test-mcc.pdf}
+	\includegraphics[width=0.5\columnwidth, trim=0 15 0 10, clip]{plots/prediction-test-mcc.pdf}
 	\caption{
 		Prediction performance (test-set MCC) for randomly sampled portfolios, using random forests with 100 trees (outliers removed for readability).
 	}
 	\label{fig:prediction-test-mcc}
 \end{figure}
-
-% Figure belongs to "Portfolio Performance", but placed here for better distribution of figures in paper
-\begin{figure*}[t]
-	\centering
-	\includegraphics[width=0.9\columnwidth, trim=0 15 0 10, clip]{plots/prediction-test-objective-beam-2020.pdf}
-	\qquad
-	\includegraphics[width=0.9\columnwidth, trim=0 15 0 10, clip]{plots/prediction-test-objective-beam-2021.pdf}
-	\caption{
-		Performance of prediction models, VBS and SBS for \emph{beam search} portfolios with $w=100$ for the \texttt{SC2020} dataset (left) and the \texttt{SC2021} dataset (right). 
-		The performance of the the global SBS is shown as a horizontal line.
-	}
-	\label{fig:prediction-test-objective-beam}
-\end{figure*}
 
 Figure~\ref{fig:prediction-test-mcc} graphs the test-set classification performance of random forests with 100 trees, using the portfolios from \emph{random sampling}.
 Performance with fewer trees is worse, on the training set as well as on the test set.
@@ -549,6 +520,27 @@ This could cause a bad \mbox{PAR-2} value for model-based portfolios, and we wil
 For small $k$, the prediction performance varies stronger between portfolios than for larger $k$.
 
 \subsubsection{Portfolio Performance}
+
+\begin{figure}[htb]
+	\centering
+	\begin{subfigure}{0.49\columnwidth}
+		\centering
+		\includegraphics[width=\columnwidth, trim=0 15 0 10, clip]{plots/prediction-test-objective-beam-2020.pdf}
+		\caption{\texttt{SC2020} dataset.}
+	\end{subfigure}
+	\hfil
+	\begin{subfigure}{0.49\columnwidth}
+		\centering
+		\includegraphics[width=\columnwidth, trim=0 15 0 10, clip]{plots/prediction-test-objective-beam-2021.pdf}
+		\caption{\texttt{SC2020} dataset.}
+	\end{subfigure}
+	\hfil
+	\caption{
+		Performance of prediction models, VBS and SBS for \emph{beam search} portfolios with $w=100$. 
+		The performance of the the global SBS is shown as a horizontal line.
+	}
+	\label{fig:prediction-test-objective-beam}
+\end{figure}
 
 Figure~\ref{fig:prediction-test-objective-beam} shows test-set PAR-2 scores for portfolios from \emph{beam search} with $w=100$.
 The plot compares the PAR-2 score of portfolios with prediction model to two competitors without prediction model, computed on the same portfolios.
@@ -566,9 +558,9 @@ As a consequence, the gap between VBS and the predicted solvers grows with $k$.
 However, model-based portfolios tend to be better than the single best solver from these portfolios, i.e., the prediction models can discriminate between solvers to some extent.
 In addition, for $k > 2$ the model-based portfolios are better than the global single-best solver, which might not be part of the portfolio, at least on average.
 
-\begin{figure}[t]
+\begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.9\columnwidth, trim=0 15 0 10, clip]{plots/prediction-test-objective-optimal-2020.pdf}
+	\includegraphics[width=0.5\columnwidth, trim=0 15 0 10, clip]{plots/prediction-test-objective-optimal-2020.pdf}
 	\caption{
 		Performance of prediction models, VBS and SBS for the optimal solution of the $k$-Portfolio Problem (\texttt{SC2020} dataset, five-fold cross validation). 
 		The performance of the the global SBS is shown as a horizontal line.
@@ -613,13 +605,7 @@ Such new features have correlated well with solver performance on application in
 Efficient implementations of feature extractors and studying feature importance on datasets which represent the state-of-the-art are future work. 
 In order to facilitate portfolio analysis for evaluation purposes and for ad-hoc portfolio generation, we also want to integrate our exact portfolio-search approach into the Python package~\emph{gbd-tools}, so one can directly use it in queries to the database GBD~\cite{iser2020collaborative}. 
 
-% \section*{Acknowledgments}
-
-% Jakob will have to add some funding source here.
-
-\balance % according to documentation, command might not work if issued to late in document, so hopefully placing it here suffices
-
-\bibliographystyle{IEEEtran}
-\bibliography{IEEEabrv,references}
+\bibliographystyle{splncs04}
+\bibliography{references}
 
 \end{document}
