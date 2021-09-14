@@ -7,7 +7,6 @@
 %\usepackage{amsthm} % mathematical theorems; handled by LNCS template at the moment
 \usepackage{graphicx} % plots
 \usepackage[misc]{ifsym} % letter symbol to mark corresponding author
-\usepackage{subcaption} % figures with multiple sub-figures and sub-captions
 \usepackage{xcolor} % for link coloring as advised by LNCS template
 \usepackage{hyperref} % links and URLs; should be loaded last
 
@@ -399,18 +398,8 @@ This indicates that combining solvers in portfolios can improve overall runtime.
 
 \begin{figure}[htb]
 	\centering
-	\begin{subfigure}{0.49\columnwidth}
-		\centering
-		\includegraphics[width=\columnwidth, trim=0 15 0 10, clip]{plots/search-train-objective-2020.pdf}
-		\caption{\texttt{SC2020} dataset}
-	\end{subfigure}
-	\hfil
-	\begin{subfigure}{0.49\columnwidth}
-		\centering
-		\includegraphics[width=\columnwidth, trim=0 15 0 10, clip]{plots/search-train-objective-2021.pdf}
-		\caption{\texttt{SC2021} dataset}
-	\end{subfigure}
-	\caption{Training-set VBS performance of $k$-portfolios determined by different approaches}
+	\includegraphics[width=\columnwidth]{plots/search-train-objective.pdf}
+	\caption{Training-set VBS performance of $k$-portfolios determined by different approaches for the \texttt{SC2020} dataset (left) and the \texttt{SC2021} dataset (right)}
 	\label{fig:search-train-objective}
 \end{figure}
 
@@ -457,18 +446,18 @@ This indicates that building a portfolio of complementary solvers, rather than p
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\columnwidth, trim=0 15 0 10, clip]{plots/search-test-objective-2020.pdf}
-	\caption{Test-set VBS performance of $k$-portfolios determined by different approaches (\texttt{SC2020} dataset)}
-	\label{fig:search-test-objective-2020}
+	\includegraphics[width=\columnwidth]{plots/search-test-objective.pdf}
+	\caption{Test-set VBS performance of $k$-portfolios determined by different approaches for the \texttt{SC2020} dataset (left) and the \texttt{SC2021} dataset (right)}
+	\label{fig:search-test-objective}
 \end{figure}
 
-Figure~\ref{fig:search-test-objective-2020} shows test-set portfolio cost for the different solution approaches.
+Figure~\ref{fig:search-test-objective} shows test-set portfolio cost for the different solution approaches.
 Here, we take the portfolios found on the training set, but evaluate them with the test-set instances.
 The overall trends are the same as on the training set in Figure~\ref{fig:search-train-objective}.
 A notable exception is that \emph{beam search}, \emph{k-best}, and the \emph{optimal solution} show similar performance on the test set of \texttt{SC2020}.
 In particular, there is no clear winner, and the \emph{optimal solution} can even perform worse than those found by the approximate approaches. 
 This is because the best portfolio on the training set is not necessarily the best portfolio on the test set.
-For the test set of \texttt{SC2021}, which we do not display here, \emph{k-best} is markedly worse than \emph{beam search} and the \emph{optimal solution}. 
+For the test set of \texttt{SC2021}, \emph{k-best} is markedly worse than \emph{beam search} and the \emph{optimal solution}. 
 The larger performance gap already on the training set might have caused this effect.
 
 \subsubsection{Portfolio Composition}
@@ -506,7 +495,7 @@ We also evaluate the portfolio performance, i.e., the PAR-2 score of the predict
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\columnwidth, trim=0 15 0 10, clip]{plots/prediction-test-mcc.pdf}
+	\includegraphics[width=0.5\columnwidth]{plots/prediction-test-mcc.pdf}
 	\caption{
 		Prediction performance (test-set MCC) for randomly sampled portfolios, using random forests with 100 trees (outliers removed for readability)
 	}
@@ -529,22 +518,10 @@ For small $k$, the prediction performance varies stronger between portfolios tha
 
 \begin{figure}[htb]
 	\centering
-	\begin{subfigure}{0.49\columnwidth}
-		\centering
-		\includegraphics[width=\columnwidth, trim=0 15 0 10, clip]{plots/prediction-test-objective-beam-2020.pdf}
-		\caption{\texttt{SC2020} dataset}
-	\end{subfigure}
-	\hfil
-	\begin{subfigure}{0.49\columnwidth}
-		\centering
-		\includegraphics[width=\columnwidth, trim=0 15 0 10, clip]{plots/prediction-test-objective-beam-2021.pdf}
-		\caption{\texttt{SC2021} dataset}
-	\end{subfigure}
-	\hfil
+	\includegraphics[width=\columnwidth]{plots/prediction-test-objective-beam.pdf}
 	\caption{
-		Performance of prediction models, VBS and SBS for \emph{beam search} portfolios with $w=100$. 
-		The performance of the the global SBS is shown as a horizontal line.
-	}
+		Performance of prediction models, VBS and SBS for \emph{beam search} portfolios with $w=100$ for the \texttt{SC2020} dataset (left) and the \texttt{SC2021} dataset (right).
+		The performance of the the global SBS is shown as a horizontal line.}
 	\label{fig:prediction-test-objective-beam}
 \end{figure}
 
@@ -566,15 +543,15 @@ In addition, for $k > 2$ the model-based portfolios are better than the global s
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\columnwidth, trim=0 15 0 10, clip]{plots/prediction-test-objective-optimal-2020.pdf}
+	\includegraphics[width=\columnwidth]{plots/prediction-test-objective-optimal.pdf}
 	\caption{
-		Performance of prediction models, VBS and SBS for the optimal solution of the $k$-Portfolio Problem (\texttt{SC2020} dataset, five-fold cross validation). 
+		Performance of prediction models, VBS and SBS for the optimal solution of the $k$-Portfolio Problem for the \texttt{SC2020} dataset (left) and the \texttt{SC2021} dataset (right).
 		The performance of the the global SBS is shown as a horizontal line.
 	}
-	\label{fig:prediction-test-objective-optimal-2020}
+	\label{fig:prediction-test-objective-optimal}
 \end{figure}
 
-Figure~\ref{fig:prediction-test-objective-optimal-2020} repeats the same comparison as before for the \emph{optimal solution} portfolios.
+Figure~\ref{fig:prediction-test-objective-optimal} repeats the same comparison as before for the \emph{optimal solution} portfolios.
 The overall trends remain the same.
 In contrast to Figure~\ref{fig:prediction-test-objective-beam}, here we have only five portfolios for each $k$, one for each fold of cross-validation.
 We still see a considerable variance for each $k$, i.e., the test set performance also depends on the current split of instances.

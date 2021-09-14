@@ -18,7 +18,7 @@ import seaborn as sns
 import prepare_dataset
 
 
-plt.rcParams['font.family'] = 'Helvetica'  # IEEE template's sans-serif font
+plt.rcParams['font.family'] = 'CMU Sans Serif'  # LNCS template uses CMR fonts
 
 
 # Run the full evaluation pipeline. To that end, read experiments' input files from "data_dir",
@@ -59,7 +59,7 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
 
     # ----General Trend / Test-Set Performance----
 
-    # Figures 2 and 3: Performance of search approaches over k (Figure 1 is pseudo-code, not created here)
+    # Figures 1 and 2: Objective value of search approaches over k
     data = search_results.loc[(search_results['algorithm'] != 'beam_search') | (search_results['w'] == 1)]
     bound_data = data[data['algorithm'] == 'mip_search'].copy()  # bounds computed from exact solution
     bound_data['algorithm'] = 'upper_bound'
@@ -77,34 +77,32 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
     plot_data['algorithm'] = plot_data['algorithm'].replace({
         'random_search': 'Random sampling', 'mip_search': 'Optimal solution',
         'beam_search': 'Greedy search', 'kbest_search': 'K-best', 'upper_bound': 'Upper bound'})
-    plot_data.rename(columns={'algorithm': 'Solution approach', 'k': 'Portfolio size $k$'}, inplace=True)
-    # Figure 2 (a)
-    plt.figure(figsize=(4, 3))
-    sns.lineplot(x='Portfolio size $k$', y='train_objective',
-                 hue='Solution approach', style='Solution approach',
-                 data=plot_data[plot_data['problem'] == 'sc2020'], palette='Set1')
-    plt.ylabel('PAR-2 score')
-    plt.legend(edgecolor='white', loc='center right', framealpha=0, bbox_to_anchor=(1, 0.4))
+    plot_data['problem'] = plot_data['problem'].str.replace('sc', 'SC')
+    plot_data.rename(columns={'algorithm': 'Solution approach', 'problem': 'Dataset'}, inplace=True)
+    # Figure 1: Training-set objective value of search approaches over k
+    plt.rcParams['font.size'] = 24
+    facet_grid = sns.relplot(x='k', y='train_objective', col='Dataset', hue='Solution approach',
+                             style='Solution approach', data=plot_data, kind='line',
+                             linewidth=4, palette='Set1', facet_kws={'despine': False},
+                             height=6.25, aspect=0.8)
+    facet_grid.set_axis_labels(x_var='Portfolio size $k$', y_var='PAR-2 score')
+    sns.move_legend(facet_grid, edgecolor='white', loc='upper center', bbox_to_anchor=(0.5, 0.1), ncol=3)
+    for handle in facet_grid.legend.legendHandles:
+        handle.set_linewidth(4)
     plt.tight_layout()
-    plt.savefig(plot_dir / 'search-train-objective-2020.pdf')
-    # Figure 2 (b)
-    plt.figure(figsize=(4, 3))
-    sns.lineplot(x='Portfolio size $k$', y='train_objective',
-                 hue='Solution approach', style='Solution approach',
-                 data=plot_data[plot_data['problem'] == 'sc2021'], palette='Set1')
-    plt.ylabel('PAR-2 score')
-    plt.legend(edgecolor='white', loc='center right', framealpha=0, bbox_to_anchor=(1, 0.4))
+    plt.savefig(plot_dir / 'search-train-objective.pdf', bbox_inches='tight')
+    # Figure 2: Test-set objective value of search approaches over k
+    plt.rcParams['font.size'] = 24
+    facet_grid = sns.relplot(x='k', y='test_objective', col='Dataset', hue='Solution approach',
+                             style='Solution approach', data=plot_data, kind='line',
+                             linewidth=4, palette='Set1', facet_kws={'despine': False},
+                             height=6.25, aspect=0.8)
+    facet_grid.set_axis_labels(x_var='Portfolio size $k$', y_var='PAR-2 score')
+    sns.move_legend(facet_grid, edgecolor='white', loc='upper center', bbox_to_anchor=(0.5, 0.1), ncol=3)
+    for handle in facet_grid.legend.legendHandles:
+        handle.set_linewidth(4)
     plt.tight_layout()
-    plt.savefig(plot_dir / 'search-train-objective-2021.pdf')
-    # Figure 3
-    plt.figure(figsize=(4, 3))
-    sns.lineplot(x='Portfolio size $k$', y='test_objective',
-                 hue='Solution approach', style='Solution approach',
-                 data=plot_data[plot_data['problem'] == 'sc2020'], palette='Set1')
-    plt.ylabel('PAR-2 score')
-    plt.legend(edgecolor='white', loc='center right', framealpha=0, bbox_to_anchor=(1, 0.4))
-    plt.tight_layout()
-    plt.savefig(plot_dir / 'search-test-objective-2020.pdf')
+    plt.savefig(plot_dir / 'search-test-objective.pdf', bbox_inches='tight')
 
     print('Ratio of PAR2 between best k-portfolio and best portfolio of all solvers:')
     print(data.loc[data['algorithm'] == 'mip_search',  ['problem', 'k', 'objective_frac']].groupby(
@@ -165,19 +163,18 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
 
     # ----MCC----
 
-    # Figure 4: MCC for random portfolios per k
+    # Figure 3: MCC of predictions on random portfolios over k
     data = prediction_results.loc[(prediction_results['algorithm'] == 'random_search')]
     data = data.loc[(data['k'] > 1) & (data['k'] <= 10) & (data['model'] == 'Random forest') &
                     (data['n_estimators'] == 100), ['problem', 'k', 'solution_id', 'test_pred_mcc']]
     # Aggregate over cross-validation folds:
     data = data.groupby(['problem', 'k', 'solution_id']).mean().reset_index().drop(columns='solution_id')
-    data['problem'] = data['problem'].replace({'sc2020': 'SAT Competition 2020',
-                                               'sc2021': 'SAT Competition 2021'})
+    data['problem'] = data['problem'].str.replace('sc', 'SC')
     data.rename(columns={'problem': 'Objective', 'k': 'Portfolio size $k$',
                          'test_pred_mcc': 'Test-set MCC'}, inplace=True)
-    plt.figure(figsize=(4, 3))
+    plt.figure(figsize=(8, 6))
     sns.boxplot(x='Portfolio size $k$', y='Test-set MCC', hue='Objective', fliersize=0, data=data,
-                palette='Set2')
+                palette='Set2', linewidth=3)
     plt.ylim(-0.1, 1)
     plt.legend(edgecolor='white')
     plt.tight_layout()
@@ -209,7 +206,7 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
 
     # ----Objective Value----
 
-    # Figure 5: Objective value for model-based and VBS-based top beam-search portfolios
+    # Figure 4: Objective value of model-based and VBS-based top beam-search portfolios over k
     w = 100
     data = prediction_results.loc[(prediction_results['algorithm'] == 'beam_search') &
                                   (prediction_results['w'] == w)]
@@ -217,37 +214,33 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
     data = data.loc[(data['k'] != 1) & (data['k'] <= 10) & (data['model'] == 'Random forest') &
                     (data['n_estimators'] == 100), ['problem', 'k', 'solution_id'] + plot_vars]
     # Aggregate over cross-validation folds (don't group by k here, as solution_ids for beam search
-    # go over mutliple values of k):
+    # go over multiple values of k):
     data = data.groupby(['problem', 'solution_id']).mean().reset_index().drop(columns='solution_id')
+    data['k'] = data['k'].astype(int)  # can become float due to mean() operation
     data = data.melt(id_vars=['problem', 'k'], value_vars=plot_vars,
                      var_name='Approach', value_name='objective')
     data['Approach'] = data['Approach'].replace(
         {'test_pred_objective': 'Prediction', 'test_objective': 'VBS', 'test_portfolio_sbs': 'SBS'})
-    data.rename(columns={'k': 'Portfolio size $k$'}, inplace=True)
+    data['problem'] = data['problem'].str.replace('sc', 'SC')
+    data.rename(columns={'problem': 'Dataset'}, inplace=True)
     global_sbs_data = search_results.loc[(search_results['algorithm'] == 'mip_search') &
                                          (search_results['k'] == 1), ['problem', 'fold_id', 'test_objective']]
-    # Figure 5 (a)
-    plt.figure(figsize=(4, 3))
-    sns.boxplot(x='Portfolio size $k$', y='objective', hue='Approach',
-                data=data[data['problem'] == 'sc2020'], palette='Set2')
-    plt.axhline(y=global_sbs_data.loc[global_sbs_data['problem'] == 'sc2020', 'test_objective'].mean(),
-                color=sns.color_palette('Set2').as_hex()[3])  # SBS
-    plt.ylabel('PAR-2 score')
-    plt.legend(edgecolor='white', loc='center right', framealpha=0, bbox_to_anchor=(1, 0.35))
+    global_sbs_data['problem'] = global_sbs_data['problem'].str.replace('sc', 'SC')
+    plt.rcParams['font.size'] = 22
+    facet_grid = sns.catplot(x='k', y='objective', hue='Approach', col='Dataset', data=data,
+                             kind='box', linewidth=2, palette='Set2', facet_kws={'despine': False},
+                             height=5, aspect=1)
+    for dataset_name, dataset_subplot in facet_grid.axes_dict.items():  # add baseline performance
+        dataset_subplot.axhline(
+            y=global_sbs_data.loc[global_sbs_data['problem'] == dataset_name, 'test_objective'].mean(),
+            color=sns.color_palette('Set2').as_hex()[3])
+    facet_grid.set_axis_labels(x_var='Portfolio size $k$', y_var='PAR-2 score')
+    sns.move_legend(facet_grid, edgecolor='white', loc='upper center', bbox_to_anchor=(0.6, 0.15), ncol=3)
+    facet_grid.legend.get_title().set_position((-312, -31))
     plt.tight_layout()
-    plt.savefig(plot_dir / 'prediction-test-objective-beam-2020.pdf')
-    # Figure 5 (b)
-    plt.figure(figsize=(4, 3))
-    sns.boxplot(x='Portfolio size $k$', y='objective', hue='Approach',
-                data=data[data['problem'] == 'sc2021'], palette='Set2')
-    plt.axhline(y=global_sbs_data.loc[global_sbs_data['problem'] == 'sc2021', 'test_objective'].mean(),
-                color=sns.color_palette('Set2').as_hex()[3])  # SBS
-    plt.ylabel('PAR-2 score')
-    plt.legend(edgecolor='white', loc='center right', framealpha=0, bbox_to_anchor=(1, 0.25))
-    plt.tight_layout()
-    plt.savefig(plot_dir / 'prediction-test-objective-beam-2021.pdf')
+    plt.savefig(plot_dir / 'prediction-test-objective-beam.pdf', bbox_inches='tight')
 
-    # Figure 6: Objective value for optimal (MIP search) portfolios
+    # Figure 5: Objective value of model-based and VBS-based optimal (MIP search) portfolios over k
     data = prediction_results.loc[(prediction_results['algorithm'] == 'mip_search')]
     data = data.loc[(data['k'] != 1) & (data['k'] <= 10) & (data['model'] == 'Random forest') &
                     (data['n_estimators'] == 100), ['problem', 'k', 'solution_id'] + plot_vars]
@@ -255,16 +248,21 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
                      var_name='Approach', value_name='objective')
     data['Approach'] = data['Approach'].replace(
         {'test_pred_objective': 'Prediction', 'test_objective': 'VBS', 'test_portfolio_sbs': 'SBS'})
-    data.rename(columns={'k': 'Portfolio size $k$'}, inplace=True)
-    plt.figure(figsize=(4, 3))
-    sns.stripplot(x='Portfolio size $k$', y='objective', hue='Approach',
-                    data=data[data['problem'] == 'sc2020'], palette='Set2', dodge=True)
-    plt.axhline(y=global_sbs_data.loc[global_sbs_data['problem'] == 'sc2020', 'test_objective'].mean(),
-                color=sns.color_palette('Set2').as_hex()[3])  # SBS
-    plt.ylabel('PAR-2 score')
-    plt.legend(edgecolor='white',  loc='lower left', bbox_to_anchor=(0, 1), ncol=3)
+    data['problem'] = data['problem'].str.replace('sc', 'SC')
+    data.rename(columns={'problem': 'Dataset'}, inplace=True)
+    plt.rcParams['font.size'] = 22
+    facet_grid = sns.catplot(x='k', y='objective', col='Dataset', hue='Approach', data=data,
+                             kind='strip', s=8, palette='Set2', facet_kws={'despine': False},
+                             height=5, aspect=1, dodge=True)
+    for dataset_name, dataset_subplot in facet_grid.axes_dict.items():  # add baseline performance
+        dataset_subplot.axhline(
+            y=global_sbs_data.loc[global_sbs_data['problem'] == dataset_name, 'test_objective'].mean(),
+            color=sns.color_palette('Set2').as_hex()[3])
+    facet_grid.set_axis_labels(x_var='Portfolio size $k$', y_var='PAR-2 score')
+    sns.move_legend(facet_grid, edgecolor='white', loc='upper center', bbox_to_anchor=(0.6, 0.15), ncol=3)
+    facet_grid.legend.get_title().set_position((-312, -31))
     plt.tight_layout()
-    plt.savefig(plot_dir / 'prediction-test-objective-optimal-2020.pdf')
+    plt.savefig(plot_dir / 'prediction-test-objective-optimal.pdf', bbox_inches='tight')
 
     # ----Feature Importance----
 
