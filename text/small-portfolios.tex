@@ -180,7 +180,7 @@ They contain runtimes of actual state-of-the-art SAT solvers for a very diverse 
 \section{Preliminaries}
 \label{sec:preliminaries}
 
-Let a set of solvers $S = \{s_1, \dots, s_n\}$, a set of SAT instances $I = \{i_1, \dots, i_m\}$, and solver runtimes $r: I \times S \rightarrow [0, T]$ with a fixed timeout $T$ be given.
+Let a set of solvers $S = \{s_1, \dots, s_n\}$, a set of SAT instances $I = \{i_1, \dots, i_l\}$, and solver runtimes $r: I \times S \rightarrow [0, T]$ with a fixed timeout $T$ be given.
 A scoring function $c_T: S \rightarrow \mathbb{R}$ estimates solver performance. 
 To score a solver, we use the popular penalized-average-runtime measure with a penalization factor of two (PAR-2 Score). 
 This score is a trade-off between solver runtime and the number of solved instances.
