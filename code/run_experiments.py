@@ -132,9 +132,8 @@ def run_experiments(data_dir: pathlib.Path, results_dir: pathlib.Path,
         print('Results directory is not empty. Files might be overwritten, but not deleted.')
     problems = []
     for year in [2020, 2021]:
-        problem_name = f'sc{year}'
-        runtimes, features = prepare_dataset.load_dataset(dataset_name=problem_name, data_dir=data_dir)
-        problems.append({'problem_name': problem_name, 'runtimes': runtimes, 'features': features})
+        runtimes, features = prepare_dataset.load_dataset(dataset_name=f'sc{year}', data_dir=data_dir)
+        problems.append({'problem_name': f'SC{year}', 'runtimes': runtimes, 'features': features})
     settings_list = define_experimental_design(problems=problems)
     print('Running evaluation...')
     progress_bar = tqdm.tqdm(total=len(settings_list))

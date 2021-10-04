@@ -77,7 +77,6 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
     plot_data['algorithm'] = plot_data['algorithm'].replace({
         'random_search': 'Random sampling', 'mip_search': 'Optimal solution',
         'beam_search': 'Greedy search', 'kbest_search': 'K-best', 'upper_bound': 'Upper bound'})
-    plot_data['problem'] = plot_data['problem'].str.replace('sc', 'SC')
     plot_data.rename(columns={'algorithm': 'Solution approach', 'problem': 'Dataset'}, inplace=True)
     # Figure 1: Training-set objective value of search approaches over k
     plt.rcParams['font.size'] = 24
@@ -151,7 +150,7 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
 
     k = 5
     print(f'How is solver occurrence in random {k=}-portfolio correlated to objective value?')
-    for problem, problem_runtimes in zip(['sc2020', 'sc2021'], [runtimes2020, runtimes2021]):
+    for problem, problem_runtimes in zip(['SC2020', 'SC2021'], [runtimes2020, runtimes2021]):
         data = search_results[(search_results['problem'] == problem) &
                               (search_results['algorithm'] == 'random_search') & (search_results['k'] == k)].copy()
         for solver_name in problem_runtimes.columns:
@@ -169,7 +168,6 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
                     (data['n_estimators'] == 100), ['problem', 'k', 'solution_id', 'test_pred_mcc']]
     # Aggregate over cross-validation folds:
     data = data.groupby(['problem', 'k', 'solution_id']).mean().reset_index().drop(columns='solution_id')
-    data['problem'] = data['problem'].str.replace('sc', 'SC')
     data.rename(columns={'problem': 'Objective', 'k': 'Portfolio size $k$',
                          'test_pred_mcc': 'Test-set MCC'}, inplace=True)
     plt.figure(figsize=(8, 6))
@@ -221,11 +219,9 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
                      var_name='Approach', value_name='objective')
     data['Approach'] = data['Approach'].replace(
         {'test_pred_objective': 'Prediction', 'test_objective': 'VBS', 'test_portfolio_sbs': 'SBS'})
-    data['problem'] = data['problem'].str.replace('sc', 'SC')
     data.rename(columns={'problem': 'Dataset'}, inplace=True)
     global_sbs_data = search_results.loc[(search_results['algorithm'] == 'mip_search') &
                                          (search_results['k'] == 1), ['problem', 'fold_id', 'test_objective']]
-    global_sbs_data['problem'] = global_sbs_data['problem'].str.replace('sc', 'SC')
     plt.rcParams['font.size'] = 22
     facet_grid = sns.catplot(x='k', y='objective', hue='Approach', col='Dataset', data=data,
                              kind='box', linewidth=2, palette='Set2', facet_kws={'despine': False},
@@ -248,7 +244,6 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
                      var_name='Approach', value_name='objective')
     data['Approach'] = data['Approach'].replace(
         {'test_pred_objective': 'Prediction', 'test_objective': 'VBS', 'test_portfolio_sbs': 'SBS'})
-    data['problem'] = data['problem'].str.replace('sc', 'SC')
     data.rename(columns={'problem': 'Dataset'}, inplace=True)
     plt.rcParams['font.size'] = 22
     facet_grid = sns.catplot(x='k', y='objective', col='Dataset', hue='Approach', data=data,
