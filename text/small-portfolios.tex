@@ -369,7 +369,7 @@ The first one, \texttt{SC2020}, contains the runtime data of $48$ solvers on $40
 The second dataset, \texttt{SC2021}, contains the runtime data of $46$ solvers on $400$ instances from the Main Track of SAT~Competition~2021. 
 In both datasets, we filtered out those instances where no solver finished in time, such that runtimes for $316$ instances remained in \texttt{SC2020} and for $325$ instances in \texttt{SC2021}.
 
-For predictions, we use 143 features to characterize instances, of which $138$ features are from the feature extractor of SATzilla~2012~\cite{xu2008satzilla,xu2012satzilla2012} and five features are from a gate-recognition approach~\cite{Iser:2015:GateRecognition}. 
+For predictions, we use $138$ features to characterize instances, which are from the feature extractor of SATzilla~2012~\cite{xu2008satzilla,xu2012satzilla2012}. 
 Feature values which are missing due to the feature extractor having exceeded time- or memory limits are replaced with a constant value which is out of the range of the features.
 
 \subsection{Implementation}
@@ -487,6 +487,8 @@ The positive correlations are even weaker, i.e., there are no solvers which infl
 Overall, this means that the influence of single solvers on portfolio performance is limited; one needs a combination of solvers to clearly influence the PAR-2 score in either direction.
 
 \subsection{Prediction Results}
+
+%TODO: adapt to new pipeline run
 
 In this section, we evaluate the prediction performance for instance-specific solver recommendations in the portfolios found earlier. 
 We also evaluate the portfolio performance, i.e., the PAR-2 score of the predicted solvers.

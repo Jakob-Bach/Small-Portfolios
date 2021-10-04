@@ -17,7 +17,7 @@ import gbd_tool.gbd_api
 import pandas as pd
 
 
-DATABASES = ['meta.db', 'gates.db', 'satzilla.db', 'sc2020.db', 'sc2021.db']
+DATABASES = ['meta.db', 'satzilla.db', 'sc2020.db', 'sc2021.db']
 PENALTY = 10000  # PAR2 score with timeout of 5000 s
 
 
@@ -78,9 +78,6 @@ def load_dataset(dataset_name: str, data_dir: pathlib.Path,
 # Load/save all necessary I/O data from/to "data_dir".
 def transform_csvs_for_pipeline(data_dir: pathlib.Path) -> None:
     meta_db = pd.read_csv(data_dir / 'meta.csv')  # allows to filter for competitions and tracks
-    # Gate-recognition instance features and SATzilla instance features; number of variables and
-    # clauses is in both databases, so we drop them once:
-    gates_db = pd.read_csv(data_dir / 'gates.csv').drop(columns=['local', 'filename', 'tags', 'variables', 'clauses'])
     satzilla_db = pd.read_csv(data_dir / 'satzilla.csv').drop(columns=['local', 'filename', 'tags'])
 
     for year in [2020, 2021]:
@@ -93,9 +90,7 @@ def transform_csvs_for_pipeline(data_dir: pathlib.Path) -> None:
         runtimes[numeric_cols] = runtimes[numeric_cols].transform(pd.to_numeric, errors='coerce')
         runtimes.fillna(value=PENALTY, inplace=True)
 
-        gates = gates_db[gates_db['hash'].isin(hashes)].reset_index(drop=True)
-        satzilla = satzilla_db[satzilla_db['hash'].isin(hashes)].reset_index(drop=True)
-        features = satzilla.merge(gates, on='hash')
+        features = satzilla_db[satzilla_db['hash'].isin(hashes)].reset_index(drop=True)
         features.sort_values(by='hash', inplace=True)
         assert (runtimes['hash'] == features['hash']).all()
         numeric_cols = [x for x in features.columns if x != 'hash']
