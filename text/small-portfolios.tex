@@ -342,7 +342,7 @@ We conduct five-fold cross-validation over SAT instances and average evaluation 
 We also analyze the performance of the previously determined $k$-portfolios with prediction models to select a solver, rather than choosing the VBS. 
 For each instance, the prediction target is the best solver out of the given $k$-portfolio.
 As models, we use random forests~\cite{breiman2001random}, which are also used in the well-known portfolio approach SATzilla2012~\cite{xu2012satzilla2012}. 
-To vary model complexity, we train models with $1$, $10$, and $100$ trees.
+We use 100 trees.
 
 In preliminary experiments, we also tried two adaptations of the prediction approach that are part of SATzilla2012:
 First, one can train a classifier for each pair of solvers, instead of training one classifier that makes a multi-class prediction.
@@ -499,13 +499,12 @@ We also evaluate the portfolio performance, i.e., the PAR-2 score of the predict
 	\centering
 	\includegraphics[width=0.5\columnwidth]{plots/prediction-test-mcc.pdf}
 	\caption{
-		Prediction performance (test-set MCC) for randomly sampled portfolios, using random forests with 100 trees (outliers removed for readability)
+		Prediction performance (test-set MCC) for randomly sampled portfolios, using random forests (outliers removed for readability)
 	}
 	\label{fig:prediction-test-mcc}
 \end{figure}
 
-Figure~\ref{fig:prediction-test-mcc} graphs the test-set classification performance of random forests with 100 trees, using the portfolios from \emph{random sampling}.
-Performance with fewer trees is worse, on the training set as well as on the test set.
+Figure~\ref{fig:prediction-test-mcc} graphs the test-set classification performance of random forests, using the portfolios from \emph{random sampling}.
 We use \emph{random sampling} results here, to show the variation of prediction performance over many portfolios.
 However, classification results are similar for \emph{beam search} with $w=100$ and for the \emph{optimal solution}.
 We do not display training-set performance, since it is close to 1.0.
@@ -563,7 +562,6 @@ We still see a considerable variance for each $k$, i.e., the test set performanc
 Averaging importance over all trained models, the most important feature has an importance of roughly 2\%, the least important one an importance of roughly 0\%.
 To reach a cumulated average importance of 50\%, one needs 40 out of 143 features.
 On average, prediction models use 110 features.
-If we limit our analysis to random forests with just one tree, the models still use 59 features on average.
 We conclude that no single feature or even small set of features drives prediction performance.
 Together with the low prediction performance, this indicates that our dataset lacks discriminating features which are suitable to decide which solver should be used on an instance.
 

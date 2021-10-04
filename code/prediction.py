@@ -4,7 +4,6 @@ Prediction-model-based portfolio evaluation, using the prediction model to make 
 solver recommendations within a portfolio.
 """
 
-import itertools
 import warnings
 
 import pandas as pd
@@ -14,7 +13,6 @@ import sklearn.metrics
 
 
 MODELS = {'Random forest': sklearn.ensemble.RandomForestClassifier}
-N_ESTIMATORS = [1, 10, 100]
 
 
 # For train/test split of "runtimes" of a portfolio and corresponding instance "features", train
@@ -36,12 +34,12 @@ def predict_and_evaluate(runtimes_train: pd.DataFrame, runtimes_test: pd.DataFra
         runtimes_test.columns, range(len(runtimes_test.columns)))
     results = []
     feature_importances = []
-    for model_name, n_estimators in itertools.product(MODELS, N_ESTIMATORS):
-        model = MODELS[model_name](random_state=25, n_estimators=n_estimators)
+    for model_name in MODELS:
+        model = MODELS[model_name](random_state=25, n_estimators=100)
         model.fit(X=X_train, y=y_train)
         pred_train = model.predict(X_train)
         pred_test = model.predict(X_test)
-        result = {'model': model_name, 'n_estimators': n_estimators}
+        result = {'model': model_name}
         with warnings.catch_warnings():
             # Filter warnings which occur if there only is one class in true or pred:
             warnings.filterwarnings(action='ignore', message='invalid value encountered in double_scalars')

@@ -164,8 +164,8 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
 
     # Figure 3: MCC of predictions on random portfolios over k
     data = prediction_results.loc[(prediction_results['algorithm'] == 'random_search')]
-    data = data.loc[(data['k'] > 1) & (data['k'] <= 10) & (data['model'] == 'Random forest') &
-                    (data['n_estimators'] == 100), ['problem', 'k', 'solution_id', 'test_pred_mcc']]
+    data = data.loc[(data['k'] > 1) & (data['k'] <= 10) & (data['model'] == 'Random forest'),
+                    ['problem', 'k', 'solution_id', 'test_pred_mcc']]
     # Aggregate over cross-validation folds:
     data = data.groupby(['problem', 'k', 'solution_id']).mean().reset_index().drop(columns='solution_id')
     data.rename(columns={'problem': 'Objective', 'k': 'Portfolio size $k$',
@@ -178,29 +178,27 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
     plt.tight_layout()
     plt.savefig(plot_dir / 'prediction-test-mcc.pdf')
 
-    print('Mean MCC for beam search with w=100, random forest with 100 trees:')
+    print('Mean MCC for beam search with w=100, random forest:')
     data = prediction_results[(prediction_results['algorithm'] == 'beam_search') &
                               (prediction_results['w'] == 100) &
-                              (prediction_results['model'] == 'Random forest') &
-                              (prediction_results['n_estimators'] == 100)]
+                              (prediction_results['model'] == 'Random forest')]
     print(data.groupby(['problem', 'k'])['test_pred_mcc'].agg(['mean', 'std']).reset_index().pivot(
         index='k', columns='problem').round(2))
 
-    print('Mean MCC for exact search, random forest with 100 trees:')
+    print('Mean MCC for exact search, random forests:')
     data = prediction_results[(prediction_results['algorithm'] == 'mip_search') &
-                              (prediction_results['model'] == 'Random forest') &
-                              (prediction_results['n_estimators'] == 100)]
+                              (prediction_results['model'] == 'Random forest')]
     print(data.groupby(['problem', 'k'])['test_pred_mcc'].agg(['mean', 'std']).reset_index().pivot(
         index='k', columns='problem').round(2))
 
-    print('Median MCC per model and number of estimators, using all prediction results:')
-    print(prediction_results.groupby(['problem', 'model', 'n_estimators'])[
+    print('Median MCC per model, using all prediction results:')
+    print(prediction_results.groupby(['problem', 'model'])[
         ['train_pred_mcc', 'test_pred_mcc']].median().round(2))
 
-    print('Train-test MCC difference per model and number of estimators, using all prediction results:')
-    data = prediction_results[['problem', 'model', 'n_estimators', 'train_pred_mcc', 'test_pred_mcc']].copy()
+    print('Train-test MCC difference per model, using all prediction results:')
+    data = prediction_results[['problem', 'model', 'train_pred_mcc', 'test_pred_mcc']].copy()
     data['train_test_diff'] = data['train_pred_mcc'] - data['test_pred_mcc']
-    print(data.groupby(['problem', 'model', 'n_estimators'])['train_test_diff'].describe().round(2))
+    print(data.groupby(['problem', 'model'])['train_test_diff'].describe().round(2))
 
     # ----Objective Value----
 
@@ -209,8 +207,8 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
     data = prediction_results.loc[(prediction_results['algorithm'] == 'beam_search') &
                                   (prediction_results['w'] == w)]
     plot_vars = ['test_pred_objective', 'test_objective', 'test_portfolio_sbs']
-    data = data.loc[(data['k'] != 1) & (data['k'] <= 10) & (data['model'] == 'Random forest') &
-                    (data['n_estimators'] == 100), ['problem', 'k', 'solution_id'] + plot_vars]
+    data = data.loc[(data['k'] != 1) & (data['k'] <= 10) & (data['model'] == 'Random forest'),
+                    ['problem', 'k', 'solution_id'] + plot_vars]
     # Aggregate over cross-validation folds (don't group by k here, as solution_ids for beam search
     # go over multiple values of k):
     data = data.groupby(['problem', 'solution_id']).mean().reset_index().drop(columns='solution_id')
@@ -238,8 +236,8 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
 
     # Figure 5: Objective value of model-based and VBS-based optimal (MIP search) portfolios over k
     data = prediction_results.loc[(prediction_results['algorithm'] == 'mip_search')]
-    data = data.loc[(data['k'] != 1) & (data['k'] <= 10) & (data['model'] == 'Random forest') &
-                    (data['n_estimators'] == 100), ['problem', 'k', 'solution_id'] + plot_vars]
+    data = data.loc[(data['k'] != 1) & (data['k'] <= 10) & (data['model'] == 'Random forest'),
+                    ['problem', 'k', 'solution_id'] + plot_vars]
     data = data.melt(id_vars=['problem', 'k'], value_vars=plot_vars,
                      var_name='Approach', value_name='objective')
     data['Approach'] = data['Approach'].replace(
@@ -268,9 +266,6 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
     print(f'To reach an importance of 50%, one needs {sum(data.sort_values(ascending=False).cumsum() < 50) + 1} features.')
     print('How many features are used in each model?')
     print((prediction_results[importance_cols] > 0).sum(axis='columns').describe().round(2))
-    print('How many features are used in each model with one estimator?')
-    print((prediction_results.loc[prediction_results['n_estimators'] == 1, importance_cols] > 0).sum(
-        axis='columns').describe().round(2))
 
 
 # Parse some command line argument and run evaluation.
