@@ -341,8 +341,10 @@ We conduct five-fold cross-validation over SAT instances and average evaluation 
 
 We also analyze the performance of the previously determined $k$-portfolios with prediction models to select a solver, rather than choosing the VBS. 
 For each instance, the prediction target is the best solver out of the given $k$-portfolio.
-As models, we use random forests~\cite{breiman2001random}, which are also used in the well-known portfolio approach SATzilla2012~\cite{xu2012satzilla2012}. 
-We use 100 trees.
+As model types, we leverage two powerful ensemble methods.
+First, we use random forests~\cite{breiman2001random}, which are also part of the well-known portfolio approach SATzilla2012~\cite{xu2012satzilla2012}.
+Second, we use XGBoost~\cite{xgboost}, a popular implementation of gradient boosting.
+In both cases, we train models with 100 trees.
 
 In preliminary experiments, we also tried two adaptations of the prediction approach that are part of SATzilla2012:
 First, one can train a classifier for each pair of solvers, instead of training one classifier that makes a multi-class prediction.

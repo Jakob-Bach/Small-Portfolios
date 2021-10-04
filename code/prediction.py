@@ -6,13 +6,23 @@ solver recommendations within a portfolio.
 
 import warnings
 
+import numpy as np
 import pandas as pd
 import sklearn.ensemble
 import sklearn.impute
 import sklearn.metrics
+import sklearn.preprocessing
+import xgboost
 
 
-MODELS = {'Random forest': sklearn.ensemble.RandomForestClassifier}
+MODELS = [
+    {'name': 'Random forest', 'func': sklearn.ensemble.RandomForestClassifier,
+     'args': {'n_estimators': 100, 'random_state': 25, 'n_jobs': 1}},
+    {'name': 'XGBoost', 'func': xgboost.XGBClassifier,
+     'args': {'n_estimators': 100, 'random_state': 25, 'n_jobs': 1,
+              'booster': 'gbtree', 'objective': 'binary:logistic',  # also handles multi-class
+              'use_label_encoder': False, 'verbosity': 0}}
+]
 
 
 # For train/test split of "runtimes" of a portfolio and corresponding instance "features", train
@@ -32,14 +42,24 @@ def predict_and_evaluate(runtimes_train: pd.DataFrame, runtimes_test: pd.DataFra
         runtimes_train.columns, range(len(runtimes_train.columns)))
     y_test = runtimes_test.idxmin(axis='columns').replace(
         runtimes_test.columns, range(len(runtimes_test.columns)))
+    # Some models (e.g., xgboost) might have problems with labels other than [0, .., k-1]; though
+    # labels are already integers, there might be gaps, as some solvers might not win any instance:
+    label_encoder = sklearn.preprocessing.LabelEncoder()
+    label_encoder.fit(y_train)
     results = []
     feature_importances = []
-    for model_name in MODELS:
-        model = MODELS[model_name](random_state=25, n_estimators=100)
-        model.fit(X=X_train, y=y_train)
-        pred_train = model.predict(X_train)
-        pred_test = model.predict(X_test)
-        result = {'model': model_name}
+    for model_item in MODELS:
+        if y_train.nunique() > 1:
+            model = model_item['func'](**model_item['args'])
+            model.fit(X=X_train, y=label_encoder.transform(y_train))
+            pred_train = label_encoder.inverse_transform(model.predict(X_train))
+            pred_test = label_encoder.inverse_transform(model.predict(X_test))
+            feature_importances.append(model.feature_importances_)
+        else:  # some models (e.g., xgboost) might have problems with zero-variance target)
+            pred_train = y_train.values
+            pred_test = np.full(shape=X_test.shape[0], fill_value=y_train.iloc[0])
+            feature_importances.append(np.full(shape=X_train.shape[1], fill_value=np.nan))
+        result = {'model': model_item['name']}
         with warnings.catch_warnings():
             # Filter warnings which occur if there only is one class in true or pred:
             warnings.filterwarnings(action='ignore', message='invalid value encountered in double_scalars')
@@ -50,7 +70,6 @@ def predict_and_evaluate(runtimes_train: pd.DataFrame, runtimes_test: pd.DataFra
         result['train_pred_objective'] = runtimes_train.values[range(len(runtimes_train)), pred_train].mean()
         result['test_pred_objective'] = runtimes_test.values[range(len(runtimes_test)), pred_test].mean()
         results.append(result)
-        feature_importances.append(model.feature_importances_)
     results = pd.DataFrame(results)
     feature_importances = pd.DataFrame(feature_importances, columns=['imp.' + x for x in features_train.columns])
     results = pd.concat([results, feature_importances], axis='columns')
