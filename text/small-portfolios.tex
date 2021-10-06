@@ -372,7 +372,10 @@ The second dataset, \texttt{SC2021}, contains the runtime data of $46$ solvers o
 In both datasets, we filtered out those instances where no solver finished in time, such that runtimes for $316$ instances remained in \texttt{SC2020} and for $325$ instances in \texttt{SC2021}.
 
 For predictions, we use $138$ features to characterize instances, which are from the feature extractor of SATzilla~2012~\cite{xu2008satzilla,xu2012satzilla2012}. 
-Feature values which are missing due to the feature extractor having exceeded time- or memory limits are replaced with a constant value which is out of the range of the features.
+Feature values that are missing due to the feature extractor having exceeded time- or memory limits are replaced with a constant value that is out of the range of the features.
+In both datasets, the number of features is relatively large compared to the number of instances.
+However, the prediction models in our experiments are tree-based and therefore implicitly select features during their training.
+Further, these kinds of models are not affected by monotonic transformations of features, which makes the experimental results more robust.
 
 \subsection{Implementation}
 \label{sec:experimental-design:impl}
