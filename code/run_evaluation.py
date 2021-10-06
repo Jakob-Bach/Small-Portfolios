@@ -164,19 +164,21 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
 
     # Figure 3: MCC of predictions on random portfolios over k
     data = prediction_results.loc[(prediction_results['algorithm'] == 'random_search')]
-    data = data.loc[(data['k'] > 1) & (data['k'] <= 10) & (data['model'] == 'Random forest'),
-                    ['problem', 'k', 'solution_id', 'test_pred_mcc']]
+    data = data.loc[(data['k'] > 1) & (data['k'] <= 10),
+                    ['problem', 'k', 'model', 'solution_id', 'test_pred_mcc']]
     # Aggregate over cross-validation folds:
-    data = data.groupby(['problem', 'k', 'solution_id']).mean().reset_index().drop(columns='solution_id')
-    data.rename(columns={'problem': 'Objective', 'k': 'Portfolio size $k$',
-                         'test_pred_mcc': 'Test-set MCC'}, inplace=True)
-    plt.figure(figsize=(8, 6))
-    sns.boxplot(x='Portfolio size $k$', y='Test-set MCC', hue='Objective', fliersize=0, data=data,
-                palette='Set2', linewidth=3)
+    data = data.groupby(['problem', 'k', 'model', 'solution_id']).mean().reset_index().drop(columns='solution_id')
+    data.rename(columns={'problem': 'Dataset', 'model': 'Model'}, inplace=True)
+    plt.rcParams['font.size'] = 22
+    facet_grid = sns.catplot(x='k', y='test_pred_mcc', hue='Model', col='Dataset', data=data,
+                             kind='box', linewidth=2, palette='Set2', facet_kws={'despine': False},
+                             height=5, aspect=1)
     plt.ylim(-0.1, 1)
-    plt.legend(edgecolor='white')
+    facet_grid.set_axis_labels(x_var='Portfolio size $k$', y_var='Test-set MCC')
+    sns.move_legend(facet_grid, edgecolor='white', loc='upper center', bbox_to_anchor=(0.5, 0.15), ncol=2)
+    facet_grid.legend.get_title().set_position((-262, -31))
     plt.tight_layout()
-    plt.savefig(plot_dir / 'prediction-test-mcc.pdf')
+    plt.savefig(plot_dir / 'prediction-test-mcc.pdf', bbox_inches='tight')
 
     print('Mean MCC for beam search with w=100, random forest:')
     data = prediction_results[(prediction_results['algorithm'] == 'beam_search') &
@@ -259,13 +261,16 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
 
     # ----Feature Importance----
 
-    print('Average feature importance (in %) over all prediction scenarios:')
+    print('Average feature importance (in %) for random forests over all prediction scenarios:')
     importance_cols = [x for x in prediction_results.columns if x.startswith('imp.')]
-    data = prediction_results[importance_cols].mean() * 100  # importance as percentage
-    print(data.describe())
-    print(f'To reach an importance of 50%, one needs {sum(data.sort_values(ascending=False).cumsum() < 50) + 1} features.')
-    print('How many features are used in each model?')
-    print((prediction_results[importance_cols] > 0).sum(axis='columns').describe().round(2))
+    data = prediction_results.loc[prediction_results['model'] == 'Random forest',
+                                  importance_cols].mean() * 100  # importance as percentage
+    print(data.describe().round(2))
+    print('To reach a feature importance of 50% with random forests, one needs',
+          f'{sum(data.sort_values(ascending=False).cumsum() < 50) + 1} features.')
+    print('How many features are used in each random-forest model?')
+    print((prediction_results.loc[prediction_results['model'] == 'Random forest',
+                                  importance_cols] > 0).sum(axis='columns').describe().round(2))
 
 
 # Parse some command line argument and run evaluation.

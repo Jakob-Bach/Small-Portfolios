@@ -379,7 +379,7 @@ Feature values which are missing due to the feature extractor having exceeded ti
 
 We implement our experimental design in Python and make our code available online\footnote{\url{https://github.com/Jakob-Bach/Small-Portfolios}}.
 The code also allows to download and prepare the datasets.
-Additionally, we publish the full experimental data, including results\footnote{\url{https://www.ipd.kit.edu/mitarbeiter/bach/k-portfolio-data.tar.gz}}.
+Additionally, we publish the full experimental data, including results\footnote{\url{https://bwsyncandshare.kit.edu/s/yKtJ34KTyqBtcJn}; will be moved to a public repository after review}.
 To create the datasets, we use the package~\emph{gbd-tools}~\cite{iser2020collaborative}.
 For predictions, we use the package \emph{scikit-learn}~\cite{scikit-learn}.
 To solve the \emph{K-Portfolio Problem} exactly, we use the package \emph{mip}~\cite{python-mip}.
@@ -490,8 +490,6 @@ Overall, this means that the influence of single solvers on portfolio performanc
 
 \subsection{Prediction Results}
 
-%TODO: adapt to new pipeline run
-
 In this section, we evaluate the prediction performance for instance-specific solver recommendations in the portfolios found earlier. 
 We also evaluate the portfolio performance, i.e., the PAR-2 score of the predicted solvers.
 
@@ -499,23 +497,24 @@ We also evaluate the portfolio performance, i.e., the PAR-2 score of the predict
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[width=0.5\columnwidth]{plots/prediction-test-mcc.pdf}
+	\includegraphics[width=\columnwidth]{plots/prediction-test-mcc.pdf}
 	\caption{
-		Prediction performance (test-set MCC) for randomly sampled portfolios, using random forests (outliers removed for readability)
+		Prediction performance (test-set MCC) for randomly sampled portfolios, using random forests and XGBoost as models, for the \texttt{SC2020} dataset (left) and the \texttt{SC2021} dataset (right)
 	}
 	\label{fig:prediction-test-mcc}
 \end{figure}
 
-Figure~\ref{fig:prediction-test-mcc} graphs the test-set classification performance of random forests, using the portfolios from \emph{random sampling}.
+Figure~\ref{fig:prediction-test-mcc} graphs the test-set classification performance of random forests and XGBoost, using the portfolios from \emph{random sampling}.
 We use \emph{random sampling} results here, to show the variation of prediction performance over many portfolios.
 However, classification results are similar for \emph{beam search} with $w=100$ and for the \emph{optimal solution}.
 We do not display training-set performance, since it is close to 1.0.
 
-As Figure~\ref{fig:prediction-test-mcc} shows, test-set prediction performance is rather low for all $k$.
-It is clearly higher than with random guessing, which would yield an MCC of 0.0, but clearly lower than the optimal MCC of 1.0.
+As Figure~\ref{fig:prediction-test-mcc} shows, test-set prediction performance is rather low for all $k$ and for both types of prediction models.
+Prediction performance is clearly higher than with random guessing, which would yield an MCC of 0.0, but clearly lower than the optimal MCC of 1.0.
 With a nearly perfect training-set performance, but a low test set performance, the models seem to overfit to the training set.
 This could cause a bad \mbox{PAR-2} value for model-based portfolios, and we will analyze this next.
-For small $k$, the prediction performance varies stronger between portfolios than for larger $k$.
+For small $k$, the prediction performance varies stronger between portfolios than for larger $k$, and is slightly higher on average.
+As random forests and XGBoost perform very similar, we will only use random-forest results in the following analyses.
 
 \subsubsection{Portfolio Performance}
 
@@ -542,7 +541,7 @@ This implies that the prediction model does not improve its selection of solvers
 Given the low prediction performance in terms of MCC, as seen in Figure~\ref{fig:prediction-test-mcc}, this has been expected.
 As a consequence, the gap between VBS and the predicted solvers grows with $k$.
 However, model-based portfolios tend to be better than the single best solver from these portfolios, i.e., the prediction models can discriminate between solvers to some extent.
-In addition, for $k > 2$ the model-based portfolios are better than the global single-best solver, which might not be part of the portfolio, at least on average.
+In addition, for $k > 2$ the model-based portfolios are better than the global single-best solver, at least on average.
 
 \begin{figure}[htb]
 	\centering
@@ -561,9 +560,9 @@ We still see a considerable variance for each $k$, i.e., the test set performanc
 
 \subsubsection{Feature Importance}
 
-Averaging importance over all trained models, the most important feature has an importance of roughly 2\%, the least important one an importance of roughly 0\%.
-To reach a cumulated average importance of 50\%, one needs 40 out of 143 features.
-On average, prediction models use 110 features.
+Averaging importance over all trained random-forest models, the most important feature has an importance of roughly 1.66\%, the least important one an importance of roughly 0.01\%.
+To reach a cumulated average importance of 50\%, one needs 38 out of 138 features.
+On average, random forests use 135 features, i.e., nearly all of them.
 We conclude that no single feature or even small set of features drives prediction performance.
 Together with the low prediction performance, this indicates that our dataset lacks discriminating features which are suitable to decide which solver should be used on an instance.
 
