@@ -316,6 +316,11 @@ In our experiments, we evaluate the exact and approximate solution approaches ju
 Also, we combine the found $k$-portfolios with prediction models for instance-specific solver selection. 
 In both cases, we are interested in the influence of the portfolio size $k$ on performance. 
 
+For evaluation purposes, we conduct five-fold cross-validation over SAT instances.
+This means we only use SAT instances from the training folds to search for $k$-portfolios and to subsequently train prediction models.
+We compute all evaluation metrics on training instances as well as on test instances.
+We average evaluation metrics over the cross-validation folds.
+
 \subsection{Solution Approaches}
 
 We employ the three solution approaches from Section~\ref{sec:approach} to determine $k$-portfolios for each $k \in \{1, \dots, |S|\}$. 
@@ -335,7 +340,6 @@ We also generate an additional baseline via random sampling of $k$-portfolios.
 The optimization goal for all approaches is the PAR-2 score $c_T(P)$.
 In preliminary experiments, we also analyzed two slightly different objectives, namely the number of unsolved instances and the PAR-2 score normalized for each instance.
 However, general trends in the results were similar to those with PAR-2 score, so we stick to the latter.
-We conduct five-fold cross-validation over SAT instances and average evaluation metrics over these folds. 
 
 \subsection{Prediction Approaches}
 
