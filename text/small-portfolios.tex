@@ -272,7 +272,7 @@ Ultimately, Equation~\ref{eq:ip4} specifies the optimization target.%
 \end{algorithm}%
 %
 \emph{Beam search} is an approximate method that finds portfolios in an iterative manner.
-Figure~\ref{al:beam-search} specifies the approach. 
+Algorithm~\ref{al:beam-search} specifies the approach. 
 In each iteration, the algorithm combines the portfolios from the previous iteration with individual solvers which are not part of these portfolios. 
 In other words, the algorithm expands existing portfolios by adding individual solvers. 
 Before the next iteration, only the $w$ portfolios with the lowest cost are retained.
