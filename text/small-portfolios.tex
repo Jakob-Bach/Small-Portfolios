@@ -26,9 +26,9 @@
 %\titlerunning{Abbreviated paper title} % currently not necessary, but possible in LNCS template
 
 \author{
-	Jakob Bach\orcidID{0000-0003-0301-2798} \and % ORCID will be rendered as icon in published version \inst{1} (\Letter)
-	Markus Iser\orcidID{0000-0003-2904-232X} \and%\inst{1}
-	Klemens Böhm%\inst{1}
+	Jakob Bach\orcidID{0000-0003-0301-2798} (\Letter) \and
+	Markus Iser\orcidID{0000-0003-2904-232X} \and
+	Klemens Böhm
 }
 
 \authorrunning{J. Bach et al.} % should use "et al." for more than two authors
@@ -105,7 +105,7 @@ For exact search, we encode the \emph{K-Portfolio Problem} as an integer optimiz
 Spurred by the complexity of the problem, we also analyze the quality of various approximate and random solutions. 
 
 In a subsequent step, we analyze the quality of solver runtime prediction which one can achieve with off-the-shelf models and instance features -- without any tuning.
-For each portfolio size $k$, we train random forests as prediction models, using the widely known instance feature records of SATzilla~2012~\cite{xu2012satzilla2012}, and then use the models to select portfolio members automatically for each instance. 
+For each portfolio size $k$, we train random forests and boosted trees as prediction models, using the widely known instance feature records of SATzilla~2012~\cite{xu2012satzilla2012}, and then use the models to select portfolio members automatically for each instance. 
 
 Our study is based on very recent \emph{competition} datasets which contain the runtimes of solvers having participated in SAT~Competitions~2020 and~2021. 
 The two sets of benchmarks in these SAT Competitions are a balanced mix of families of interest which have been drawn from the application and crafted instance categories. 
@@ -146,8 +146,9 @@ Finally, we discuss related work on systematic investigation of $k$-portfolios.
 Solver complementarity regarding the runtime of solver portfolios has been examined by Xu et al.~\cite{Xu:2012:EvalContribVBS}. 
 They show that significant contributions to the runtime of a portfolio often come from solvers which are not competitive when evaluated as a standalone solver. 
 This however depends on the dataset under evaluation. 
-In fact, the best performing $2$-portfolio of solvers in SAT~Competition~2020 are the winners of the SAT and UNSAT Tracks.\footnote{This is the expected result for a benchmark set which contains similar amounts of SAT and UNSAT instances.} 
-This has been markedly different in SAT~Competition~2021, in which an otherwise not competitive solver is part of the best performing $2$-portfolio. 
+In fact, the best performing $2$-portfolio of solvers in SAT~Competition~2020 are the winners of the SAT and UNSAT Tracks.
+This is the expected result for a benchmark set which contains similar amounts of SAT and UNSAT instances. 
+Results have been markedly different in SAT~Competition~2021, in which an otherwise not competitive solver is part of the best performing $2$-portfolio. 
 All this underlines the importance of portfolio analysis for a complete evaluation of the state-of-the-art. 
 This in turn can also support the development of better stable solvers.
 
