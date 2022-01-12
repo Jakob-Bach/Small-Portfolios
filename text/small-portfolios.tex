@@ -1,42 +1,57 @@
-\documentclass[runningheads]{llncs}
+\documentclass[a4paper,USenglish,pdfa]{lipics-v2021} % add "draft" to highlight overfull boxes; some other options available as well
 
-%\usepackage[style=ieee, backend=bibtex]{biblatex} % handled by LNCS template at the moment
+%\usepackage[style=ieee, backend=bibtex]{biblatex} % handled by LIPICs template (see end of document)
 \usepackage[ruled,linesnumbered,vlined]{algorithm2e} % pseudo-code
-\usepackage{amsmath} % mathematical symbols
-\usepackage{amssymb} % mathematical symbols
-%\usepackage{amsthm} % mathematical theorems; handled by LNCS template at the moment
-\usepackage{graphicx} % plots
-\usepackage[misc]{ifsym} % letter symbol to mark corresponding author
-\usepackage{xcolor} % for link coloring as advised by LNCS template
-\usepackage{hyperref} % links and URLs; should be loaded last
+%\usepackage{amsmath} % mathematical symbols; loaded by LIPIcs template
+%\usepackage{amssymb} % mathematical symbols; loaded by LIPIcs template
+%\usepackage{amsthm} % mathematical theorems; loaded by LIPIcs template
+%\usepackage{graphicx} % plots; loaded by LIPIcs template
+%\usepackage{hyperref} % links and URLs; should be loaded last; loaded by LIPIcs template
 
-%\addbibresource{references.bib} % handled by LNCS template at the moment
+%\addbibresource{references.bib} % handled by LIPIcs template (see end of document)
 
-%\newtheorem{example}{Example} % also defined in LNCS template
+%\newtheorem{example}{Example} % already defined in LIPIcs template
 
 \DeclareMathOperator*{\argmax}{arg\,max}
 \DeclareMathOperator*{\argmin}{arg\,min}
 
-\renewcommand\UrlFont{\color{blue}\rmfamily} % URL formatting as advised by LNCS template
+\title{A Comprehensive Study of k-Portfolios of Recent SAT Solvers}
+
+%\titlerunning{} % currently not necessary, full title can appear on headers of subsequent pages
+
+\author{Jakob Bach}{Karlsruhe Institute of Technology, Germany}{jakob.bach@kit.edu}{https://orcid.org/0000-0003-0301-2798}{}
+\author{Markus Iser}{Karlsruhe Institute of Technology, Germany}{markus.iser@kit.edu}{https://orcid.org/0000-0003-2904-232X}{}
+\author{Klemens Böhm}{Karlsruhe Institute of Technology, Germany}{klemens.boehm@kit.edu}{}{}
+
+\authorrunning{J. Bach, M. Iser, and K. Böhm} % first names should be abbreviated
+
+\Copyright{Jakob Bach, Markus Iser, and Klemens Böhm} % should use full first names
+
+\ccsdesc[500]{Theory of computation~Logic and verification} % see https://dl.acm.org/ccs/ccs_flat.cfm
+\ccsdesc[300]{Computing methodologies~Supervised learning by regression}
+
+\keywords{Propositional satisfiability, solver portfolios, runtime prediction, machine learning}
+
+\supplementdetails[subcategory={Code}]{Software}{https://github.com/Jakob-Bach/Small-Portfolios}
+\supplementdetails[subcategory={Full experimental data (review link, data will be moved to public repo after review)}]{Dataset}{https://bwsyncandshare.kit.edu/s/yKtJ34KTyqBtcJn}
+
+\nolinenumbers % disable line numbering
+
+%Editor-only macros:: begin (do not touch as author)%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\EventEditors{John Q. Open and Joan R. Access}
+\EventNoEds{2}
+\EventLongTitle{42nd Conference on Very Important Topics (CVIT 2016)}
+\EventShortTitle{CVIT 2016}
+\EventAcronym{CVIT}
+\EventYear{2016}
+\EventDate{December 24--27, 2016}
+\EventLocation{Little Whinging, United Kingdom}
+\EventLogo{}
+\SeriesVolume{42}
+\ArticleNo{23}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{document}
-
-\title{A Comprehensive Study of k-Portfolios\\ of Recent SAT Solvers}
-
-%\titlerunning{Abbreviated paper title} % currently not necessary, but possible in LNCS template
-
-\author{
-	Jakob Bach\orcidID{0000-0003-0301-2798} (\Letter) \and
-	Markus Iser\orcidID{0000-0003-2904-232X} \and
-	Klemens Böhm
-}
-
-\authorrunning{J. Bach et al.} % should use "et al." for more than two authors
-
-\institute{
-	Karlsruhe Institute of Technology (KIT), Karlsruhe, Germany\\
-	\email{\{jakob.bach,markus.iser,klemens.boehm\}@kit.edu}
-}
 
 \maketitle
 
@@ -51,14 +66,12 @@ We determine optimal portfolios with exact and approximate approaches and study 
 We also investigate how effective off-the-shelf prediction models are for instance-specific solver recommendations.
 One result is that the portfolios found with an approximate approach are as good as the optimal solution in practice. 
 We also observe that marginal returns decrease very quickly with larger $k$, and our prediction models do not give way to better performance beyond very small portfolio sizes. 
-
-\keywords{Propositional satisfiability \and Solver portfolios \and Runtime prediction \and Machine Learning}
 \end{abstract}
 
 \section{Introduction}
 \label{sec:introduction}
 
-\subsubsection{Motivation}
+\subsection{Motivation}
 
 SAT solving is the archetypal NP-complete problem.
 Its practical applications abound, e.g., verification of hardware and software~\cite{Kaufmann:2021:Amulet,Buning:2020:QPRVerify}, product configuration~\cite{Janota:2014:Configuration}, cryptanalysis~\cite{Nejati:2020:CDCLCrypto}, or planning~\cite{Schreiber:2021:Lilotane}.
@@ -96,7 +109,7 @@ Searching for a solution to the \emph{K-Portfolio Problem} is an NP-complete opt
 Second, one must decide how to select a solver for each instance. 
 In particular, this includes the choice of instance features used to learn a prediction model as well as of the model type. 
 
-\subsubsection{Contributions}
+\subsection{Contributions}
 
 This current article features a study which captures and evaluates the state-of-the-art in SAT solving in terms of portfolio performance. 
 Our study is unique in that it addresses all points raised so far, as follows:
@@ -111,7 +124,7 @@ Our study is based on very recent \emph{competition} datasets, which contain the
 The two sets of benchmarks in these SAT Competitions are a balanced mix of families of interest which have been drawn from the application and crafted instance categories. 
 Our code and data are available online (cf. Section~\ref{sec:experimental-design:impl}).
 
-\subsubsection{Results}
+\subsection{Results}
 
 Our evaluation yields insightful results regarding the various questions. 
 While it is expected that the marginal utility decreases with portfolio size, we did not expect the decrease to be so early. 
@@ -128,7 +141,7 @@ For the solvers in the SAT Competition~2021 dataset, we observe a further gain i
 For larger $k$, the runtimes of portfolios with prediction models do not improve further. 
 We take this as a further indication that it might not be beneficial to have many solvers in a portfolio. 
 
-\subsubsection{Outline}
+\subsection{Outline}
 
 In Section~\ref{sec:related-work}, we review related work. 
 Preliminaries are given in Section~\ref{sec:preliminaries}. 
@@ -198,16 +211,16 @@ A portfolio $P \subseteq S$ is a non-empty set of solvers.
 To score a solver portfolio $P$, we assume to have an oracle that always selects the fastest solver for each instance. 
 This construction is commonly referred to as the virtual best solver (VBS) for $P$. 
 Accordingly, we extend the scoring function as follows:%
-$$
+\[
 	c_{T}(P) := \frac{1}{|I|} \cdot \sum\limits_{i \in I}{\min\{r_T(i,s) \mid s \in P\}}
-$$
+\]
 In the following, we refer to $c_{T}(P)$ as the \emph{cost} of $P$. 
 
 In reality, one may train a prediction model $m : I \rightarrow P$ for a solver portfolio $P$ that recommends a solver for each instance, using features of the instance. 
 The cost of such a prediction model is given by the following function:%
-$$
+\[
 	c_{T}(m,P) := \frac{1}{|I|} \cdot \sum\limits_{i \in I}{r_T(m(i),i)}
-$$
+\]
 
 Clearly, the portfolio cost $c_{T}(P)$ is a lower bound for the actual cost of a portfolio $P$ which uses a prediction model.
 
@@ -215,9 +228,9 @@ Clearly, the portfolio cost $c_{T}(P)$ is a lower bound for the actual cost of a
 \label{sec:approach}
 
 The \emph{K-Portfolio Problem} is to find a portfolio $P$ of size $|P| = k$ with minimum cost:%
-$$
+\[
 \argmin\limits_{P \subseteq S, |P| = k} c_{T}(P)
-$$
+\]
 Note that the portfolio cost function decreases monotonically under the addition of solvers: $\forall s \in S, c_{T}(P \cup \{s\}) \leq c_{T}(P)$. 
 In the following, we outline three solution approaches, an exact one based on \emph{integer programming} and two approximate methods, namely \emph{beam search} and \emph{k-best}. 
 
@@ -286,17 +299,17 @@ Though the algorithm does not necessarily find the optimal solution to the \emph
 To this end, one can use a result from~\cite{nemhauser1978analysis}, which applies to greedy algorithms on non-negative monotone submodular set functions.
 Nof and Strichman show that their \emph{K-Algorithms Max-Sum Problem} for portfolios is submodular, and thus a bound on greedy algorithms holds~\cite{nof2020real}. 
 We can transform the \emph{K-Portfolio Problem} (minimization) into the \emph{K-Algorithms Max-Sum Problem} (maximization) by replacing the cost with utility as follows:%
-$$
+\[
 u_{T}(P) := c_W - c_{T}(P)
-$$
+\]
 In this transformation, $c_W$ is an upper bound on portfolio cost, the single worst solver:%
-$$
+\[
 c_W := \max\{c_T(s) \mid s \in S\}
-$$
+\]
 As $u_{T}(P)$ is non-negative, monotone, and submodular, we get a lower bound on the utility of a portfolio found by \emph{greedy search} $P_k^{greedy}$~\cite{nemhauser1978analysis,krause2014submodular}:%
-$$
+\[
 	u_{T}(P_k^{greedy}) \geq (1 - \frac{1}{e}) \cdot \max_{|P| \leq k}{u_{T}(P)}
-$$
+\]
 This can be transformed into an upper bound on the cost of a portfolio found by \emph{greedy search}:%
 \begin{equation}
 	c_{T}(P_k^{greedy}) \leq (1 - \frac{1}{e}) \cdot \min_{|P| \leq k}{c_{T}(P)} + \frac{1}{e} \cdot c_W
@@ -597,7 +610,7 @@ Such new features have correlated well with solver performance on application in
 Efficient implementations of feature extractors and studying feature importance on datasets which represent the state-of-the-art are subject to future work. 
 In order to facilitate portfolio analysis for evaluation purposes and for ad-hoc portfolio generation, we also want to integrate our exact portfolio-search approach into the Python package~\emph{gbd-tools}, so one can directly use it in queries to the database GBD~\cite{iser2020collaborative}. 
 
-\bibliographystyle{splncs04}
+\bibliographystyle{plainurl} % mandatory style for LIPIcs template
 \bibliography{references}
 
 \end{document}
