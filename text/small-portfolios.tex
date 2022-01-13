@@ -87,10 +87,14 @@ One way to leverage complementarity of solvers is with portfolios, i.e., sets of
 One can combine a solver portfolio with a perfect oracle which then selects the fastest solver from the portfolio for each instance in the benchmark set. 
 This construction is commonly referred to as the \emph{Virtual Best Solver} (VBS). 
 One can then derive a ranking of solvers based on their marginal contribution to the VBS~\cite{Xu:2012:EvalContribVBS}. 
+Note that the term \emph{portfolio} is used in different contexts in literature~\cite{kerschke2019automated}.
+For examples, one can also run multiple algorithms from a portfolio in parallel.
+These algorithms might even exchange information, e.g., share clauses learned from the SAT instance.
+In our work, we only consider portfolios from which exactly one solver is selected per instance.
 
 \begin{example}[Special Price in SAT Competition 2021]
 In the SAT Competition 2021, the performance of the VBS of all portfolios of size two over the entirety of participating solvers has been evaluated. 
-The best pair of solvers in terms of their VBS contains the solver \emph{CaDiCaL\_PriPro}.
+The best pair of solvers in terms of their VBS contains the solver \emph{CaDiCaL\_PriPro}~\cite{balyo2021proceedings}.
 This solver has not been competitive in the overall evaluation.
 But due to that achievement, it has been awarded the new \emph{Special Innovation Price}.
 \end{example}
@@ -179,7 +183,8 @@ One can also analyze the impact of configuration options with tools such as CAVE
 A systematic analysis of portfolios with varying size~$k$, which has some similarities to our study, is conducted by Amadini et al.~\cite{amadini2014empirical,amadini2016extensive}.
 They evaluate $k$-portfolios of CSP solvers in terms of their average runtime and solved instances. 
 They compare several classification methods within portfolios, next to adapting complex SAT portfolio approaches like SATzilla. 
-Amadini et al.\ focus on different instances and solvers than this current study, though the evaluation procedure has some similarities.
+Amadini et al.\ focus on different instances and solvers than this current study.
+This limits comparability of actual results, but their evaluation procedure has some similarities to ours.
 While they only use heuristic search algorithms, our study features a broad comparison of different search strategies for portfolios, including an \emph{exact} solution, two \emph{approximate} solutions, and \emph{random sampling}. 
 
 Nof and Strichman formalize the \emph{K-Portfolio Problem} in the form of two maximization problems with different objective functions and prove their submodularity and NP-completeness~\cite{nof2020real}. 
@@ -190,6 +195,8 @@ In addition to including more solution approaches, we also analyze portfolios wi
 
 Our study analyzes two very recent datasets, created from the SAT~Competitions~2020 and~2021~\cite{balyo2020proceedings,balyo2021proceedings}. 
 They contain runtimes of actual state-of-the-art SAT solvers for a very diverse set of hard SAT instances, which are measured with a timeout of 5000~seconds.
+Froleyks et al. analyze the results of the SAT~Competition~2020 in detail~\cite{SC2020:AIJ}.
+While they also evaluate portfolios shortly, our study provides an in-depth discussion and a broader experimental design regarding portfolios.
 
 \section{Preliminaries}
 \label{sec:preliminaries}
@@ -219,7 +226,7 @@ In the following, we refer to $c_{T}(P)$ as the \emph{cost} of $P$.
 In reality, one may train a prediction model $m : I \rightarrow P$ for a solver portfolio $P$ that recommends a solver for each instance, using features of the instance. 
 The cost of such a prediction model is given by the following function:%
 \[
-	c_{T}(m,P) := \frac{1}{|I|} \cdot \sum\limits_{i \in I}{r_T(m(i),i)}
+	c_{T}(P,m) := \frac{1}{|I|} \cdot \sum\limits_{i \in I}{r_T(i,m(i))}
 \]
 
 Clearly, the portfolio cost $c_{T}(P)$ is a lower bound for the actual cost of a portfolio $P$ which uses a prediction model.
@@ -232,12 +239,20 @@ The \emph{K-Portfolio Problem} is to find a portfolio $P$ of size $|P| = k$ with
 \argmin\limits_{P \subseteq S, |P| = k} c_{T}(P)
 \]
 Note that the portfolio cost function decreases monotonically under the addition of solvers: $\forall s \in S, c_{T}(P \cup \{s\}) \leq c_{T}(P)$. 
-In the following, we outline three solution approaches, an exact one based on \emph{integer programming} and two approximate methods, namely \emph{beam search} and \emph{k-best}. 
+This is because an oracle automatically selects the best solver from the portfolio for each instance, and adding further solvers only increases the number of choices.
+In contrast, monotonicity might not hold if a prediction model selects solvers from the portfolio, as the model might choose suboptimal solvers.
+We will analyze this behavior later.
+
+In the following, we outline three solution approaches for the \emph{K-Portfolio Problem}, an exact one based on \emph{integer programming} and two approximate methods, namely \emph{beam search} and \emph{k-best}. 
+Note that other solution approaches are possible as well.
+For example, Nof and Strichman present an SMT encoding of the problem and solve it with \emph{Z3}~\cite{nof2020real}.
+However, we found our re-implementation of this encoding to be slower than our integer-programming formulation.
+Also, all exact solution approaches should yield portfolios with the same quality anyway.
 
 \subsection{Integer Programming}
 \label{sec:approach:ip}
 
-The \emph{K-Portfolio Problem} is not linear due to the use of the $\min$ function.
+The \emph{K-Portfolio Problem} is not linear due to the use of the $\min()$ function.
 However, one can make it an integer linear problem by introducing additional variables.
 This allows to obtain an exact solution for the problem with an off-the-shelf integer-programming solver.
 
@@ -280,7 +295,7 @@ Ultimately, Equation~\ref{eq:ip4} specifies the optimization target.%
 		}
 	}
 	\Return $\argmin\limits_{P \in T_k}{c_{T}(P)}$\;
-	\caption{\emph{Beam search} algorithm}
+	\caption{\emph{Beam search}}
 	\label{al:beam-search}
 \end{algorithm}%
 %
@@ -332,6 +347,8 @@ In both cases, we are interested in the influence of the portfolio size $k$ on p
 
 For evaluation purposes, we conduct five-fold cross-validation over SAT instances.
 This means we only use SAT instances from the training folds to search for $k$-portfolios and to subsequently train prediction models.
+In particular, neither portfolio search nor the prediction models have access to solver runtimes on the test instances.
+The prediction models need to recommend a solver from the portfolio only based on instance features.
 We compute all evaluation metrics on training instances as well as on test instances.
 We average evaluation metrics over the cross-validation folds.
 
@@ -359,12 +376,14 @@ However, general trends in the results were similar to those with PAR-2 score, s
 
 We also analyze the performance of the previously determined $k$-portfolios with prediction models to select a solver, rather than choosing the VBS. 
 For each instance, the prediction target is the best solver out of the given $k$-portfolio.
-As model types, we leverage two powerful ensemble methods.
-First, we use random forests~\cite{breiman2001random}, which are also part of the well-known portfolio approach SATzilla2012~\cite{xu2012satzilla2012}.
+This mean we have a multi-class prediction problem with $k$ classes.
+Inputs for the prediction are numeric features characterizing a SAT instance; we will describe the features later. 
+As prediction models, we leverage two powerful ensemble methods.
+First, we use random forests~\cite{breiman2001random}, which are also part of the well-known portfolio approach SATzilla~2012~\cite{xu2012satzilla2012}.
 Second, we use XGBoost~\cite{xgboost}, a popular implementation of gradient boosting.
 In both cases, we train models with 100 trees.
 
-In preliminary experiments, we also tried two adaptations of the prediction approach that are part of SATzilla2012:
+In preliminary experiments, we also tried two adaptations of the prediction approach that are part of SATzilla~2012:
 First, one can train a classifier for each pair of solvers, instead of training one classifier that makes a multi-class prediction.
 Second, one can weight instances based on the runtime difference between solvers, instead of using an unweighted training set.
 However, none of these changes has helped to improve prediction performance in our preliminary experiments.
@@ -373,7 +392,7 @@ We evaluate prediction performance in two ways:
 
 \begin{itemize}
 	\item \emph{Objective value}:
-	We evaluate the prediction models with respect to the objective value, i.e., the runtime cost function $c_{T}(m,P)$ (cf. Section~\ref{sec:preliminaries}). 
+	We evaluate the prediction models with respect to the objective value, i.e., the runtime cost function $c_{T}(P,m)$ (cf. Section~\ref{sec:preliminaries}). 
 	\item \emph{MCC}:
 	We evaluate the predictions with Matthews correlation coefficient (MCC)~\cite{matthews1975comparison,gorodkin2004comparing}.
 	This does not take into account how fast the recommended solvers actually are, but only if the fastest solver is recommended or not.
@@ -389,7 +408,12 @@ The first one, \texttt{SC2020}, contains the runtime data of $48$ solvers on $40
 The second dataset, \texttt{SC2021}, contains the runtime data of $46$ solvers on $400$ instances from the Main Track of SAT~Competition~2021. 
 In both datasets, we filtered out those instances where no solver finished in time, such that runtimes for $316$ instances remained in \texttt{SC2020} and for $325$ instances in \texttt{SC2021}.
 
-For predictions, we use $138$ features to characterize instances, which are from the feature extractor of SATzilla~2012~\cite{xu2008satzilla,xu2012satzilla2012}. 
+For predictions, we use $138$ features to characterize instances, which are from the feature extractor of SATzilla~2012~\cite{xu2012features}. 
+Features come from twelve categories that describe different aspects of SAT instances.
+For example, the number of variables and clauses quantify the problem size.
+Several features summarize graph representations of SAT instances, e.g., the maximum node degree in the clause graph.
+As a last example, several features base on probing, i.e., running solvers for a short time and quantifying the progress over that period.
+
 Feature values that are missing due to the feature extractor having exceeded time- or memory limits are replaced with a constant value that is out of the range of the features.
 In both datasets, the number of features is relatively large compared to the number of instances.
 However, the prediction models in our experiments are tree-based and therefore implicitly select features during their training.
@@ -416,6 +440,7 @@ The datasets seem promising for portfolios, as in both datasets, there is no sin
 For the $316$ instances in \texttt{SC2020}, the three overall fastest solvers win on only 46, 38, and 26 instances, respectively.
 For the $325$ instances in \texttt{SC2021}, the three overall fastest solvers win on only 25, 22, and 20 instances, respectively.
 This indicates that combining solvers in portfolios can improve overall runtime.
+See~\cite{SC2020:AIJ} for more information how individual solvers performed in \texttt{SC2020}.
 
 \subsubsection{General Trend}
 
@@ -429,6 +454,7 @@ This indicates that combining solvers in portfolios can improve overall runtime.
 Figure~\ref{fig:search-train-objective} displays the cost in terms of the PAR-2 score of the best $k$-portfolios for the different solution approaches. 
 The \emph{optimal solution} is the exact optimum.
 \emph{Greedy search} denotes \emph{beam search} with the smallest beam width $w=1$. 
+We will discuss other beam widths as well.
 \emph{K-best} stands for portfolios comprised of the top $k$ single-best solvers. 
 For \emph{random sampling}, we average over repeated samples.
 The \emph{upper bound} limits the cost of \emph{greedy search} according to Equation~\ref{eq:upper-bound}.
@@ -477,10 +503,10 @@ This indicates that building a portfolio of complementary solvers, rather than p
 Figure~\ref{fig:search-test-objective} shows test-set portfolio cost for the different solution approaches.
 Here, we take the portfolios found on the training set, but evaluate them with the test-set instances.
 The overall trends are the same as on the training set in Figure~\ref{fig:search-train-objective}.
-A notable exception is that \emph{beam search}, \emph{k-best}, and the \emph{optimal solution} show similar performance on the test set of \texttt{SC2020}.
+A notable exception is that \emph{greedy search}, \emph{k-best}, and the \emph{optimal solution} show similar performance on the test set of \texttt{SC2020}.
 In particular, there is no clear winner, and the \emph{optimal solution} can even perform worse than those found by the approximate approaches. 
 This is because the best portfolio on the training set is not necessarily the best portfolio on the test set.
-For the test set of \texttt{SC2021}, \emph{k-best} is markedly worse than \emph{beam search} and the \emph{optimal solution}. 
+For the test set of \texttt{SC2021}, \emph{k-best} is markedly worse than \emph{greedy search} and the \emph{optimal solution}. 
 The larger performance gap already on the training set might have caused this effect.
 
 \subsubsection{Portfolio Composition}
@@ -544,7 +570,7 @@ As random forests and XGBoost perform very similar, we will only use random-fore
 	\includegraphics[width=\columnwidth]{plots/prediction-test-objective-beam.pdf}
 	\caption{
 		Performance of prediction models, VBS and SBS for \emph{beam search} portfolios with $w=100$ for the \texttt{SC2020} dataset (left) and the \texttt{SC2021} dataset (right).
-		The performance of the the global SBS is shown as a horizontal line.}
+		The performance of the global SBS is shown as a horizontal line.}
 	\label{fig:prediction-test-objective-beam}
 \end{figure}
 
@@ -569,7 +595,7 @@ In addition, for $k > 2$ the model-based portfolios are better than the global s
 	\includegraphics[width=\columnwidth]{plots/prediction-test-objective-optimal.pdf}
 	\caption{
 		Performance of prediction models, VBS and SBS for the optimal solution of the $k$-Portfolio Problem for the \texttt{SC2020} dataset (left) and the \texttt{SC2021} dataset (right).
-		The performance of the the global SBS is shown as a horizontal line.
+		The performance of the global SBS is shown as a horizontal line.
 	}
 	\label{fig:prediction-test-objective-optimal}
 \end{figure}
@@ -585,7 +611,7 @@ Averaging importance over all trained random-forest models, the most important f
 To reach a cumulated average importance of 50\%, one needs 38 out of 138 features.
 On average, random forests use 135 features, i.e., nearly all of them.
 We conclude that no single feature or even small set of features drives prediction performance.
-Together with the low prediction performance, this indicates that our dataset lacks discriminating features which are suitable to decide which solver should be used on an instance.
+Together with the low prediction performance, this indicates that the features from SATzilla~2012 are not sufficiently discriminating to recommend solvers on our datasets.
 
 \section{Conclusions and Future Work}
 \label{sec:conclusion}
