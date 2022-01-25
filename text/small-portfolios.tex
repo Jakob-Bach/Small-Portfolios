@@ -87,10 +87,12 @@ One way to leverage complementarity of solvers is with portfolios, i.e., sets of
 One can combine a solver portfolio with a perfect oracle which then selects the fastest solver from the portfolio for each instance in the benchmark set. 
 This construction is commonly referred to as the \emph{Virtual Best Solver} (VBS). 
 One can then derive a ranking of solvers based on their marginal contribution to the VBS~\cite{Xu:2012:EvalContribVBS}. 
-Note that the term \emph{portfolio} is used in different contexts in literature~\cite{kerschke2019automated}.
-For examples, one can also run multiple algorithms from a portfolio in parallel.
-These algorithms might even exchange information, e.g., share clauses learned from the SAT instance.
-In our work, we only consider portfolios from which exactly one solver is selected per instance.
+
+%Note that the term \emph{portfolio} is used in different contexts in literature~\cite{kerschke2019automated}.
+%For examples, one can also run multiple algorithms from a portfolio in parallel.
+%These algorithms might even exchange information, e.g., share clauses learned from the SAT instance.
+%In our work, we only consider portfolios from which exactly one solver is selected per instance.
+
 
 \begin{example}[Special Price in SAT Competition 2021]
 In the SAT Competition 2021, the performance of the VBS of all portfolios of size two over the entirety of participating solvers has been evaluated. 
@@ -158,7 +160,13 @@ We conclude with Section~\ref{sec:conclusion}.
 
 In this section, we provide an overview of approaches that deal with portfolios of SAT solvers. 
 We begin with approaches using portfolios to evaluate the state-of-the-art of SAT solving and continue with instance-specific solver selection, including approaches to automatically configure and analyze such techniques. 
-Finally, we discuss related work on systematic investigation of $k$-portfolios. 
+Finally, we discuss related work on systematic investigation of $k$-portfolios.
+
+In the context of algorithms, the term \emph{portfolio} refers to a heterogeneous family of approaches~\cite{kerschke2019automated}. 
+Portfolio approaches have in common that they operate on a \emph{set of algorithms} to exploit the presupposed complementary performance of different methods and strategies. 
+Some sequential approaches generate schedules to interleave runs of different algorithms in a static~\cite{Gomes:2001:AlgoSched} or dynamic~\cite{Carchrae:2005:AlgoSched,Streeter:2007:AlgoSched} fashion. 
+Others use supervised learning for instance-specific algorithm selection (cf.~SATzilla~\cite{xu2008satzilla}), or recurr on unsupervised methods to estimate the best algorithm configuration for a given instance (cf.~ISAC~\cite{Kadioglu:2010:ISAC}).
+Parallel approaches encompass \emph{pure portfolios} (cf.~PPfolio~\cite{Roussel:2012:ppfolio}) as well as \emph{parallel portfolios with information sharing} (cf.~ManySAT~\cite{Hamadi:2009:ManySAT}).
 
 Solver complementarity regarding the runtime of solver portfolios has been examined by Xu et al.~\cite{Xu:2012:EvalContribVBS}. 
 They show that significant contributions to the runtime of a portfolio often come from solvers which are not competitive when evaluated as a standalone solver. 
