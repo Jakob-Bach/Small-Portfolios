@@ -88,12 +88,6 @@ One can combine a solver portfolio with a perfect oracle which then selects the 
 This construction is commonly referred to as the \emph{Virtual Best Solver} (VBS). 
 One can then derive a ranking of solvers based on their marginal contribution to the VBS~\cite{Xu:2012:EvalContribVBS}. 
 
-%Note that the term \emph{portfolio} is used in different contexts in literature~\cite{kerschke2019automated}.
-%For examples, one can also run multiple algorithms from a portfolio in parallel.
-%These algorithms might even exchange information, e.g., share clauses learned from the SAT instance.
-%In our work, we only consider portfolios from which exactly one solver is selected per instance.
-
-
 \begin{example}[Special Price in SAT Competition 2021]
 \label{ex:specialprice}
 In the SAT Competition 2021, the performance of the VBS of all portfolios of size two over the entirety of participating solvers has been evaluated. 
@@ -128,11 +122,9 @@ In a subsequent step, we analyze the quality of solver runtime prediction which 
 For each portfolio size $k$, we train random forests and boosted trees as prediction models, using the widely known instance feature records of SATzilla~2012~\cite{xu2012satzilla2012}, and then use the models to select portfolio members automatically for each instance. 
 
 Our study is based on very recent \emph{competition} datasets, which contain the runtimes of solvers having participated in SAT~Competitions~2020 and~2021. 
-The two sets of benchmarks in these SAT competitions were selected by stratified random sampling from various families of interest drawn from the application and crafted instance categories~\cite{SC2020:AIJ}.
-
+The two sets of benchmarks in these SAT competitions were selected by stratified random sampling from various instance families of interest, considering the categories \emph{application} and \emph{crafted}~\cite{SC2020:AIJ}.
 With a few exceptions (cf.~Example~\ref{ex:specialprice}), solvers submitted to such competitions are tailored for good overall performance.
-Our study highlights the extent to which solvers entering current SAT competitions are still complementary.
-We also analyze the extent to which we can generalize from complementary performance observed in competition datasets using predictive models and standard instance features.
+Our study highlights the extent to which solvers entering current SAT competitions are still complementary, and if one can leverage this complementarity with prediction models for solver selection.
 Our code and data are available online (cf.~Section~\ref{sec:experimental-design:impl}).
 
 \subsection{Results}
@@ -170,8 +162,9 @@ Finally, we discuss related work on systematic investigation of $k$-portfolios.
 In the context of algorithms, the term \emph{portfolio} refers to a heterogeneous family of approaches~\cite{kerschke2019automated}. 
 Portfolio approaches have in common that they operate on a \emph{set of algorithms} to exploit the presupposed complementary performance of different methods and strategies. 
 Some sequential approaches generate schedules to interleave runs of different algorithms in a static~\cite{Gomes:2001:AlgoSched} or dynamic~\cite{Carchrae:2005:AlgoSched,Streeter:2007:AlgoSched} fashion. 
-Others use supervised learning for instance-specific algorithm selection (cf.~SATzilla~\cite{xu2008satzilla}), or recurr on unsupervised methods to estimate the best algorithm configuration for a given instance (cf.~ISAC~\cite{Kadioglu:2010:ISAC}).
+Others use supervised learning for instance-specific algorithm selection (cf.~SATzilla~\cite{xu2008satzilla}), or rely on unsupervised methods to estimate the best algorithm configuration for a given instance (cf.~ISAC~\cite{Kadioglu:2010:ISAC}).
 Parallel approaches encompass \emph{pure portfolios} (cf.~PPfolio~\cite{Roussel:2012:ppfolio}) as well as \emph{parallel portfolios with information sharing} (cf.~ManySAT~\cite{Hamadi:2009:ManySAT}).
+In our work, we consider portfolios from which exactly one solver is selected and run for each instance.
 
 Solver complementarity regarding the runtime of solver portfolios has been examined by Xu et al.~\cite{Xu:2012:EvalContribVBS}. 
 They show that significant contributions to the runtime of a portfolio often come from solvers which are not competitive when evaluated as a standalone solver. 
