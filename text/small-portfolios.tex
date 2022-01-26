@@ -95,6 +95,7 @@ One can then derive a ranking of solvers based on their marginal contribution to
 
 
 \begin{example}[Special Price in SAT Competition 2021]
+\label{ex:specialprice}
 In the SAT Competition 2021, the performance of the VBS of all portfolios of size two over the entirety of participating solvers has been evaluated. 
 The best pair of solvers in terms of their VBS contains the solver \emph{CaDiCaL\_PriPro}~\cite{balyo2021proceedings}.
 This solver has not been competitive in the overall evaluation.
@@ -127,8 +128,12 @@ In a subsequent step, we analyze the quality of solver runtime prediction which 
 For each portfolio size $k$, we train random forests and boosted trees as prediction models, using the widely known instance feature records of SATzilla~2012~\cite{xu2012satzilla2012}, and then use the models to select portfolio members automatically for each instance. 
 
 Our study is based on very recent \emph{competition} datasets, which contain the runtimes of solvers having participated in SAT~Competitions~2020 and~2021. 
-The two sets of benchmarks in these SAT Competitions are a balanced mix of families of interest which have been drawn from the application and crafted instance categories. 
-Our code and data are available online (cf. Section~\ref{sec:experimental-design:impl}).
+The two sets of benchmarks in these SAT competitions were selected by stratified random sampling from various families of interest drawn from the application and crafted instance categories~\cite{SC2020:AIJ}.
+
+With a few exceptions (cf.~Example~\ref{ex:specialprice}), solvers submitted to such competitions are tailored for good overall performance.
+Our study highlights the extent to which solvers entering current SAT competitions are still complementary.
+We also analyze the extent to which we can generalize from complementary performance observed in competition datasets using predictive models and standard instance features.
+Our code and data are available online (cf.~Section~\ref{sec:experimental-design:impl}).
 
 \subsection{Results}
 
@@ -179,7 +184,7 @@ This in turn can also support the development of better stable solvers.
 
 Instance-specific solver-selection approaches bring in another perspective on solver complementarity.
 One of the best-known complex solver-selection approaches is SATzilla, of which multiple versions exist~\cite{xu2008satzilla,xu2012satzilla2012}. 
-In SATZilla, multiple prediction models guide the selection of a solver from their portfolio. 
+In SATzilla, multiple prediction models guide the selection of a solver from their portfolio. 
 Additional components of SATzilla are so-called \emph{pre-solvers}, which are only run for a short time to solve easy instances, and a \emph{backup solver}, which is responsible for instances where computing features for the prediction models takes too long.
 Other instance-specific solver selection approaches are ISAC, which is based on clustering in the instance feature space~\cite{Kadioglu:2010:ISAC}, and SNNAP, which combines the ISAC approach with runtime prediction models~\cite{Collautti:2013:SNNAP}.
 A recent survey on algorithm-selection approaches -- also beyond SAT -- is provided by Kerschke et al.~\cite{kerschke2019automated}.
