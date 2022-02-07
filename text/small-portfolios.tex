@@ -639,9 +639,10 @@ In principle, runtime prediction models can help to find out which solvers are c
 
 This article has been a comparative study of portfolios that goes beyond previous work in several respects.
 Our study includes the runtime data of the latest SAT solvers from the SAT~Competitions~2020 and~2021. 
-It has addressed the essential question of how large portfolios should be.
+It has addressed the essential question of how large portfolios which are drawn from that set of solvers should be.
 There has been a substantial improvement in the objective value for small portfolios but a negligible impact once a particular size is reached. 
 We also found that \emph{beam search}, an approximate solution approach, yields close-to-optimal solutions.
+In order to facilitate portfolio analysis for evaluation purposes and for ad-hoc portfolio generation, we integrated our exact portfolio-search approach into the Python package~\emph{gbd-tools}~\cite{iser2020collaborative}. 
 
 As the next step, we have combined portfolios with prediction models to recommend solvers specific to problem instances.
 However, these models have not performed satisfactorily on the given datasets:
@@ -650,8 +651,13 @@ The objective value of model-based portfolios did not continuously improve with 
 We see room for improved prediction performance by adapting the set of instance features in particular,
 e.g., by using features describing the community structure of graph representations of SAT instances.
 Such new features have correlated well with solver performance on application instances in recent studies~\cite{Ansotegui:2009:StructureIndustrial,Ansotegui:2017:StructureFeatures,Ansotegui:2019:CommunityStructure,Li:2021:HCS}. 
-Efficient implementations of feature extractors and studying feature importance on datasets that represent the state-of-the-art are subject to future work. 
-In order to facilitate portfolio analysis for evaluation purposes and ad-hoc portfolio generation, we also want to integrate our exact portfolio-search approach into the Python package~\emph{gbd-tools}, so one can directly use it in queries to the database GBD~\cite{iser2020collaborative}. 
+Efficient implementations of new feature extractors and studying feature importance on datasets which represent the state-of-the-art are subject to future work. 
+
+Traditionally, SAT competitions incentivize the development of so-called \emph{stable} solvers by evaluating the best average performance on benchmarks from diverse applications.
+This general trend has been mitigated in the competitions considered in our study by also highlighting SAT solvers that perform particularly well on specific instance families~\cite{SC2020:AIJ} or on a (not further specified) large subset of the benchmark instances (cf.~Example~\ref{ex:specialprice}).
+Such additional evaluations provide reference points for a more informed portfolio composition, and can even positively impact research on stable solvers~\cite{Fleury:2021:AllUip}.
+For future analyses, we plan to increase the amount of specialized solvers and configurations targeting \emph{well-defined} subsets of benchmark instances.
+
 
 \bibliographystyle{plainurl} % mandatory style for LIPIcs template
 \bibliography{references}
