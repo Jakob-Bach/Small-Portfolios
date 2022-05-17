@@ -396,9 +396,10 @@ First, we use random forests~\cite{breiman2001random}, which are also part of th
 Second, we use XGBoost~\cite{xgboost}, a popular implementation of gradient boosting.
 In both cases, we train models with 100 trees.
 
-In preliminary experiments, we also tried two adaptations of the prediction approach that are part of SATzilla~2012:
+In preliminary experiments, we also tried further prediction approaches that are part of SATzilla~2008 or SATzilla~2012:
 First, one can train a classifier for each pair of solvers instead of training one classifier that makes a multi-class prediction.
 Second, one can weight instances based on the solvers' runtime difference instead of using an unweighted training set.
+Third, one can train a regression model for each solver from the portfolio, predict the runtime, and choose the solver with the lowest predicted runtime.
 However, none of these changes has helped to improve prediction performance in our preliminary experiments.
 
 We evaluate prediction performance in two ways:
