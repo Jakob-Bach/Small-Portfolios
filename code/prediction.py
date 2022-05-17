@@ -9,11 +9,15 @@ import pandas as pd
 import sklearn.ensemble
 import sklearn.impute
 import sklearn.metrics
+import sklearn.neighbors
+import sklearn.neural_network
 import sklearn.preprocessing
 import xgboost
 
 
 MODELS = [
+    {'name': 'kNN', 'func': sklearn.neighbors.KNeighborsClassifier, 'args': {'n_jobs': 1}},
+    {'name': 'MLP', 'func': sklearn.neural_network.MLPClassifier, 'args': {'random_state': 25}},
     {'name': 'Random forest', 'func': sklearn.ensemble.RandomForestClassifier,
      'args': {'n_estimators': 100, 'random_state': 25, 'n_jobs': 1}},
     {'name': 'XGBoost', 'func': xgboost.XGBClassifier,
@@ -52,7 +56,10 @@ def predict_and_evaluate(runtimes_train: pd.DataFrame, runtimes_test: pd.DataFra
             model.fit(X=X_train, y=label_encoder.transform(y_train))
             pred_train = label_encoder.inverse_transform(model.predict(X_train))
             pred_test = label_encoder.inverse_transform(model.predict(X_test))
-            feature_importances.append(model.feature_importances_)
+            if hasattr(model, 'feature_importances_'):
+                feature_importances.append(model.feature_importances_)
+            else:
+                feature_importances.append(np.full(shape=X_train.shape[1], fill_value=np.nan))
         else:  # some models (e.g., xgboost) might have problems with zero-variance target)
             pred_train = y_train.values
             pred_test = np.full(shape=X_test.shape[0], fill_value=y_train.iloc[0])
