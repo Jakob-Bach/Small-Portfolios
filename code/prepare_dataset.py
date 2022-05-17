@@ -15,37 +15,23 @@ import urllib.request
 
 import gbd_tool.gbd_api
 import pandas as pd
+import tqdm
 
 
-DATABASES = ['meta.db', 'satzilla.db', 'sc2020.db', 'sc2021.db']
+DATABASE_NAMES = ['meta', 'satzilla', 'sc2020', 'sc2021']
 PENALTY = 10000  # PAR2 score with timeout of 5000 s
 
 
-# Download database files, save in "data_dir".
-def download_dbs(data_dir: pathlib.Path) -> None:
-    for database in DATABASES:
-        urllib.request.urlretrieve(url='https://gbd.iti.kit.edu/getdatabase/' + database,
-                                   filename=data_dir / database)
-
-
-# Join all tables within each database (.db file) in "data_dir" and save as CSVs in "data_dir".
-# In the databases, each instance feature is in a separate table, but we want a unified dataset.
-def transform_dbs_to_csvs(data_dir: pathlib.Path) -> None:
-    for database in DATABASES:
-        db_path = str(data_dir) + '/' + database
-        with gbd_tool.gbd_api.GbdApi(db_string=db_path) as api:
-            features = api.get_features(path=db_path)
-            features.remove('hash')  # is key of all other tables, so we don't need this table
-            dataset = None
-            # Getting multiple features at same time (with join in database) also possible,
-            # but breaks if too many features and is actually slower than join via pandas
-            for feature in features:  # for each database table (containing two columns, instance hash and one feature)
-                feature_table = pd.DataFrame(api.query_search(query=None, resolve=[feature]), columns=['hash', feature])
-                if dataset is None:
-                    dataset = feature_table
-                else:
-                    dataset = dataset.merge(feature_table, on='hash', how='outer', copy=False)
-            dataset.to_csv(data_dir / database.replace('.db', '.csv'), index=False)
+# Download database files and save them in original format + CSV in "data_dir".
+def download_and_save_dbs(data_dir: pathlib.Path) -> None:
+    for db_name in tqdm.tqdm(DATABASE_NAMES, desc='Downloading'):
+        urllib.request.urlretrieve(url=f'https://gbd.iti.kit.edu/getdatabase/{db_name}_db',
+                                   filename=data_dir / f'{db_name}.db')
+        with gbd_tool.gbd_api.GBD(db_list=[str(data_dir / f'{db_name}.db')]) as api:
+            features = api.get_features()
+            features.remove('hash')  # will be added to result anyway, so avoid duplicates
+            database = pd.DataFrame(api.query_search(resolve=features), columns=['hash'] + features)
+            database.to_csv(data_dir / f'{db_name}.csv', index=False)
 
 
 # Save runtimes and features for experimental pipeline. Method is rather trivial, but serves as an
@@ -78,12 +64,12 @@ def load_dataset(dataset_name: str, data_dir: pathlib.Path,
 # Load/save all necessary I/O data from/to "data_dir".
 def transform_csvs_for_pipeline(data_dir: pathlib.Path) -> None:
     meta_db = pd.read_csv(data_dir / 'meta.csv')  # allows to filter for competitions and tracks
-    satzilla_db = pd.read_csv(data_dir / 'satzilla.csv').drop(columns=['local', 'filename', 'tags'])
+    satzilla_db = pd.read_csv(data_dir / 'satzilla.csv')
 
     for year in [2020, 2021]:
-        hashes = meta_db.loc[meta_db['competition_track'].fillna('').str.contains(f'main_{year}'), 'hash']
+        hashes = meta_db.loc[meta_db['track'].fillna('').str.contains(f'main_{year}'), 'hash']
 
-        runtimes = pd.read_csv(data_dir / f'sc{year}.csv').drop(columns=['tags', 'filename', 'local'])
+        runtimes = pd.read_csv(data_dir / f'sc{year}.csv')
         runtimes = runtimes[runtimes['hash'].isin(hashes)].reset_index(drop=True)
         runtimes.sort_values(by='hash', inplace=True)  # so runtimes and features have same order of instances
         numeric_cols = [x for x in runtimes.columns if x != 'hash']
@@ -106,11 +92,9 @@ def prepare_dataset(data_dir: pathlib.Path) -> None:
         data_dir.mkdir(parents=True)
     if any(data_dir.iterdir()):
         print('Data directory is not empty. Files might be overwritten, but not deleted.')
-    print('Downloading databases ...')
-    download_dbs(data_dir=data_dir)
-    print('Transforming database files to CSVs ...')
-    transform_dbs_to_csvs(data_dir=data_dir)
-    print('Tranforming CSVs for pipeline ...')
+    print('Downloading and saving databases ...')
+    download_and_save_dbs(data_dir=data_dir)
+    print('Transforming databases for pipeline ...')
     transform_csvs_for_pipeline(data_dir=data_dir)
 
 
