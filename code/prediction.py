@@ -4,8 +4,6 @@ Prediction-model-based portfolio evaluation, using the prediction model to make 
 solver recommendations within a portfolio.
 """
 
-import warnings
-
 import numpy as np
 import pandas as pd
 import sklearn.ensemble
@@ -60,11 +58,8 @@ def predict_and_evaluate(runtimes_train: pd.DataFrame, runtimes_test: pd.DataFra
             pred_test = np.full(shape=X_test.shape[0], fill_value=y_train.iloc[0])
             feature_importances.append(np.full(shape=X_train.shape[1], fill_value=np.nan))
         result = {'model': model_item['name']}
-        with warnings.catch_warnings():
-            # Filter warnings which occur if there only is one class in true or pred:
-            warnings.filterwarnings(action='ignore', message='invalid value encountered in double_scalars')
-            result['train_pred_mcc'] = sklearn.metrics.matthews_corrcoef(y_true=y_train, y_pred=pred_train)
-            result['test_pred_mcc'] = sklearn.metrics.matthews_corrcoef(y_true=y_test, y_pred=pred_test)
+        result['train_pred_mcc'] = sklearn.metrics.matthews_corrcoef(y_true=y_train, y_pred=pred_train)
+        result['test_pred_mcc'] = sklearn.metrics.matthews_corrcoef(y_true=y_test, y_pred=pred_test)
         # To compute objective value, we need to extract runtime of predicted solver for each
         # instance; as "runtimes.values" is "ndarray" (not "DataFrame"), following syntax works:
         result['train_pred_objective'] = runtimes_train.values[range(len(runtimes_train)), pred_train].mean()
