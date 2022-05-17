@@ -16,12 +16,11 @@ import xgboost
 
 
 MODELS = [
-    {'name': 'Random forest', 'func': sklearn.ensemble.RandomForestClassifier,
+    {'name': 'Random forest', 'func': sklearn.ensemble.RandomForestRegressor,
      'args': {'n_estimators': 100, 'random_state': 25, 'n_jobs': 1}},
-    {'name': 'XGBoost', 'func': xgboost.XGBClassifier,
-     'args': {'n_estimators': 100, 'random_state': 25, 'n_jobs': 1,
-              'booster': 'gbtree', 'objective': 'binary:logistic',  # also handles multi-class
-              'use_label_encoder': False, 'verbosity': 0}}
+    {'name': 'XGBoost', 'func': xgboost.XGBRegressor,
+     'args': {'n_estimators': 100, 'random_state': 25, 'n_jobs': 1, 'booster': 'gbtree',
+              'objective': 'reg:squarederror', 'verbosity': 0}}
 ]
 
 
@@ -42,23 +41,25 @@ def predict_and_evaluate(runtimes_train: pd.DataFrame, runtimes_test: pd.DataFra
         runtimes_train.columns, range(len(runtimes_train.columns)))
     y_test = runtimes_test.idxmin(axis='columns').replace(
         runtimes_test.columns, range(len(runtimes_test.columns)))
-    # Some models (e.g., xgboost) might have problems with labels other than [0, .., k-1]; though
-    # labels are already integers, there might be gaps, as some solvers might not win any instance:
-    label_encoder = sklearn.preprocessing.LabelEncoder()
-    label_encoder.fit(y_train)
     results = []
     feature_importances = []
     for model_item in MODELS:
-        if y_train.nunique() > 1:
+        pred_train = {}
+        pred_test = {}
+        feature_importances_model = []
+        for solver_name in runtimes_train.columns:  # predict runtime for each solver separately
             model = model_item['func'](**model_item['args'])
-            model.fit(X=X_train, y=label_encoder.transform(y_train))
-            pred_train = label_encoder.inverse_transform(model.predict(X_train))
-            pred_test = label_encoder.inverse_transform(model.predict(X_test))
-            feature_importances.append(model.feature_importances_)
-        else:  # some models (e.g., xgboost) might have problems with zero-variance target)
-            pred_train = y_train.values
-            pred_test = np.full(shape=X_test.shape[0], fill_value=y_train.iloc[0])
-            feature_importances.append(np.full(shape=X_train.shape[1], fill_value=np.nan))
+            model.fit(X=X_train, y=runtimes_train[solver_name])
+            pred_train[solver_name] = model.predict(X_train)
+            pred_test[solver_name] = model.predict(X_test)
+            feature_importances_model.append(model.feature_importances_)
+        feature_importances.append(np.array(feature_importances_model).mean(axis=0))  # mean over solvers
+        pred_train = pd.DataFrame(pred_train)
+        pred_test = pd.DataFrame(pred_test)
+        pred_train = pred_train.idxmin(axis='columns').replace(
+            pred_train.columns, range(len(pred_train.columns)))  # choose solver based on runtime predictions
+        pred_test = pred_test.idxmin(axis='columns').replace(
+            pred_test.columns, range(len(pred_test.columns)))
         result = {'model': model_item['name']}
         with warnings.catch_warnings():
             # Filter warnings which occur if there only is one class in true or pred:
