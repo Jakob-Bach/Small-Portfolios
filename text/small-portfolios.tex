@@ -258,13 +258,14 @@ In particular, a prediction model might choose suboptimal solvers from the portf
 We will analyze this behavior later.
 
 In the following, we outline three solution approaches for the \emph{K-Portfolio Problem}, an exact one based on \emph{integer programming} and two approximate methods, namely \emph{beam search} and \emph{k-best}. 
-As another exact solution, Nof and Strichman present an SMT encoding of the problem and solve it with \emph{Z3}~\cite{nof2020real}.
-However, we found our re-implementation of this encoding to be slower than our integer-programming formulation.
-Also, all exact approaches should yield solutions with the same portfolio cost.
+To the best of our knowledge, the \emph{integer programming} approach is novel,
+while Nof and Strichman~\cite{nof2020real} already used a particular variant of \emph{beam search} to build algorithm portfolios,
+and \emph{k-best} is a baseline from Nof and Strichman as well.
 
 \subsection{Integer Programming}
 \label{sec:approach:ip}
 
+To solve the \emph{K-Portfolio Problem} exactly, we propose an integer linear program.
 The \emph{K-Portfolio Problem} is not linear due to the use of the $\min()$ function.
 However, reformulating the problem with additional variables can make it linear.
 In consequence, an off-the-shelf integer-programming solver can find an exact solution for the problem.
@@ -282,6 +283,10 @@ Ultimately, Equation~\ref{eq:ip4} specifies the optimization target.%
 	\forall s \in S:~\sum_{i \in I} x_{i,s} &\leq |I| \cdot y_s \label{eq:ip3}\\
 	\min_{x,y} \quad & \frac{1}{|I|} \cdot \sum_{i \in I} \sum_{s \in S} r_T(i,s) \cdot x_{i,s} \label{eq:ip4}
 \end{align}
+
+As another exact solution, Nof and Strichman present an SMT encoding of the problem and solve it with \emph{Z3}~\cite{nof2020real}.
+However, we found our re-implementation of this encoding to be slower than our integer-programming formulation.
+Also, all exact approaches should yield solutions with the same portfolio cost anyway.
 
 \subsection{Beam Search}
 \label{sec:approach:beam}
@@ -320,7 +325,8 @@ Thus, the algorithm considers the marginal contribution~\cite{Xu:2012:EvalContri
 Before the next iteration, only the $w$ portfolios with the lowest cost are retained.
 The beam width $w$ is an input parameter.
 For $w=1$, only one portfolio remains at the end of each iteration.
-We refer to this special case as \emph{greedy search}.
+We refer to this special case, which Nof and Strichman already used for algorithm portfolios~\cite{nof2020real}, as \emph{greedy search}.
+
 For reasonably small $w$, \emph{beam search} has a clear runtime advantage compared to an exhaustive search over all $k$-portfolios.
 In particular, \emph{beam search} only evaluates $O(|S| \cdot w)$ out of $\binom{|S|}{k}$ possible portfolios per iteration.
 
@@ -382,6 +388,7 @@ We also generate an additional baseline via random sampling of $k$-portfolios.
 	We build portfolios from the $k$ best individual solvers as a simple baseline.
 	\item \emph{Random sampling}:
 	To get an idea of how the performance of arbitrary portfolios is distributed, we randomly sample 1000 portfolios for each $k$.
+	This baseline is new compared to the related studies of Amadini et al.~\cite{amadini2014empirical,amadini2016extensive} and Nof and Strichman~\cite{nof2020real}.
 \end{itemize}
 
 The optimization goal for all approaches is the PAR-2 score $c_T(P)$.
