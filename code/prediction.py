@@ -38,6 +38,11 @@ def predict_and_evaluate(runtimes_train: pd.DataFrame, runtimes_test: pd.DataFra
     imputer = sklearn.impute.SimpleImputer(strategy='constant', fill_value=impute_value)
     X_train = pd.DataFrame(imputer.fit_transform(X=features_train), columns=list(features_train))
     X_test = pd.DataFrame(imputer.transform(X=features_test), columns=list(features_test))
+    # Scale features such that median = 0 and IQR = 1; should not make difference for tree models,
+    # but other models:
+    scaler = sklearn.preprocessing.RobustScaler()
+    X_train = pd.DataFrame(scaler.fit_transform(X=X_train), columns=list(X_train))
+    X_test = pd.DataFrame(scaler.transform(X=X_test), columns=list(X_test))
     # Find fastest solver for each row (instance), but use positions instead of solver names as
     # class labels (since we use position-based indexing later):
     y_train = runtimes_train.idxmin(axis='columns').replace(
