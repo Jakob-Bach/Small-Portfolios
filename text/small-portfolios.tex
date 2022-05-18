@@ -292,7 +292,7 @@ Also, all exact approaches should yield solutions with the same portfolio cost a
 \subsection{Beam Search}
 \label{sec:approach:beam}
 %
-\begin{algorithm}[htb]
+\begin{algorithm}[tb]
 	\DontPrintSemicolon
 	\KwIn{Set of solvers $S$, Portfolio size $k$, Portfolio cost function $c_T$, Beam width $w$}
 	\KwOut{Portfolio $P$ with $|P|=k$}
@@ -477,7 +477,7 @@ In this section, we focus on portfolios as a whole, particularly the portfolio p
 
 \subsubsection{General Trend}
 
-\begin{figure}[htb]
+\begin{figure}[tb]
 	\centering
 	\includegraphics[width=\columnwidth]{plots/search-train-objective.pdf}
 	\caption{Training-set VBS performance of $k$-portfolios determined by different solution approaches for the \texttt{SC2020} dataset (left) and the \texttt{SC2021} dataset (right)}
@@ -528,7 +528,7 @@ These results indicate that building a portfolio of complementary solvers, rathe
 
 \subsubsection{Test-Set Performance}
 
-\begin{figure}[htb]
+\begin{figure}[tb]
 	\centering
 	\includegraphics[width=\columnwidth]{plots/search-test-objective.pdf}
 	\caption{Test-set VBS performance of $k$-portfolios determined by different solution approaches for the \texttt{SC2020} dataset (left) and the \texttt{SC2021} dataset (right)}
@@ -576,7 +576,7 @@ We also evaluate the portfolio performance $c_T(P,m)$, i.e., the PAR-2 score of 
 
 \subsubsection{Matthews Correlation Coefficient}
 
-\begin{figure}[htb]
+\begin{figure}[tb]
 	\centering
 	\includegraphics[width=\columnwidth]{plots/prediction-test-mcc.pdf}
 	\caption{
@@ -599,7 +599,7 @@ As random forests and XGBoost perform similarly, we will only use random-forest 
 
 \subsubsection{Portfolio Performance}
 
-\begin{figure}[htb]
+\begin{figure}[tb]
 	\centering
 	\includegraphics[width=\columnwidth]{plots/prediction-test-objective-beam.pdf}
 	\caption{
@@ -624,7 +624,7 @@ Consequently, the gap between VBS and the predicted solvers grows with $k$.
 However, model-based portfolios tend to be better than the single best solver from these portfolios, i.e., the prediction models can discriminate between solvers to some extent.
 In addition, for $k > 2$, the model-based portfolios are better than the global single best solver, at least on average.
 
-\begin{figure}[htb]
+\begin{figure}[tb]
 	\centering
 	\includegraphics[width=\columnwidth]{plots/prediction-test-objective-optimal.pdf}
 	\caption{
