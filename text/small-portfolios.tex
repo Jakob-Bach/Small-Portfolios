@@ -169,14 +169,16 @@ Others use supervised learning for instance-specific algorithm selection (cf.~SA
 Parallel approaches encompass \emph{pure portfolios} (cf.~PPfolio~\cite{Roussel:2012:ppfolio}) as well as \emph{parallel portfolios with information sharing} (cf.~ManySAT~\cite{Hamadi:2009:ManySAT}).
 Our work considers portfolios from which exactly one solver is selected and run for each instance.
 
-Solver complementarity regarding the runtime of solver portfolios has been examined by Xu et al.~\cite{Xu:2012:EvalContribVBS}. 
-They show that significant contributions to the runtime of a portfolio often come from solvers that are not competitive when evaluated as a standalone solver. 
-However, this result depends on the dataset under evaluation. 
-In fact, the best performing $2$-portfolio of solvers in the SAT~Competition~2020 are the winners of the SAT and UNSAT Tracks.
-Such a result is expected for a benchmark set containing similar amounts of SAT and UNSAT instances. 
-Results have been markedly different in the SAT~Competition~2021, in which an otherwise not competitive solver is part of the best performing $2$-portfolio. 
-All this underlines the importance of portfolio analysis for a complete evaluation of the state-of-the-art. 
-In turn, such an evaluation can also support the development of better stable solvers.
+Solver complementarity regarding the runtime of solver portfolios has been examined by Xu et al.~\cite{Xu:2012:EvalContribVBS}, who analyze the marginal contributions of solvers,
+and Fr{\'e}chette et al.~\cite{frechette2016using}, who analyze the Shapley values of solvers. 
+Both these analyses show that significant contributions to the runtime of a portfolio can come from solvers that are not competitive when evaluated as a standalone solver. 
+% JB: I cut the following example, as it seems to be too long and too specific for the related-work section
+%However, this result depends on the dataset under evaluation. 
+%In fact, the best performing $2$-portfolio of solvers in the SAT~Competition~2020 are the winners of the SAT and UNSAT Tracks.
+%Such a result is expected for a benchmark set containing similar amounts of SAT and UNSAT instances. 
+%Results have been markedly different in the SAT~Competition~2021, in which an otherwise not competitive solver is part of the best performing $2$-portfolio. 
+%All this underlines the importance of portfolio analysis for a complete evaluation of the state-of-the-art. 
+%In turn, such an evaluation can also support the development of better stable solvers.
 
 Instance-specific solver-selection approaches bring in another perspective on solver complementarity.
 One of the best-known complex solver-selection approaches is SATzilla, of which multiple versions exist~\cite{xu2008satzilla,xu2012satzilla2012}. 
@@ -313,6 +315,8 @@ Ultimately, Equation~\ref{eq:ip4} specifies the optimization target.%
 Algorithm~\ref{al:beam-search} specifies the approach. 
 In each iteration, the algorithm combines $w$ portfolios from the previous iteration with individual solvers that are not part of these portfolios. 
 In other words, the algorithm expands existing portfolios by adding individual solvers. 
+Thus, the algorithm considers the marginal contribution~\cite{Xu:2012:EvalContribVBS} of solvers to the current portfolios.
+
 Before the next iteration, only the $w$ portfolios with the lowest cost are retained.
 The beam width $w$ is an input parameter.
 For $w=1$, only one portfolio remains at the end of each iteration.
