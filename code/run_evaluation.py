@@ -31,6 +31,8 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
     if len(list(plot_dir.glob('*.pdf'))) > 0:
         print('Plot directory is not empty. Files might be overwritten, but not deleted.')
 
+    print('Loading the data (might take a while) ...')
+
     # Load results, make solvers a list again:
     search_results = pd.read_csv(results_dir / 'search_results.csv',
                                  converters={'solvers': ast.literal_eval})
@@ -48,28 +50,26 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
     prediction_results = pd.read_csv(results_dir / 'prediction_results.csv')
     prediction_results = prediction_results.merge(search_results)
 
-    # --------Experimental Design--------
+    print('\n--------5 Experimental Design--------')
 
-    # ------Prediction Approaches------
+    print('\n------5.2 Prediction Approaches------')
 
-    print('How do the prediction models perform in terms of test-set MCC (over all portfolios)?')
+    print('\nHow do the prediction models perform in terms of test-set MCC (over all portfolios)?')
     print(prediction_results.groupby('model')['test_pred_mcc'].describe().round(2))
 
     # Drop models with performance worse than others from further analysis:
     prediction_results = prediction_results[~prediction_results['model'].isin(['kNN', 'MLP'])]
 
-    # --------Evaluation--------
+    print('\n--------6 Evaluation--------')
 
-    # ------Optimization Results------
+    print('\n------6.1 Optimization Results------')
 
-    # ----Performance of Single Solvers----
-
-    print('How often is a solver fastest in SC2020?')
+    print('\nHow often is a solver fastest in SC2020?')
     print(runtimes2020.idxmin(axis='columns').value_counts())
-    print('How often is a solver fastest in SC2021?')
+    print('\nHow often is a solver fastest in SC2021?')
     print(runtimes2021.idxmin(axis='columns').value_counts())
 
-    # ----General Trend / Test-Set Performance----
+    print('\n----6.1.1  General Trend----')
 
     # Figures 1 and 2: Objective value of search approaches over k
     data = search_results.loc[(search_results['algorithm'] != 'beam_search') | (search_results['w'] == 1)]
@@ -115,13 +115,13 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
     plt.tight_layout()
     plt.savefig(plot_dir / 'search-test-objective.pdf', bbox_inches='tight')
 
-    print('Ratio of PAR2 between best k-portfolio and best portfolio of all solvers:')
+    print('\nRatio of PAR2 between best k-portfolio and best portfolio of all solvers:')
     print(data.loc[data['algorithm'] == 'mip_search',  ['problem', 'k', 'objective_frac']].groupby(
         ['problem', 'k']).mean().reset_index().pivot(index='k', columns='problem').round(2))  # mean over folds
 
-    # ----Beam Search----
+    print('\n----6.1.2 Beam Search----')
 
-    print('Ratio of PAR2 value between greedy-search/k-best and exact solution:')
+    print('\nRatio of PAR2 value between greedy-search/k-best and exact solution:')
     print(data.loc[data['algorithm'] == 'beam_search', ['problem', 'k', 'k_objective_frac']].groupby(
         ['problem', 'k']).mean().reset_index().pivot(index='k', columns='problem').round(3))
 
@@ -129,39 +129,39 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
     data = search_results[(search_results['algorithm'] == 'mip_search') |
                           ((search_results['algorithm'] == 'beam_search') & (search_results['w'] == w))].copy()
     data['k_objective_frac'] = data.groupby(['problem', 'k', 'fold_id'])['train_objective'].apply(lambda x: x / x.min())
-    print(f'Ratio of PAR2 value between best {w=} beam-search-portfolio and exact solution:')
+    print(f'\nRatio of PAR2 value between best {w=} beam-search-portfolio and exact solution:')
     # Need to pick optimal portfolio (min out of w portfolios) for each k first, then average over folds
     print(data.loc[data['algorithm'] == 'beam_search', ['problem', 'k', 'fold_id', 'k_objective_frac']].groupby(
         ['problem', 'k', 'fold_id'])['k_objective_frac'].min().groupby(['problem', 'k']).mean(
             ).reset_index().pivot(index='k', columns='problem').round(3))
 
-    print(f'Standard deviation of objective value of top {w=} portfolios in beam search:')
+    print(f'\nStandard deviation of objective value of top {w=} portfolios in beam search:')
     print(data.loc[data['algorithm'] == 'beam_search'].groupby(['problem', 'k', 'fold_id'])['train_objective'].std(
         ).groupby(['problem', 'k']).mean().reset_index().pivot(index='k', columns='problem').round(2))
 
-    print('Standard deviation of objective value for random search:')
+    print('\nStandard deviation of objective value for random search:')
     data = search_results[search_results['algorithm'] == 'random_search']
     print(data.groupby(['problem', 'k', 'fold_id'])['train_objective'].std().groupby(['problem', 'k']).mean(
         ).reset_index().pivot(columns='problem', index='k').round(2))
 
-    # ----Portfolio Composition----
+    print('\n----6.1.5 Portfolio Composition----')
 
     data = search_results[search_results['algorithm'] == 'mip_search'].copy()
     data['prev_solvers'] = data.groupby(['problem', 'fold_id'])['solvers'].shift().fillna('').apply(list)
     data['solvers_added'] = data.apply(lambda x: len(set(x['solvers']) - set(x['prev_solvers'])), axis='columns')
     data['solvers_deleted'] = data.apply(lambda x: len(set(x['prev_solvers']) - set(x['solvers'])), axis='columns')
 
-    print('How many solver changes are there from k-1 to k in exact search?')
+    print('\nHow many solver changes are there from k-1 to k in exact search?')
     print(data.loc[data['k'] <= 20].groupby(['problem', 'k'])[
         ['solvers_added', 'solvers_deleted']].mean())
 
-    print('How many solver changes are there from k-1 to k in exact search, aggregating over k?')
+    print('\nHow many solver changes are there from k-1 to k in exact search, aggregating over k?')
     print(data.groupby('problem')[['solvers_added', 'solvers_deleted']].describe().transpose())
 
-    # ----Impact of single solvers on Portfolios----
+    print('\n----6.1.6 Impact of Single Solvers on Portfolios----')
 
     k = 5
-    print(f'How is solver occurrence in random {k=}-portfolio correlated to objective value?')
+    print(f'\nHow is solver occurrence in random {k=}-portfolio correlated to objective value?')
     for problem, problem_runtimes in zip(['SC2020', 'SC2021'], [runtimes2020, runtimes2021]):
         data = search_results[(search_results['problem'] == problem) &
                               (search_results['algorithm'] == 'random_search') & (search_results['k'] == k)].copy()
@@ -170,9 +170,9 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
         print(f'- {problem}:')
         print(data[problem_runtimes.columns].corrwith(data['train_objective'], method='spearman').describe().round(2))
 
-    # ------Prediction Results------
+    print('\n------6.2 Prediction Results------')
 
-    # ----MCC----
+    print('\n----6.2.1 Matthews Correlation Coefficient----')
 
     # Figure 3: MCC of predictions on random portfolios over k
     data = prediction_results.loc[(prediction_results['algorithm'] == 'random_search')]
@@ -192,29 +192,29 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
     plt.tight_layout()
     plt.savefig(plot_dir / 'prediction-test-mcc.pdf', bbox_inches='tight')
 
-    print('Mean MCC for beam search with w=100, random forest:')
+    print('\nMean MCC for beam search with w=100, random forest:')
     data = prediction_results[(prediction_results['algorithm'] == 'beam_search') &
                               (prediction_results['w'] == 100) &
                               (prediction_results['model'] == 'Random forest')]
     print(data.groupby(['problem', 'k'])['test_pred_mcc'].agg(['mean', 'std']).reset_index().pivot(
         index='k', columns='problem').round(2))
 
-    print('Mean MCC for exact search, random forests:')
+    print('\nMean MCC for exact search, random forests:')
     data = prediction_results[(prediction_results['algorithm'] == 'mip_search') &
                               (prediction_results['model'] == 'Random forest')]
     print(data.groupby(['problem', 'k'])['test_pred_mcc'].agg(['mean', 'std']).reset_index().pivot(
         index='k', columns='problem').round(2))
 
-    print('Median MCC per model, using all prediction results:')
+    print('\nMedian MCC per model, using all prediction results:')
     print(prediction_results.groupby(['problem', 'model'])[
         ['train_pred_mcc', 'test_pred_mcc']].median().round(2))
 
-    print('Train-test MCC difference per model, using all prediction results:')
+    print('\nTrain-test MCC difference per model, using all prediction results:')
     data = prediction_results[['problem', 'model', 'train_pred_mcc', 'test_pred_mcc']].copy()
     data['train_test_diff'] = data['train_pred_mcc'] - data['test_pred_mcc']
     print(data.groupby(['problem', 'model'])['train_test_diff'].describe().round(2))
 
-    # ----Objective Value----
+    print('\n----6.2.2 Portfolio Performance----')
 
     # Figure 4: Objective value of model-based and VBS-based top beam-search portfolios over k
     w = 100
@@ -271,16 +271,16 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
     plt.tight_layout()
     plt.savefig(plot_dir / 'prediction-test-objective-optimal.pdf', bbox_inches='tight')
 
-    # ----Feature Importance----
+    print('\n----6.2.3 Feature Importance----')
 
-    print('Average feature importance (in %) for random forests over all prediction scenarios:')
+    print('\nAverage feature importance (in %) for random forests over all prediction scenarios:')
     importance_cols = [x for x in prediction_results.columns if x.startswith('imp.')]
     data = prediction_results.loc[prediction_results['model'] == 'Random forest',
                                   importance_cols].mean() * 100  # importance as percentage
     print(data.describe().round(2))
-    print('To reach a feature importance of 50% with random forests, one needs',
+    print('\nTo reach a feature importance of 50% with random forests, one needs',
           f'{sum(data.sort_values(ascending=False).cumsum() < 50) + 1} features.')
-    print('How many features are used in each random-forest model?')
+    print('\nHow many features are used in each random-forest model?')
     print((prediction_results.loc[prediction_results['model'] == 'Random forest',
                                   importance_cols] > 0).sum(axis='columns').describe().round(2))
 
