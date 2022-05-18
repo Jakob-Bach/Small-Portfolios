@@ -183,26 +183,27 @@ Both these analyses show that significant contributions to the runtime of a port
 Instance-specific solver-selection approaches bring in another perspective on solver complementarity.
 One of the best-known complex solver-selection approaches is SATzilla, of which multiple versions exist~\cite{xu2008satzilla,xu2012satzilla2012}. 
 In SATzilla, multiple prediction models guide the selection of a solver from a portfolio. 
-Additional components of SATzilla are so-called \emph{pre-solvers}, which are only run for a short time to solve easy instances, and a \emph{backup solver}, which is responsible for instances where computing features for the prediction models takes too long.
-Other instance-specific solver selection approaches include ISAC, which is based on clustering in the instance-feature space~\cite{Kadioglu:2010:ISAC}, and SNNAP, which extends the ISAC approach with runtime prediction models~\cite{Collautti:2013:SNNAP}.
-A recent survey on algorithm-selection approaches -- also beyond SAT -- is provided by Kerschke et al.~\cite{kerschke2019automated}.
+Additional components of SATzilla are \emph{pre-solvers}, which are only run for a short time to solve easy instances, and a \emph{backup solver}, which runs on instances where computing features for the prediction models takes too long.
+Other instance-specific solver selection approaches include ISAC, which is based on clustering in the instance-feature space~\cite{Kadioglu:2010:ISAC}, and SNNAP, which extends ISAC with runtime prediction models~\cite{Collautti:2013:SNNAP}.
+Kerschke et al. provide a recent survey on algorithm-selection approaches, also beyond SAT~\cite{kerschke2019automated}.
+For example, algorithm selection is an issues for Constraint Satisfaction Problems (CSPs)~\cite{amadini2016extensive,omahony2008using} and Satisfiability Modulo Theories (SMT)~\cite{pimpalkhare2021medleysolver,scott2021machsmt} as well.
 
 Many portfolio approaches have several stages and configuration options, making configuring and selecting the best approach difficult.
 To cope with this, Autofolio by Lindauer et al.\ provides an automatic configurator~\cite{lindauer2015autofolio}.
 One can also analyze the impact of configuration options with tools such as CAVE~\cite{biedenkapp2018cave}.
 
 A systematic analysis of portfolios with varying size~$k$, which has some similarities to our study, is conducted by Amadini et al.~\cite{amadini2014empirical,amadini2016extensive}.
-They evaluate $k$-portfolios of Constraint Satisfaction Problem (CSP) solvers in terms of their average runtime and solved instances. 
+They evaluate $k$-portfolios of CSP solvers in terms of their average runtime and solved instances. 
 They compare several classification methods within portfolios, besides adapting complex SAT portfolio approaches like SATzilla. 
 Amadini et al. focus on different instances and solvers than our study.
 This different focus limits the comparability of actual results, but their evaluation procedure shares similarities with ours.
 While they only use heuristic search algorithms, our study features a broad comparison of different search strategies for portfolios, including an exact solution, two approximate solutions, and random sampling. 
 
 Nof and Strichman formalize the \emph{K-Portfolio Problem} in the form of two maximization problems with different objective functions and prove their submodularity and NP-completeness~\cite{nof2020real}. 
-They solve the \emph{K-Portfolio Problem} optimally with a Satisfiability Module Theories (SMT) solver and use \emph{greedy search} to generate approximate solutions.
+They solve the \emph{K-Portfolio Problem} optimally with an SMT solver and use \emph{greedy search} to generate approximate solutions.
 They evaluate their approach on anytime algorithms for an allocation problem, focusing on solution quality after one second or less. 
 While we build on the theoretical results of Nof and Strichman, our evaluation is broader. 
-In addition to including more solution approaches, we also analyze portfolios with prediction models.
+We include more solution approaches and analyze portfolios with prediction models.
 
 Our study analyzes two very recent datasets, created from the SAT~Competitions~2020 and~2021~\cite{balyo2020proceedings,balyo2021proceedings}. 
 They contain runtimes of state-of-the-art SAT solvers for a very diverse set of hard SAT instances, which are measured up to a timeout of 5000~seconds.
@@ -407,7 +408,7 @@ First, we use random forests~\cite{breiman2001random}, which are also part of th
 Second, we use XGBoost~\cite{xgboost}, a popular implementation of gradient boosting.
 In both cases, we train models with 100 trees.
 
-Preliminary experiments also included a k-nearest-neighbors classifier and a simple neural network.
+Preliminary experiments also included a k-nearest-neighbors classifier, which is popular for portfolio approaches as well~\cite{Collautti:2013:SNNAP,malitsky2011non,nikolic2013simple,samulowitz2013snappy}, and a simple neural network.
 However, both performed worse than tree-based ensembles.
 The former might suffer from the high number of features, while the latter might need parameter tuning, which would have been too expensive in the context of our study.
 Further, we tried other prediction approaches that are part of SATzilla~2008 or SATzilla~2012:
