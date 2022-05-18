@@ -98,13 +98,10 @@ def search_and_evaluate(problem_name: str, search_func: str, search_args: Dict[s
         search_result['fold_id'] = fold_id
         search_results.append(search_result)
         for _, portfolio_result in search_result.iterrows():
-            start_time = time.process_time()
             prediction_result = prediction.predict_and_evaluate(
                 runtimes_train=runtimes_train[portfolio_result['solvers']],
                 runtimes_test=runtimes_test[portfolio_result['solvers']],
                 features_train=features.iloc[train_idx], features_test=features.iloc[test_idx])
-            end_time = time.process_time()
-            prediction_result['pred_time'] = end_time - start_time
             prediction_result['solution_id'] = portfolio_result['solution_id']
             prediction_result['fold_id'] = portfolio_result['fold_id']
             prediction_results.append(prediction_result)

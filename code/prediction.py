@@ -4,6 +4,8 @@ Prediction-model-based portfolio evaluation, using the prediction model to make 
 solver recommendations within a portfolio.
 """
 
+import time
+
 import numpy as np
 import pandas as pd
 import sklearn.ensemble
@@ -56,6 +58,7 @@ def predict_and_evaluate(runtimes_train: pd.DataFrame, runtimes_test: pd.DataFra
     results = []
     feature_importances = []
     for model_item in MODELS:
+        start_time = time.process_time()
         if y_train.nunique() > 1:
             model = model_item['func'](**model_item['args'])
             model.fit(X=X_train, y=label_encoder.transform(y_train))
@@ -69,7 +72,8 @@ def predict_and_evaluate(runtimes_train: pd.DataFrame, runtimes_test: pd.DataFra
             pred_train = y_train.values
             pred_test = np.full(shape=X_test.shape[0], fill_value=y_train.iloc[0])
             feature_importances.append(np.full(shape=X_train.shape[1], fill_value=np.nan))
-        result = {'model': model_item['name']}
+        end_time = time.process_time()
+        result = {'model': model_item['name'], 'pred_time': end_time - start_time}
         result['train_pred_mcc'] = sklearn.metrics.matthews_corrcoef(y_true=y_train, y_pred=pred_train)
         result['test_pred_mcc'] = sklearn.metrics.matthews_corrcoef(y_true=y_test, y_pred=pred_test)
         # To compute objective value, we need to extract runtime of predicted solver for each
