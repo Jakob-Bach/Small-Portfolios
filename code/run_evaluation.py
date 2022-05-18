@@ -50,6 +50,16 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
     prediction_results = pd.read_csv(results_dir / 'prediction_results.csv')
     prediction_results = prediction_results.merge(search_results)
 
+    print('\n--------5 Experimental Design--------')
+
+    print('\n------5.2 Prediction Approaches------')
+
+    print('\nHow do the prediction models perform in terms of test-set MCC (over all portfolios)?')
+    print(prediction_results.groupby('model')['test_pred_mcc'].describe().round(2))
+
+    # Drop models with performance worse than others from further analysis:
+    prediction_results = prediction_results[~prediction_results['model'].isin(['kNN', 'MLP'])]
+
     print('\n--------6 Evaluation--------')
 
     print('\n------6.1 Optimization Results------')
