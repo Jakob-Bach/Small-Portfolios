@@ -18,7 +18,7 @@ import seaborn as sns
 import prepare_dataset
 
 
-plt.rcParams['font.family'] = 'CMU Sans Serif'  # LNCS template uses CMR fonts
+plt.rcParams['font.family'] = 'Latin Modern Sans'  # LIPIcs template uses "Latin Modern" fonts
 
 
 # Run the full evaluation pipeline. To that end, read experiments' input files from "data_dir",
@@ -181,14 +181,14 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
     # Aggregate over cross-validation folds:
     data = data.groupby(['problem', 'k', 'model', 'solution_id']).mean().reset_index().drop(columns='solution_id')
     data.rename(columns={'problem': 'Dataset', 'model': 'Model'}, inplace=True)
-    plt.rcParams['font.size'] = 22
+    plt.rcParams['font.size'] = 23
     facet_grid = sns.catplot(x='k', y='test_pred_mcc', hue='Model', col='Dataset', data=data,
                              kind='box', linewidth=2, palette='Set2', facet_kws={'despine': False},
                              height=5, aspect=1)
     plt.ylim(-0.1, 1)
     facet_grid.set_axis_labels(x_var='Portfolio size $k$', y_var='Test-set MCC')
     sns.move_legend(facet_grid, edgecolor='white', loc='upper center', bbox_to_anchor=(0.5, 0.15), ncol=2)
-    facet_grid.legend.get_title().set_position((-262, -31))
+    facet_grid.legend.get_title().set_position((-284, -32))
     plt.tight_layout()
     plt.savefig(plot_dir / 'prediction-test-mcc.pdf', bbox_inches='tight')
 
