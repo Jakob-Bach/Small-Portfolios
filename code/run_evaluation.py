@@ -19,6 +19,7 @@ import prepare_dataset
 
 
 plt.rcParams['font.family'] = 'Latin Modern Sans'  # LIPIcs template uses "Latin Modern" fonts
+plt.rcParams['savefig.dpi'] = 300  # recommended by LIPIcs template
 
 
 # Run the full evaluation pipeline. To that end, read experiments' input files from "data_dir",
