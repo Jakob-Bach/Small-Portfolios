@@ -459,7 +459,7 @@ The code also allows to download and prepare the datasets.
 Additionally, we publish the complete experimental data, including results\footnote{\url{https://bwsyncandshare.kit.edu/s/yKtJ34KTyqBtcJn}; will be moved to a public repository after review}.
 To obtain the instance- and solver data, we use the package~\emph{gbd-tools}~\cite{iser2020collaborative}.
 For predictions, we use the package \emph{scikit-learn}~\cite{scikit-learn}.
-To solve the \emph{K-Portfolio Problem} exactly, we use the package \emph{mip}~\cite{python-mip}.
+To solve the \emph{K-Portfolio Problem} exactly, we use the package \emph{mip}~\cite{python-mip} with its integrated mixed integer linear-programming solver \emph{COIN-OR branch-and-cut} (Cbc).
 
 \section{Evaluation}
 \label{sec:evaluation}
@@ -474,8 +474,6 @@ For the $325$ instances in \texttt{SC2021}, the three overall fastest solvers wi
 These observations indicate that combining solvers in portfolios can improve overall runtime.
 See~\cite{SC2020:AIJ} for details how single solvers performed in \texttt{SC2020}.
 In this section, we focus on portfolios as a whole, particularly the portfolio performance $c_T(P)$.
-
-\subsubsection{General Trend}
 
 \begin{figure}[tb]
 	\centering
@@ -493,11 +491,18 @@ For \emph{random sampling}, we average over repeated samples of portfolios.
 The \emph{upper bound} limits the cost of \emph{greedy search} according to Equation~\ref{eq:upper-bound}.
 If we report numbers for the solution approaches in the following, we refer to the training set, where all solution approaches conduct their search.
 
-For all approaches and both datasets, the PAR-2 score improves rapidly for the first few $k$.
+\subsubsection{Optimal Solution}
+
+The PAR-2 score improves rapidly for the first few $k$, not only for the optimal solution but all approaches and both datasets.
 However, marginal gains become smaller with increasing $k$.
 For the dataset \texttt{SC2020}, the optimal $1$-portfolio, i.e., the single best solver, has a penalized runtime $5.51$ times as high as the $48$-portfolio, i.e., the set of all solvers.
 This ratio reduces to $1.89$ for the best $5$-portfolio and $1.25$ for the best $10$-portfolio.
 For \texttt{SC2021}, the respective ratios are $4.74$ for $k=1$, $1.58$ for $k=5$ and $1.17$ for $k=10$.
+
+The solver \emph{Cbc} was able to find these optimal solutions within a reasonable time.
+The mean optimization time was 15~s and the maximum optimization time was 250~s.
+Most of the variance in optimization time occurred for small portfolios.
+For $k \geq 10$, all optimization runs took less than 16~s.
 
 \subsubsection{Beam Search}
 
@@ -644,9 +649,9 @@ We still see a considerable variance for each $k$, i.e., the test set performanc
 Averaging importance over all trained random-forest models, the most important feature has an importance score of 1.66\%, the least important one an importance score of 0.01\%.
 To reach a cumulated average importance of 50\%, one needs 38 out of 138 features.
 On average, random forests use 135 features, i.e., nearly all of them.
-We conclude that no single feature or even a small set of features drives prediction performance.
+We conclude that no single feature or small set of features drives prediction performance.
 Features might be redundant to each other, as the feature extractor often applies several statistical aggregates to summarize the same characteristics of the instances.
-Also, the low prediction performance indicates that the features from SATzilla~2012 are not sufficiently discriminating to recommend solvers on our datasets reliably.
+Also, the low prediction performance indicates that the features are not sufficiently discriminating to recommend solvers on our datasets reliably.
 
 \section{Conclusions and Future Work}
 \label{sec:conclusion}

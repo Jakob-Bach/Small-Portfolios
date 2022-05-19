@@ -59,8 +59,6 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
     print('\nHow often is a solver fastest in SC2021?')
     print(runtimes2021.idxmin(axis='columns').value_counts())
 
-    print('\n----6.1.1  General Trend----')
-
     # Figures 1 and 2: Objective value of search approaches over k
     data = search_results.loc[(search_results['algorithm'] != 'beam_search') | (search_results['w'] == 1)]
     bound_data = data[data['algorithm'] == 'mip_search'].copy()  # bounds computed from exact solution
@@ -105,9 +103,23 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
     plt.tight_layout()
     plt.savefig(plot_dir / 'search-test-objective.pdf', bbox_inches='tight')
 
+    print('\n----6.1.1  Optimal Solution----')
+
     print('\nRatio of PAR2 between best k-portfolio and best portfolio of all solvers:')
     print(data.loc[data['algorithm'] == 'mip_search',  ['problem', 'k', 'objective_frac']].groupby(
         ['problem', 'k']).mean().reset_index().pivot(index='k', columns='problem').round(2))  # mean over folds
+
+    print('\nHow is the optimization time for the exact solution distributed?')
+    print(data.loc[data['algorithm'] == 'mip_search', 'search_time'].describe().round(2))
+
+    print('\nHow is the maximum optimization time for the exact solution distributed over k?')
+    print(data.loc[(data['algorithm'] == 'mip_search')].groupby('k')['search_time'].max().round(2))
+
+    print('\nHow is the optimization time for the exact solution distributed for k <= 9?')
+    print(data.loc[(data['algorithm'] == 'mip_search') & (data['k'] <= 9), 'search_time'].describe().round(2))
+
+    print('\nHow is the optimization time for the exact solution distributed for k >= 10?')
+    print(data.loc[(data['algorithm'] == 'mip_search') & (data['k'] >= 10), 'search_time'].describe().round(2))
 
     print('\n----6.1.2 Beam Search----')
 
