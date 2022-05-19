@@ -33,18 +33,20 @@ def define_experimental_design(problems: List[Dict[str, Any]]) -> List[Dict[str,
     results = []
     for problem, fold_id in itertools.product(problems, range(CV_FOLDS)):
         max_k = problem['runtimes'].shape[1]
-        for k in range(1, max_k + 1):
-            results.append({**problem, 'fold_id': fold_id, 'search_func': 'random_search',
-                            'search_args': {'k': k, 'w': 1000}})
-        for k in range(1, max_k + 1):
-            results.append({**problem, 'fold_id': fold_id, 'search_func': 'mip_search',
-                            'search_args': {'k': k}})
         # Beam search and k-best also save intermediate results if run up to max_k:
         for w in list(range(1, 11)) + list(range(20, 101, 10)):
             results.append({**problem, 'fold_id': fold_id, 'search_func': 'beam_search',
                             'search_args': {'k': max_k, 'w': w}})
         results.append({**problem, 'fold_id': fold_id, 'search_func': 'kbest_search',
                         'search_args': {'k': max_k}})
+        # The other two search approaches only obtain results for one k at once:
+        for k in range(1, max_k + 1):
+            results.append({**problem, 'fold_id': fold_id, 'search_func': 'random_search',
+                            'search_args': {'k': k, 'w': 1000}})
+            results.append({**problem, 'fold_id': fold_id, 'search_func': 'mip_search',
+                            'search_args': {'k': k}})
+    for i, result in enumerate(results):  # identify combinations of dataset, fold, and search run
+        result['search_id'] = i
     return results
 
 
@@ -77,11 +79,13 @@ def add_portfolio_performance(search_result: pd.DataFrame, runtimes_train: pd.Da
 # instance features): search for portfolios, make predictions, and compute evaluation metrics.
 # - "problem_name" should identify the dataset; is just copied to output.
 # - "fold_id" should identify the cross-validation fold.
+# - "search_id" should identify the portfolio search run (combination of dataset, fold, and
+#   search settings); is just copied to output, but vital to join search and prediction results.
 # - "search_func" and "search_args" should allow a function call (see module "search").
 # - "runtimes" and "features" are the dataset (with features only being necessary for predictions,
 # not for search).
 # Return two data frames, one with search results and one with prediction results (can be joined).
-def search_and_evaluate(problem_name: str, fold_id: int, search_func: str,
+def search_and_evaluate(problem_name: str, fold_id: int, search_id: int, search_func: str,
                         search_args: Dict[str, Any], runtimes: pd.DataFrame,
                         features: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame]:
     splitter = sklearn.model_selection.KFold(n_splits=CV_FOLDS, shuffle=True, random_state=25)
@@ -95,6 +99,7 @@ def search_and_evaluate(problem_name: str, fold_id: int, search_func: str,
     add_portfolio_performance(search_result=search_results, runtimes_train=runtimes_train,
                               runtimes_test=runtimes_test)
     search_results['search_time'] = end_time - start_time
+    search_results['search_id'] = search_id
     search_results['solution_id'] = np.arange(len(search_results))  # there might be multiple results per search
     search_results['fold_id'] = fold_id
     search_results['problem'] = problem_name
@@ -111,8 +116,7 @@ def search_and_evaluate(problem_name: str, fold_id: int, search_func: str,
         prediction_result['solution_id'] = portfolio_result['solution_id']
         prediction_results.append(prediction_result)
     prediction_results = pd.concat(prediction_results)
-    prediction_results['fold_id'] = fold_id
-    prediction_results['problem'] = problem_name
+    prediction_results['search_id'] = search_id
     return search_results, prediction_results
 
 
