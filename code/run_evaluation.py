@@ -81,6 +81,7 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
     plot_data.rename(columns={'algorithm': 'Solution approach', 'problem': 'Dataset'}, inplace=True)
     # Figure 1: Training-set objective value of search approaches over k
     plt.rcParams['font.size'] = 24
+    plt.figure()
     facet_grid = sns.relplot(x='k', y='train_objective', col='Dataset', hue='Solution approach',
                              style='Solution approach', data=plot_data, kind='line',
                              linewidth=4, palette='Set1', facet_kws={'despine': False},
@@ -93,6 +94,7 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
     plt.savefig(plot_dir / 'search-train-objective.pdf', bbox_inches='tight')
     # Figure 2: Test-set objective value of search approaches over k
     plt.rcParams['font.size'] = 24
+    plt.figure()
     facet_grid = sns.relplot(x='k', y='test_objective', col='Dataset', hue='Solution approach',
                              style='Solution approach', data=plot_data, kind='line',
                              linewidth=4, palette='Set1', facet_kws={'despine': False},
@@ -185,6 +187,7 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
     data = data.groupby(['problem', 'k', 'model', 'solution_id']).mean().reset_index().drop(columns='solution_id')
     data.rename(columns={'problem': 'Dataset', 'model': 'Model'}, inplace=True)
     plt.rcParams['font.size'] = 23
+    plt.figure()
     facet_grid = sns.catplot(x='k', y='test_pred_mcc', hue='Model', col='Dataset', data=data,
                              kind='box', linewidth=2, palette='Set2', facet_kws={'despine': False},
                              height=5, aspect=1)
@@ -238,6 +241,7 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
     global_sbs_data = search_results.loc[(search_results['algorithm'] == 'mip_search') &
                                          (search_results['k'] == 1), ['problem', 'fold_id', 'test_objective']]
     plt.rcParams['font.size'] = 22
+    plt.figure()
     facet_grid = sns.catplot(x='k', y='objective', hue='Approach', col='Dataset', data=data,
                              kind='box', linewidth=2, palette='Set2', facet_kws={'despine': False},
                              height=5, aspect=1)
@@ -261,6 +265,7 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
         {'test_pred_objective': 'Prediction', 'test_objective': 'VBS', 'test_portfolio_sbs': 'SBS'})
     data.rename(columns={'problem': 'Dataset'}, inplace=True)
     plt.rcParams['font.size'] = 22
+    plt.figure()
     facet_grid = sns.catplot(x='k', y='objective', col='Dataset', hue='Approach', data=data,
                              kind='strip', s=8, palette='Set2', facet_kws={'despine': False},
                              height=5, aspect=1, dodge=True)
