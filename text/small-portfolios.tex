@@ -477,7 +477,7 @@ In this section, we focus on portfolios as a whole, particularly the portfolio p
 
 \begin{figure}[tb]
 	\centering
-	\includegraphics[width=\columnwidth]{plots/search-train-objective.pdf}
+	\includegraphics[width=\columnwidth, trim={0 15 0 0}, clip]{plots/search-train-objective.pdf}
 	\caption{Training-set VBS performance of $k$-portfolios determined by different solution approaches for the \texttt{SC2020} dataset (left) and the \texttt{SC2021} dataset (right)}
 	\label{fig:search-train-objective}
 \end{figure}
@@ -500,9 +500,9 @@ This ratio reduces to $1.89$ for the best $5$-portfolio and $1.25$ for the best 
 For \texttt{SC2021}, the respective ratios are $4.74$ for $k=1$, $1.58$ for $k=5$ and $1.17$ for $k=10$.
 
 The solver \emph{Cbc} was able to find these optimal solutions within a reasonable time.
-The mean optimization time was 15~s and the maximum optimization time was 250~s.
+The mean optimization time was 15~s and the maximum optimization time was about 5~min.
 Most of the variance in optimization time occurred for small portfolios.
-For $k \geq 10$, all optimization runs took less than 16~s.
+For $k \geq 10$, all optimization runs took less than 14~s.
 
 \subsubsection{Beam Search}
 
@@ -535,7 +535,7 @@ These results indicate that building a portfolio of complementary solvers, rathe
 
 \begin{figure}[tb]
 	\centering
-	\includegraphics[width=\columnwidth]{plots/search-test-objective.pdf}
+	\includegraphics[width=\columnwidth, trim={0 15 0 0}, clip]{plots/search-test-objective.pdf}
 	\caption{Test-set VBS performance of $k$-portfolios determined by different solution approaches for the \texttt{SC2020} dataset (left) and the \texttt{SC2021} dataset (right)}
 	\label{fig:search-test-objective}
 \end{figure}
