@@ -29,7 +29,7 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
     if not plot_dir.is_dir():
         print('Plot directory does not exist. We create it.')
         plot_dir.mkdir(parents=True)
-    if len(list(plot_dir.glob('*.pdf'))) > 0:
+    if any(plot_dir.glob('*.pdf')):
         print('Plot directory is not empty. Files might be overwritten, but not deleted.')
 
     print('Loading the data (might take a while) ...')
@@ -55,14 +55,14 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
 
     print('\n------6.1 Optimization Results------')
 
-    print('\nHow often is a solver fastest in SC2020?')
+    print('\nOn how many instances is each solver fastest in SC2020?')
     print(runtimes2020.idxmin(axis='columns').value_counts())
-    print('\nHow often is a solver fastest in SC2021?')
+    print('\nOn how many instances is each solver fastest in SC2021?')
     print(runtimes2021.idxmin(axis='columns').value_counts())
 
     # Figures 1 and 2: Objective value of search approaches over k
     data = search_results.loc[(search_results['algorithm'] != 'beam_search') | (search_results['w'] == 1)]
-    bound_data = data[data['algorithm'] == 'mip_search'].copy()  # bounds computed from exact solution
+    bound_data = data[data['algorithm'] == 'mip_search'].copy()  # bounds computed from optimal solution
     bound_data['algorithm'] = 'upper_bound'
     for problem in data['problem'].unique():
         bound_data.loc[bound_data['problem'] == problem, 'train_objective'] =\
@@ -112,21 +112,21 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
     print(data.loc[data['algorithm'] == 'mip_search',  ['problem', 'k', 'objective_frac']].groupby(
         ['problem', 'k']).mean().reset_index().pivot(index='k', columns='problem').round(2))  # mean over folds
 
-    print('\nHow is the optimization time for the exact solution distributed?')
+    print('\nHow is the optimization time for the integer problem distributed?')
     print(data.loc[data['algorithm'] == 'mip_search', 'search_time'].describe().round(2))
 
-    print('\nHow is the maximum optimization time for the exact solution distributed over k?')
+    print('\nHow is the maximum optimization time for the integer problem distributed over k?')
     print(data.loc[(data['algorithm'] == 'mip_search')].groupby('k')['search_time'].max().round(2))
 
-    print('\nHow is the optimization time for the exact solution distributed for k <= 9?')
+    print('\nHow is the optimization time for the integer problem distributed for k <= 9?')
     print(data.loc[(data['algorithm'] == 'mip_search') & (data['k'] <= 9), 'search_time'].describe().round(2))
 
-    print('\nHow is the optimization time for the exact solution distributed for k >= 10?')
+    print('\nHow is the optimization time for the integer problem distributed for k >= 10?')
     print(data.loc[(data['algorithm'] == 'mip_search') & (data['k'] >= 10), 'search_time'].describe().round(2))
 
     print('\n----6.1.2 Beam Search----')
 
-    print('\nRatio of PAR2 value between greedy-search/k-best and exact solution:')
+    print('\nRatio of PAR2 value between greedy search and optimal solution:')
     print(data.loc[data['algorithm'] == 'beam_search', ['problem', 'k', 'k_objective_frac']].groupby(
         ['problem', 'k']).mean().reset_index().pivot(index='k', columns='problem').round(3))
 
@@ -134,7 +134,7 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
     data = search_results[(search_results['algorithm'] == 'mip_search') |
                           ((search_results['algorithm'] == 'beam_search') & (search_results['w'] == w))].copy()
     data['k_objective_frac'] = data.groupby(['problem', 'k', 'fold_id'])['train_objective'].apply(lambda x: x / x.min())
-    print(f'\nRatio of PAR2 value between best {w=} beam-search-portfolio and exact solution:')
+    print(f'\nRatio of PAR2 value between best {w=} beam-search portfolio and optimal solution:')
     # Need to pick optimal portfolio (min out of w portfolios) for each k first, then average over folds
     print(data.loc[data['algorithm'] == 'beam_search', ['problem', 'k', 'fold_id', 'k_objective_frac']].groupby(
         ['problem', 'k', 'fold_id'])['k_objective_frac'].min().groupby(['problem', 'k']).mean(
@@ -156,12 +156,12 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
     data['solvers_added'] = data.apply(lambda x: len(set(x['solvers']) - set(x['prev_solvers'])), axis='columns')
     data['solvers_deleted'] = data.apply(lambda x: len(set(x['prev_solvers']) - set(x['solvers'])), axis='columns')
 
-    print('\nHow many solver changes are there from k-1 to k in exact search?')
+    print('\nHow many solver changes are there from k-1 to k in the optimal solution?')
     print(data.loc[data['k'] <= 20].groupby(['problem', 'k'])[
         ['solvers_added', 'solvers_deleted']].mean())
 
-    print('\nHow many solver changes are there from k-1 to k in exact search, aggregating over k?')
-    print(data.groupby('problem')[['solvers_added', 'solvers_deleted']].describe().transpose())
+    print('\nHow many solver changes are there from k-1 to k in the optimal solution, aggregating over k?')
+    print(data.groupby('problem')[['solvers_added', 'solvers_deleted']].describe().round(2).transpose())
 
     print('\n----6.1.6 Impact of Single Solvers on Portfolios----')
 
@@ -198,17 +198,17 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
     plt.tight_layout()
     plt.savefig(plot_dir / 'prediction-test-mcc.pdf', bbox_inches='tight')
 
-    print('\nMean MCC for beam search with w=100, random forest:')
+    print('\nMCC for beam search with w=100, random forests:')
     data = prediction_results[(prediction_results['algorithm'] == 'beam_search') &
                               (prediction_results['w'] == 100) &
                               (prediction_results['model'] == 'Random forest')]
-    print(data.groupby(['problem', 'k'])['test_pred_mcc'].agg(['mean', 'std']).reset_index().pivot(
+    print(data.groupby(['problem', 'k'])['test_pred_mcc'].agg(['median', 'std']).reset_index().pivot(
         index='k', columns='problem').round(2))
 
-    print('\nMean MCC for exact search, random forests:')
+    print('\nMCC for the optimal solution, random forests:')
     data = prediction_results[(prediction_results['algorithm'] == 'mip_search') &
                               (prediction_results['model'] == 'Random forest')]
-    print(data.groupby(['problem', 'k'])['test_pred_mcc'].agg(['mean', 'std']).reset_index().pivot(
+    print(data.groupby(['problem', 'k'])['test_pred_mcc'].agg(['median', 'std']).reset_index().pivot(
         index='k', columns='problem').round(2))
 
     print('\nMedian MCC per model, using all prediction results:')
