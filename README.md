@@ -5,8 +5,9 @@ This repository contains the code and text of the paper
 > Bach, Jakob, Markus Iser, and Klemens Böhm. "A Comprehensive Study of k-Portfolios of Recent SAT Solvers"
 
 (The paper is accepted at [SAT 2022](http://satisfiability.org/SAT22/) but not published yet.
-Once it's published, we'll add a link to it here.
-We'll link the experimental data, too.)
+Once it's published, we'll add a link to it here.)
+You can find the corresponding full experimental data (inputs as well as results) on [KITopenData](https://doi.org/10.5445/IR/1000146629).
+
 This document provides:
 
 - an outline of the repo structure
@@ -51,7 +52,7 @@ Let's try exhaustive search:
 print(search.exhaustive_search(runtimes=runtimes, k=2))
 ```
 
-As you would expect, this search procedure returns all portfolios of the desired size:
+As you would expect, this search procedure returns all portfolios of the desired size `k`:
 
 ```
 [(['Solver1', 'Solver2'], 1.75), (['Solver1', 'Solver3'], 1.5), (['Solver2', 'Solver3'], 1.75)]
@@ -60,10 +61,10 @@ As you would expect, this search procedure returns all portfolios of the desired
 Let's try greedy search, i.e., beam search with a beam width of one:
 
 ```python
-print(search.beam_search(runtimes=runtimes, k=4, w=1))
+print(search.beam_search(runtimes=runtimes, k=3, w=1))
 ```
 
-This search procedure also yields all intermediate results:
+This search procedure does not only yield the `k`-portfolio, but also all intermediate results:
 
 ```
 [(['Solver1'], 2.5), (['Solver1', 'Solver3'], 1.5), (['Solver1', 'Solver2', 'Solver3'], 1.5)]
