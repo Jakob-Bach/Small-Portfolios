@@ -326,7 +326,7 @@ Thus, the algorithm considers the marginal contribution~\cite{Xu:2012:EvalContri
 Before the next iteration, only the $w$ portfolios with the lowest cost are retained.
 The beam width $w$ is an input parameter.
 For $w=1$, only one portfolio remains at the end of each iteration.
-We refer to this special case, which Nof and Strichman already used for algorithm portfolios~\cite{nof2020real}, as \emph{greedy search}.
+We refer to this special case, which also Nof and Strichman used for algorithm portfolios~\cite{nof2020real}, as \emph{greedy search}.
 
 For reasonably small $w$, \emph{beam search} has a clear runtime advantage compared to an exhaustive search over all $k$-portfolios.
 In particular, \emph{beam search} only evaluates $O(|S| \cdot w)$ out of $\binom{|S|}{k}$ possible portfolios per iteration.
@@ -389,7 +389,8 @@ We also generate an additional baseline via random sampling of $k$-portfolios.
 	We build portfolios from the $k$ best individual solvers as a simple baseline.
 	\item \emph{Random sampling}:
 	To get an idea of how the performance of arbitrary portfolios is distributed, we randomly sample 1000 portfolios for each $k$.
-	This baseline is new compared to the related studies of Amadini et al.~\cite{amadini2014empirical,amadini2016extensive} and Nof and Strichman~\cite{nof2020real}.
+	%MI: not really _novel_: be less pedantic about details discriminating against related work
+	%This baseline is new compared to the related studies of Amadini et al.~\cite{amadini2014empirical,amadini2016extensive} and Nof and Strichman~\cite{nof2020real}.
 \end{itemize}
 
 The optimization goal for all approaches is the PAR-2 score $c_T(P)$.
