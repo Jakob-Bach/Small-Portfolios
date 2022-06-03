@@ -79,7 +79,7 @@ Propositional satisfiability (SAT) solving is the archetypal NP-complete problem
 Its practical applications abound, e.g., verification of hardware and software~\cite{Kaufmann:2021:Amulet,Buning:2020:QPRVerify}, product configuration~\cite{Janota:2014:Configuration}, cryptanalysis~\cite{Nejati:2020:CDCLCrypto}, or planning~\cite{Schreiber:2021:Lilotane}.
 SAT solvers are not only used to solve hard combinatorial problems in industry but also previously open problems in mathematics~\cite{Heule:2016:Pyth,Heule:2018:Schur}. 
 
-Nowadays, one can observe continuous progress regarding SAT solving methods, heuristics, and their implementations in SAT solvers. 
+Nowadays, one can observe continuous progress regarding SAT-solving methods, heuristics, and their implementations in SAT solvers. 
 Evaluation of solvers is commonly based on compilations of benchmark instances that represent diverse, interesting application scenarios. 
 An important design objective behind new SAT solvers is stability, i.e., good performance on many types of instances. 
 At the same time, we observe a recurrent emergence of new heuristics and methods that improve performance on only a narrow subset of instances. 
@@ -102,7 +102,7 @@ While the VBS is a theoretical construct, one might use prediction models to sel
 Solver selection that includes runtime predictions usually outperforms individual best solvers by much~\cite{xu2008satzilla}. 
 However, the relative performance gains of such approaches on instances in the very diverse \emph{application} category are usually much smaller than the gains in the categories of \emph{crafted} or \emph{randomly generated} instances~\cite{Xu:2012:EvalContribVBS,Collautti:2013:SNNAP}. 
 We argue that evaluations confined to only a few, very specific sets of instances, such as the one in \cite{Kadioglu:2010:ISAC}, let the solvers appear in a better light than ones covering various domains. 
-Moreover, constructing a prediction-based solver-selection process is complex and time-consuming, particularly preparing the necessary training data.
+Moreover, constructing a prediction-based solver-selection process is complex and time-consuming, particularly for preparing the necessary training data.
 In consequence, more often than not, comparative studies in SAT solving do not include implementations applying this principle to state-of-the-art solvers and recent benchmarks of interest.
 
 Given the circumstances sketched so far, the following questions are essential when it comes to the design of portfolios and their evaluation. 
@@ -136,7 +136,7 @@ Our evaluation yields insightful results regarding the various questions.
 While the marginal utility is expected to decrease with portfolio size, we did not expect the decrease to be so early. 
 Regarding the VBS, portfolios of size five already achieve more than 70\% of the maximum possible performance gain over the single best solver, so marginal performance gains from adding single additional solvers become very small in each case. 
 Another interesting observation is that the well-known heuristic \emph{beam search} has given way to good approximate solutions to the \emph{K-Portfolio Problem}. 
-These solutions happen to perform very similarly to the optimal ones, even for a minimal beam width of one.
+These solutions perform very similarly to the optimal ones, even for a minimal beam width of one.
 
 Relying on an off-the-shelf prediction model has been a mixed bag. 
 On the negative side, prediction performance has been somewhat low. 
@@ -215,7 +215,7 @@ While they also evaluate portfolios shortly, our study provides an in-depth anal
 
 Let a set of solvers $S = \{s_1, \dots, s_n\}$, a set of SAT instances $I = \{i_1, \dots, i_l\}$, and solver runtimes $r: I \times S \rightarrow [0, T]$ with a fixed timeout $T$ be given.
 A scoring function $c_T: S \rightarrow \mathbb{R}$ estimates solver performance. 
-To score a solver, we use the popular penalized-average-runtime measure with a penalization factor of two (PAR-2 Score). 
+To score a solver, we use the popular penalized-average-runtime measure with a penalization factor of two (PAR-2 score). 
 This score offers a trade-off between solver runtimes and the number of solved instances.
 It is defined as follows:%
 \begin{align}
@@ -258,8 +258,8 @@ In contrast, monotonicity might not hold if one analyzes $c_{T}(P,m)$ instead of
 In particular, a prediction model might choose suboptimal solvers from the portfolio.
 We will analyze this behavior later.
 
-In the following, we outline three solution approaches for the \emph{K-Portfolio Problem}, an exact one based on \emph{integer programming} and two approximate methods, namely \emph{beam search} and \emph{k-best}. 
-To the best of our knowledge, the \emph{integer programming} approach is novel,
+In the following, we outline three solution approaches for the \emph{K-Portfolio Problem}, an exact one based on \emph{integer programming}, and two approximate methods, namely \emph{beam search} and \emph{k-best}. 
+To the best of our knowledge, the \emph{integer programming} formulation is novel,
 while Nof and Strichman~\cite{nof2020real} already used a particular variant of \emph{beam search} to build algorithm portfolios,
 and \emph{k-best} is a baseline from Nof and Strichman as well.
 
@@ -285,8 +285,8 @@ Ultimately, Equation~\ref{eq:ip4} specifies the optimization target.%
 	\min_{x,y} \quad & \frac{1}{|I|} \cdot \sum_{i \in I} \sum_{s \in S} r_T(i,s) \cdot x_{i,s} \label{eq:ip4}
 \end{align}
 
-As another exact solution, Nof and Strichman present an SMT encoding of the problem and solve it with \emph{Z3}~\cite{nof2020real}.
-However, we found our re-implementation of this encoding to be slower than our integer-programming formulation.
+As another exact solution for the \emph{K-Portfolio Problem}, Nof and Strichman present an SMT encoding of the problem and solve it with \emph{Z3}~\cite{nof2020real}.
+However, we found our re-implementation of their encoding to be slower than our integer-programming formulation.
 Also, all exact approaches should yield solutions with the same portfolio cost anyway.
 
 \subsection{Beam Search}
@@ -369,9 +369,9 @@ In both cases, we are interested in the influence of the portfolio size $k$ on p
 
 For evaluation purposes, we conduct five-fold cross-validation over SAT instances.
 Thus, we only use SAT instances from the training folds to search for $k$-portfolios and subsequently train prediction models.
-In particular, neither portfolio search nor the prediction models have access to solver runtimes on the test instances.
+In particular, neither portfolio search nor prediction models have access to solver runtimes on the test instances.
 The prediction models need to recommend a solver from the portfolio only based on instance features.
-We compute all evaluation metrics on training instances as well as on test instances.
+We compute all evaluation metrics on training instances and on test instances.
 We average evaluation metrics over the cross-validation folds.
 
 \subsection{Solution Approaches}
@@ -396,7 +396,7 @@ We also generate an additional baseline via random sampling of $k$-portfolios.
 The optimization goal for all approaches is the PAR-2 score $c_T(P)$.
 In preliminary experiments, we also analyzed two slightly different objectives:
 the number of unsolved instances and the PAR-2 score normalized for each instance.
-However, general trends in the results were similar to those with the PAR-2 score, so we stick to the latter.
+However, general trends in the results were similar to those with the PAR-2 score, so we stuck to the latter.
 
 \subsection{Prediction Approaches}
 
@@ -409,14 +409,14 @@ First, we use random forests~\cite{breiman2001random}, which are also part of th
 Second, we use XGBoost~\cite{xgboost}, a popular implementation of gradient boosting.
 In both cases, we train models with 100 trees.
 
-Preliminary experiments also included a k-nearest-neighbors classifier, which is popular for portfolio approaches as well~\cite{Collautti:2013:SNNAP,malitsky2011non,nikolic2013simple,samulowitz2013snappy}, and a simple neural network.
+Our preliminary experiments also included a k-nearest-neighbors classifier, which is popular for portfolio approaches as well~\cite{Collautti:2013:SNNAP,malitsky2011non,nikolic2013simple,samulowitz2013snappy}, and a simple neural network with one hidden layer.
 However, both performed worse than tree-based ensembles.
-The former might suffer from the high number of features, while the latter might need parameter tuning, which would have been too expensive in the context of our study.
+The former might suffer from the high number of features, while the latter might need parameter tuning, which would have been too expensive in our study.
 Further, we tried other prediction approaches that are part of SATzilla~2008 or SATzilla~2012:
-First, one can train a classifier for each pair of solvers instead of training one classifier that makes a multi-class prediction.
+First, one can train a classifier for each pair of solvers instead of one classifier that makes a multi-class prediction.
 Second, one can weight instances based on the solvers' runtime difference instead of using an unweighted training set.
 Third, one can train a regression model for each solver from the portfolio, predict the runtime, and choose the solver with the lowest predicted runtime.
-However, none of these changes has helped to improve prediction performance in our preliminary experiments.
+However, none of these changes has helped improve prediction performance in our preliminary experiments.
 
 We evaluate prediction performance in two ways:
 
@@ -445,7 +445,7 @@ For example, the number of variables and clauses roughly measure the problem siz
 Several features summarize graph representations of instances, e.g., the maximum node degree in the clause graph.
 As the last example, several features base upon probing, i.e., running solvers for a short time and quantifying their progress over that period.
 
-Some feature values are missing, since the feature extractor exceeded time- or memory limits.
+Some feature values are missing since the feature extractor exceeded time- or memory limits.
 For predictions, we replace missing values with a constant value out of the range of the features.
 
 In both datasets, the number of features is relatively large compared to the number of instances.
@@ -456,7 +456,7 @@ Further, these models are not affected by monotonic transformations of features,
 \label{sec:experimental-design:impl}
 
 We implement our experimental design in Python and make our code available online\footnote{\url{https://github.com/Jakob-Bach/Small-Portfolios}}.
-The code also allows to download and prepare the datasets.
+The code also allows downloading and preparing the datasets.
 Additionally, we publish the complete experimental data, including datasets and results\footnote{\url{https://doi.org/10.5445/IR/1000146629}}.
 To obtain the instance- and solver data, we use the package~\emph{gbd-tools}~\cite{iser2020collaborative}.
 For predictions, we use the package \emph{scikit-learn}~\cite{scikit-learn}.
@@ -469,7 +469,7 @@ We evaluate the solution approaches for the \emph{K-Portfolio Problem} first and
 
 \subsection{Optimization Results}
 
-The datasets seem promising for portfolios, as in both datasets, there is no single solver which is fastest for all or even for a majority of the instances.
+The datasets seem promising for portfolios, as in both datasets, there is no single solver that is fastest for all or even for most instances.
 For the $316$ instances in \texttt{SC2020}, the three overall fastest solvers win on only 46, 38, and 26 instances, respectively.
 For the $325$ instances in \texttt{SC2021}, the three overall fastest solvers win on only 25, 22, and 20 instances, respectively.
 These observations indicate that combining solvers in portfolios can improve overall runtime.
@@ -494,14 +494,14 @@ If we report numbers for the solution approaches in the following, we refer to t
 
 \subsubsection{Optimal Solution}
 
-The PAR-2 score improves rapidly for the first few $k$, not only for the optimal solution but all approaches and both datasets.
+The PAR-2 score improves rapidly for the first few $k$, not only for the optimal solution but for all approaches and both datasets.
 However, marginal gains become smaller with increasing $k$.
 For the dataset \texttt{SC2020}, the optimal $1$-portfolio, i.e., the single best solver, has a penalized runtime $5.51$ times as high as the $48$-portfolio, i.e., the set of all solvers.
 This ratio reduces to $1.89$ for the best $5$-portfolio and $1.25$ for the best $10$-portfolio.
 For \texttt{SC2021}, the respective ratios are $4.74$ for $k=1$, $1.58$ for $k=5$ and $1.17$ for $k=10$.
 
 The solver \emph{Cbc} was able to find these optimal solutions within a reasonable time.
-The mean optimization time was 15~s and the maximum optimization time was about 5~min.
+The mean optimization time was 15~s, and the maximum optimization time was about 5~min.
 Most of the variance in optimization time occurred for small portfolios.
 For $k \geq 10$, all optimization runs took less than 14~s.
 
@@ -594,12 +594,12 @@ We also evaluate the portfolio performance $c_T(P,m)$, i.e., the PAR-2 score of 
 Figure~\ref{fig:prediction-test-mcc} graphs the test-set classification performance of random forests and XGBoost, using the portfolios from \emph{random sampling}.
 We use \emph{random sampling} results to show the variation of prediction performance over many portfolios.
 However, classification results are similar for \emph{beam search} with $w=100$ and for the \emph{optimal solution}.
-We do not display training-set performance, since it consistently is close to the maximum MCC of 1.0.
+We do not display training-set performance since it consistently is close to the maximum MCC of 1.0.
 
 As Figure~\ref{fig:prediction-test-mcc} shows, test-set prediction performance is rather low for all $k$ and for both types of prediction models.
 Prediction performance is clearly higher than with random guessing, which would yield an MCC of 0.0, but clearly lower than the optimal MCC of 1.0.
 Given the nearly perfect training-set performance but a low test set performance, the models seem to overfit the training set.
-Overfitting could cause a bad \mbox{PAR-2} value for model-based portfolios, which we will analyze next.
+Overfitting could cause a bad PAR-2 value for model-based portfolios, which we will analyze next.
 For small $k$, the prediction performance varies stronger between portfolios than for larger $k$ and is slightly higher on average.
 As random forests and XGBoost perform similarly, we will only use random-forest results in the following analyses.
 
@@ -618,12 +618,12 @@ Figure~\ref{fig:prediction-test-objective-beam} shows test-set PAR-2 scores for 
 The plot compares the PAR-2 score of solvers recommended by the prediction model to two competitors without a prediction model, computed on the same portfolios.
 The virtual best solver (VBS) provides a lower bound on cost, as its portfolio performance can only be achieved with perfect prediction.
 Each portfolio's single best solver (SBS) serves as a baseline, corresponding to always recommending one particular solver.
-Note that the portfolio performance can even be worse than the SBS, e.g. when always predicting the slowest solver for each instance.
+Note that the portfolio performance can even be worse than the SBS, e.g., when always predicting the slowest solver for each instance.
 However, we do not show this upper bound here.
 
 As discussed earlier, the VBS score decreases with $k$.
 In theory, this also allows model-based portfolios to improve their performance.
-However, in our case, the \mbox{PAR-2} score of model-based portfolios remains relatively stable with increasing values of $k$, with the biggest improvement from $k=2$ to $k=3$.
+However, in our case, the PAR-2 score of model-based portfolios remains relatively stable with increasing values of $k$, with the biggest improvement from $k=2$ to $k=3$.
 This observation implies that the prediction model does not improve its selection of solvers even if the portfolio grows.
 Given the low prediction performance in terms of MCC, as seen in Figure~\ref{fig:prediction-test-mcc}, this has been expected.
 Consequently, the gap between VBS and the predicted solvers grows with $k$.
