@@ -6,7 +6,7 @@ This repository contains the code and text of the paper
 
 (The paper is accepted at [SAT 2022](http://satisfiability.org/SAT22/) but not published yet.
 Once it's published, we'll add a link to it here.)
-You can find the corresponding full experimental data (inputs as well as results) on [KITopenData](https://doi.org/10.5445/IR/1000146629).
+You can find the corresponding complete experimental data (inputs as well as results) on [KITopenData](https://doi.org/10.5445/IR/1000146629).
 
 This document provides:
 
@@ -19,7 +19,7 @@ This document provides:
 
 The repo contains two folders, one with the text of the paper and one with the Python code.
 In the folder `code/`, there are five Python files and three non-code files.
-The non code-files are:
+The non-code files are:
 
 - `.gitignore`: For Python development.
 - `LICENSE`: The code is MIT-licensed, so feel free to use it.
@@ -64,14 +64,14 @@ Let's try greedy search, i.e., beam search with a beam width of one:
 print(search.beam_search(runtimes=runtimes, k=3, w=1))
 ```
 
-This search procedure does not only yield the `k`-portfolio, but also all intermediate results:
+This search procedure does not only yield a `k`-portfolio, but also all intermediate results:
 
 ```
 [(['Solver1'], 2.5), (['Solver1', 'Solver3'], 1.5), (['Solver1', 'Solver2', 'Solver3'], 1.5)]
 ```
 
 We can see that the third iteration does not lead to any marginal gain, i.e.,
-solver 2 cannot solve any instance faster than both solver 1 and solver 3.
+Solver 2 cannot solve any instance faster than both other solvers.
 
 ## Development
 
@@ -80,22 +80,22 @@ the prediction approaches, search approaches, and dataset integration.
 
 ### Prediction
 
-If you want to change the set of prediction models used in the experiments,
-or their parametrization, modify the variable `MODELS` in `prediction.py`.
-Any other changes to prediction procedure (e.g., target, imputation, evaluation metrics, etc.)
+If you want to change the prediction models (or their parametrization) used in the experiments,
+modify the variable `MODELS` in `prediction.py`.
+Any other changes to the prediction procedure (e.g., target, imputation, evaluation metrics, etc.)
 should be made in the same file as well.
 
 ### Portfolio Search
 
-If you want to add another routine for portfolio search, have a look at `search.py`.
+If you want to add another portfolio-search routine, have a look at `search.py`.
 Though there is no formal superclass or interface, all search routines share two parameters:
 The solver `runtimes` as `DataFrame` and the number of solvers `k` as `int`.
-The result is a list of tuples of
+The result of each search routine is a list of tuples of
 
 - solver names (list of strings) and
 - portfolio performance (float).
 
-The list might also just have a length one, in case the search only returns one portfolio.
+The list might also have a length of one in case the search only returns one portfolio.
 You can add further, arbitrarily named parameters as well.
 For example, beam search has the beam width `w` as another parameter.
 
@@ -106,7 +106,7 @@ have a look at the function `define_experimental_design()` in `run_experiments.p
 
 If you want to analyze further datasets, you should bring them into a format similar to the one
 produced by `prepare_dataset.py`.
-In particular, the dataset should be stored in the form of two CSVs:
+In particular, you should store the dataset in the form of two CSVs:
 
 - `{dataset_name}_runtimes.csv` should contain the solver runtimes as floats or ints.
   Each row is an instance, and each column is a solver (column names are solver names).
@@ -114,11 +114,13 @@ In particular, the dataset should be stored in the form of two CSVs:
   It is not used for search and predictions.
 - `{dataset_name}_features.csv` should contain the instance features as floats or ints.
   Each row is an instance, and each column is a feature (column names are feature names).
+  Additionally, column `hash` should identify the instance.
+  It is not used for search and predictions.
   Please encode categorical features beforehand (e.g., via one-hot encoding).
-  Missing values will be replaced with a constant outside the feature's range before predicting.
+  Before prediction, we will replace missing values with a constant outside the feature's range.
 
 Having prepared the dataset(s) in this format, you need to adapt the function `run_experiments()` in
-`run_experiments.py` such that it uses your datasets instead of / besides the SAT Competition ones.
+`run_experiments.py` to use your datasets instead of / beside the SAT Competition ones.
 The evaluation code in `run_evaluation.py` also partly contains hard-coded dataset names but the
 evaluation functionality itself should work with results from arbitrary datasets.
 
@@ -217,13 +219,14 @@ python -m run_experiments
 ```
 
 Depending on your hardware, this might take several hours or even days.
+(It took about 25 hours on our server with 32 CPU cores having a base clock of 2.0 GHz.)
 To create the plots for the paper and print some statistics to the console, run
 
 ```bash
 python -m run_evaluation
 ```
 
-All scripts have a few command line options, which you can see by running the scripts like
+All scripts have a few command-line options, which you can see by running the scripts like
 
 ```bash
 python -m prepare_dataset --help
