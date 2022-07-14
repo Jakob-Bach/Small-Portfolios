@@ -1,0 +1,51 @@
+% Customized "beamer" class
+% Template cloned from https://git.scc.kit.edu/i43/dokumentvorlagen/praesentationen/beamer | commit: 5c6fe51d431425942a350e8a439bb4cef08f0275 (2022-06-28)
+% Due to unclear licensing, we do not provide the files "sdqbeamer.cls" and "logos/kitlogo_en_rgb.pdf" (need to be added manually)
+\documentclass[en]{sdqbeamer}
+% - remove animation roll-out: handout (general "beamer" option, not specific for this class)
+% - layout options: 16:9 (default), 16:10, 4:3
+% - footer font size options: bigfoot (default), smallfoot (KIT layout)
+% - navigation bar options: navbarinline (default), navbarinfooter, navbarside, navbaroff, navbarkit (off + smallfoot)
+% - language: de (default), en
+
+\titleimage{}
+
+\grouplogo{}
+
+\groupname{}
+%\groupnamewidth{50mm} % default
+
+\title[A Comprehensive Study of k-Portfolios of Recent SAT Solvers]{A Comprehensive Study of k-Portfolios of Recent SAT Solvers} % [footer]{title slide}
+\subtitle{SAT 2022 | Haifa, Israel}
+\author[\underline{Jakob Bach}, Markus Iser, and Klemens Böhm]{\underline{Jakob Bach}, Markus Iser, and Klemens Böhm} % [footer]{title slide}
+\date[2022-08-02]{August 2, 2022} % [footer]{title slide}
+
+%\usepackage{amsmath} % mathematical symbols and equations; apparently pre-loaded
+%\usepackage{amssymb} % mathematical symbols; apparently pre-loaded
+\usepackage[style=numeric, backend=bibtex]{biblatex}  % original template uses "biber" as backend
+%\usepackage{graphicx} % plots; apparently pre-loaded
+%\usepackage{hyperref} % links and URLs; apparently pre-loaded
+\usepackage{subcaption} % figures with multiple sub-figures and sub-captions
+
+\addbibresource{k-portfolio-presentation.bib}
+
+\setlength{\leftmargini}{0.2cm} % change default identation (so items are left-aligned to boxes)
+\setlength{\leftmarginii}{0.3cm} % 2nd level identation
+\setlength{\leftmarginiii}{0.3cm} % 3rd level identation
+
+\setbeamercovered{invisible} % use "transparent" to show later content of animated slide in gray
+
+\begin{document}
+
+\KITtitleframe
+
+\appendix
+\beginbackup % subsequent slides do not impact overall slide count
+
+\begin{frame}[t, allowframebreaks]{References}
+	\printbibliography
+\end{frame}
+
+\backupend
+
+\end{document}
