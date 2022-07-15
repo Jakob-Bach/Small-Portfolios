@@ -34,10 +34,48 @@
 \setlength{\leftmarginiii}{0.3cm} % 3rd level identation
 
 \setbeamercovered{invisible} % use "transparent" to show later content of animated slide in gray
+\setbeamertemplate{enumerate items}[default] % do not use the ugly colored circles
 
 \begin{document}
 
 \KITtitleframe
+
+\section{Experiments}
+
+\begin{frame}[t]{Experimental Design}
+	\begin{itemize}
+		\item Two datasets (from Main Tracks of recent SAT Competitions):
+		\begin{enumerate}[1)]
+			\item \emph{SC2020} (316 instances, 48 solvers)~\cite{balyo2020proceedings}
+			\item \emph{SC2021} (325 instances, 46 solvers)~\cite{balyo2021proceedings}
+			%JB: took all solvers, but removed instances not solved any of them
+		\end{enumerate}
+		\begin{itemize}
+			\item 138 features from feature extractor of SATzilla~2012~\cite{xu2012features, xu2012satzilla2012}
+			%JB: features from twelve categories, simple ones (like number of instances) to complicated ones (like variable-clause graph node degree)
+			%JB: missing values due to timeouts and memouts replaced with out-of-range value
+			\item Instance features and solver runtimes retrieved from GBD~\cite{iser2020collaborative}
+		\end{itemize}
+		\pause
+		\vspace{\baselineskip}
+		\item Four solution approaches:
+		%JB: all of them run for both datasets and all k (from 1 to number of solvers)
+		\begin{itemize}
+			\item \emph{Optimal solution} via MIP solving~\cite{python-mip}
+			%JB: that's the exact approach, others are heuristics
+			%JB: package "mip" uses the solver "COIN-OR branch-and-cut" (Cbc) internally
+			\item \emph{Beam search} with beam width $w \in \{1, 2, 3, \dots, 10, 20, 30, \dots, 100\}$
+			\item \emph{K-best}
+			\item \emph{Random sampling} with 1000 repetitions
+		\end{itemize}
+		\pause
+		\vspace{\baselineskip}
+		\item Two multi-class prediction models: Random forests~\cite{breiman2001random, scikit-learn} and XGBoost~\cite{xgboost} with 100 trees each
+		%JB: ensemble tree models: powerful and can learn non-linear dependencies (RFs also used in SATzilla 2012)
+		%JB: in preliminary experiments, also tried other models (e.g., kNN, untuned neural network) -> worse performance
+		%JB: in preliminary experiments, also regression, instance-weighted classififcation, one-vs-one classification -> worse performance
+	\end{itemize}
+\end{frame}
 
 \appendix
 \beginbackup % subsequent slides do not impact overall slide count
