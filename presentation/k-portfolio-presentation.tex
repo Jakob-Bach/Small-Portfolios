@@ -25,7 +25,7 @@
 \usepackage[style=numeric, backend=bibtex]{biblatex}  % original template uses "biber" as backend
 %\usepackage{graphicx} % plots; apparently pre-loaded
 %\usepackage{hyperref} % links and URLs; apparently pre-loaded
-\usepackage{subcaption} % figures with multiple sub-figures and sub-captions
+\usepackage{subcaption} % figures with multiple sub-figures; just used for \caption* here
 
 \addbibresource{k-portfolio-presentation.bib}
 
@@ -64,6 +64,7 @@
 			\item \emph{Optimal solution} via MIP solving~\cite{python-mip}
 			%JB: that's the exact approach, others are heuristics
 			%JB: package "mip" uses the solver "COIN-OR branch-and-cut" (Cbc) internally
+			%JB: Cbc was very fast, mean runtime of 15 s, max ~5 min
 			\item \emph{Beam search} with beam width $w \in \{1, 2, 3, \dots, 10, 20, 30, \dots, 100\}$
 			\item \emph{K-best}
 			\item \emph{Random sampling} with 1000 repetitions
@@ -75,6 +76,60 @@
 		%JB: in preliminary experiments, also tried other models (e.g., kNN, untuned neural network) -> worse performance
 		%JB: in preliminary experiments, also regression, instance-weighted classififcation, one-vs-one classification -> worse performance
 	\end{itemize}
+\end{frame}
+
+\begin{frame}[t]{Results -- Portfolio Search (VBS on Training Set)}
+	\begin{figure}[htb]
+		\centering
+		\includegraphics[width=\textwidth]{plots/search-train-objective.pdf}
+		\caption*{Training-set VBS performance for different datasets, values of $k$, and portfolio-search approaches.}
+		%JB: conducted five-fold cross-validation; portfolios search and model training on training set only
+		%JB: figures are average over CV folds, in case of random sampling also over sampling repetitions
+		%JB: all approaches: strong decrease with k; optimal 10-portfolio only 25% (SC2020) / 17% (SC2021) worse than portfolio out of all solvers
+		%JB: greedy search is beam search with k=1; already very close to optimum (though problem NP-complete); slight improvement by increasing w
+		%JB: also looked at composition of optimal portfolio and found that usually just 1 or 2 solvers added from k to k+1, which is nice scenario for greedy search
+		%JB: upper bound follows from submodularity; far away from greedy search
+		%JB: k-best between greedy and random; depends on datasets to which closer; gaps widens after first few k
+	\end{figure}
+\end{frame}
+
+\begin{frame}[t]{Results -- Portfolio Search (VBS on Test Set)}
+	\begin{figure}[htb]
+		\centering
+		\includegraphics[width=\textwidth]{plots/search-test-objective.pdf}
+		\caption*{Test-set VBS performance for different datasets, values of $k$, and portfolio-search approaches.}
+		%JB: overall, rather similar trends as on training set
+		%JB: k-best closer to greedy/optimal than on training set; there might be slight overfitting (best potrfolio on train instances not necessarily best on test instances)
+	\end{figure}
+\end{frame}
+
+\begin{frame}[t]{Results -- Recommending Solvers (MCC)}
+	\begin{figure}[htb]
+		\centering
+		\includegraphics[width=\textwidth]{plots/prediction-test-mcc.pdf}
+		\caption*{Test-set prediction performance in terms of Matthews correlation coefficient (MCC)~\cite{matthews1975comparison,gorodkin2004comparing} for different datasets, values of $k$, and prediction models. Randomly sampled portfolios.}
+		%JB: that's direct way of evaluating predictions; does not consider how bad wrongly recommended solver is; indirect evaluation on next slide
+		%JB: MCC is suitable for imbalanced classes; is in [-1, 1]; higher is better; 0 for random guessing and constant prediction
+		%JB: random sampling to have many portfolios; prediction performance for beam-search/optimal porfolios similar
+		%JB: training-set MCC close to 1, as typical for unpruned tree models (overfitting)
+		%JB: prediction performance not good, but better than random guessing (apparently there is some information in features)
+		%JB: slightly larger MCC and clearly more variation for small k
+		%JB: random forest and XGBoost similar; focus on former in the following
+	\end{figure}
+\end{frame}
+
+\begin{frame}[t]{Results -- Recommending Solvers (PAR-2 Score)}
+	\begin{figure}[htb]
+		\centering
+		\includegraphics[width=\textwidth]{plots/prediction-test-objective-beam.pdf}
+		\caption*{Test-set solver performance for different datasets, values of $k$, and solver-recommendation approaches. Portfolios from \emph{beam search} with $w=100$. Random forests for predictions.}
+		%JB: beam search with w=10o to predict for a bunch of good portfolios (similar resutls for optimal portfolios)
+		%JB: VBS corresponds to optimal prediction
+		%JB: SBS corresponds to sensible baseline (best constant prediction), though results could even be worse
+		%JB: horizontal line is global SBS, "SBS" boxes are portfolio-specific
+		%JB: while VBS decreases, predictions cannot leverage new solvers (decrease from k=2 to k=3 or k=4, but not beyond)
+		%JB: at least score of predicted solver (for k > 2) better than (global, and thus also portfolio) SBS
+	\end{figure}
 \end{frame}
 
 \appendix

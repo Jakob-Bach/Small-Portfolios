@@ -1,7 +1,7 @@
 """Run evaluation
 
-Evaluation pipeline, creating plots for the paper and printing statistics which are used in the
-paper as well. Should be run after the experimental pipeline.
+Evaluation pipeline, creating plots for the paper and the conference presentation, and printing
+statistics which are used in the paper as well. Should be run after the experimental pipeline.
 
 Usage: python -m run_evaluation --help
 """
@@ -23,14 +23,20 @@ plt.rcParams['savefig.dpi'] = 300  # recommended by LIPIcs template
 
 
 # Run the full evaluation pipeline. To that end, read experiments' input files from "data_dir",
-# experiments' results files from the "results_dir" and save plots to the "plot_dir".
-# Print some statistics to the console.
-def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathlib.Path) -> None:
-    if not plot_dir.is_dir():
-        print('Plot directory does not exist. We create it.')
-        plot_dir.mkdir(parents=True)
-    if any(plot_dir.glob('*.pdf')):
-        print('Plot directory is not empty. Files might be overwritten, but not deleted.')
+# experiments' results files from the "results_dir" and save plots to the "paper_plot_dir" and the
+# "presentation_plot_dir". Print some statistics to the console.
+def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, paper_plot_dir: pathlib.Path,
+             presentation_plot_dir: pathlib.Path) -> None:
+    if not paper_plot_dir.is_dir():
+        print('Paper plot directory does not exist. We create it.')
+        paper_plot_dir.mkdir(parents=True)
+    if any(paper_plot_dir.glob('*.pdf')):
+        print('Paper plot directory is not empty. Files might be overwritten, but not deleted.')
+    if not presentation_plot_dir.is_dir():
+        print('Presentation plot directory does not exist. We create it.')
+        presentation_plot_dir.mkdir(parents=True)
+    if any(presentation_plot_dir.glob('*.pdf')):
+        print('Presentation plot directory is not empty. Files might be overwritten, but not deleted.')
 
     print('Loading the data (might take a while) ...')
 
@@ -80,31 +86,47 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
         'beam_search': 'Greedy search', 'kbest_search': 'K-best', 'upper_bound': 'Upper bound'})
     plot_data.rename(columns={'algorithm': 'Solution approach', 'problem': 'Dataset'}, inplace=True)
     # Figure 1: Training-set objective value of search approaches over k
-    plt.rcParams['font.size'] = 24
-    plt.figure()
-    facet_grid = sns.relplot(x='k', y='train_objective', col='Dataset', hue='Solution approach',
-                             style='Solution approach', data=plot_data, kind='line',
-                             linewidth=4, palette='Set1', facet_kws={'despine': False},
-                             height=6.25, aspect=0.8)
-    facet_grid.set_axis_labels(x_var='Portfolio size $k$', y_var='PAR-2 score')
-    sns.move_legend(facet_grid, edgecolor='white', loc='upper center', bbox_to_anchor=(0.5, 0.1), ncol=3)
-    for handle in facet_grid.legend.legendHandles:
-        handle.set_linewidth(4)
-    plt.tight_layout()
-    plt.savefig(plot_dir / 'search-train-objective.pdf', bbox_inches='tight')
+    for is_for_paper in (False, True):
+        plt.rcParams['font.size'] = 24 if is_for_paper else 30
+        plt.figure()
+        facet_grid = sns.relplot(x='k', y='train_objective', col='Dataset', hue='Solution approach',
+                                 style='Solution approach', data=plot_data, kind='line',
+                                 linewidth=4, palette='Set1', facet_kws={'despine': False},
+                                 height=6.25, aspect=0.8)
+        facet_grid.set_axis_labels(x_var='Portfolio size $k$', y_var='PAR-2 score')
+        if is_for_paper:
+            sns.move_legend(facet_grid, edgecolor='white', loc='upper center',
+                            bbox_to_anchor=(0.5, 0.1), ncol=3)
+            plot_dir = paper_plot_dir
+        else:
+            sns.move_legend(facet_grid, edgecolor='white', loc='center left',
+                            bbox_to_anchor=(1, 0.5), ncol=1)
+            plot_dir = presentation_plot_dir
+        for handle in facet_grid.legend.legendHandles:
+            handle.set_linewidth(4)
+        plt.tight_layout()
+        plt.savefig(plot_dir / 'search-train-objective.pdf', bbox_inches='tight')
     # Figure 2: Test-set objective value of search approaches over k
-    plt.rcParams['font.size'] = 24
-    plt.figure()
-    facet_grid = sns.relplot(x='k', y='test_objective', col='Dataset', hue='Solution approach',
-                             style='Solution approach', data=plot_data, kind='line',
-                             linewidth=4, palette='Set1', facet_kws={'despine': False},
-                             height=6.25, aspect=0.8)
-    facet_grid.set_axis_labels(x_var='Portfolio size $k$', y_var='PAR-2 score')
-    sns.move_legend(facet_grid, edgecolor='white', loc='upper center', bbox_to_anchor=(0.5, 0.1), ncol=3)
-    for handle in facet_grid.legend.legendHandles:
-        handle.set_linewidth(4)
-    plt.tight_layout()
-    plt.savefig(plot_dir / 'search-test-objective.pdf', bbox_inches='tight')
+    for is_for_paper in (False, True):
+        plt.rcParams['font.size'] = 24 if is_for_paper else 30
+        plt.figure()
+        facet_grid = sns.relplot(x='k', y='test_objective', col='Dataset', hue='Solution approach',
+                                 style='Solution approach', data=plot_data, kind='line',
+                                 linewidth=4, palette='Set1', facet_kws={'despine': False},
+                                 height=6.25, aspect=0.8)
+        facet_grid.set_axis_labels(x_var='Portfolio size $k$', y_var='PAR-2 score')
+        if is_for_paper:
+            sns.move_legend(facet_grid, edgecolor='white', loc='upper center',
+                            bbox_to_anchor=(0.5, 0.1), ncol=3)
+            plot_dir = paper_plot_dir
+        else:
+            sns.move_legend(facet_grid, edgecolor='white', loc='center left',
+                            bbox_to_anchor=(1, 0.5), ncol=1)
+            plot_dir = presentation_plot_dir
+        for handle in facet_grid.legend.legendHandles:
+            handle.set_linewidth(4)
+        plt.tight_layout()
+        plt.savefig(plot_dir / 'search-test-objective.pdf', bbox_inches='tight')
 
     print('\n----6.1.1  Optimal Solution----')
 
@@ -186,17 +208,25 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
     # Aggregate over cross-validation folds:
     data = data.groupby(['problem', 'k', 'model', 'solution_id']).mean().reset_index().drop(columns='solution_id')
     data.rename(columns={'problem': 'Dataset', 'model': 'Model'}, inplace=True)
-    plt.rcParams['font.size'] = 23
-    plt.figure()
-    facet_grid = sns.catplot(x='k', y='test_pred_mcc', hue='Model', col='Dataset', data=data,
-                             kind='box', linewidth=2, palette='Set2', facet_kws={'despine': False},
-                             height=5, aspect=1)
-    plt.ylim(-0.1, 1)
-    facet_grid.set_axis_labels(x_var='Portfolio size $k$', y_var='Test-set MCC')
-    sns.move_legend(facet_grid, edgecolor='white', loc='upper center', bbox_to_anchor=(0.5, 0.15), ncol=2)
-    facet_grid.legend.get_title().set_position((-284, -32))
-    plt.tight_layout()
-    plt.savefig(plot_dir / 'prediction-test-mcc.pdf', bbox_inches='tight')
+    for is_for_paper in (False, True):
+        plt.rcParams['font.size'] = 23 if is_for_paper else 28
+        plt.figure()
+        facet_grid = sns.catplot(x='k', y='test_pred_mcc', hue='Model', col='Dataset', data=data,
+                                 kind='box', linewidth=2, palette='Set2', facet_kws={'despine': False},
+                                 height=5, aspect=1)
+        plt.ylim(-0.1, 1)
+        facet_grid.set_axis_labels(x_var='Portfolio size $k$', y_var='Test-set MCC')
+        if is_for_paper:
+            sns.move_legend(facet_grid, edgecolor='white', loc='upper center',
+                            bbox_to_anchor=(0.5, 0.15), ncol=2)
+            facet_grid.legend.get_title().set_position((-284, -32))
+            plot_dir = paper_plot_dir
+        else:
+            sns.move_legend(facet_grid, edgecolor='white', loc='center left',
+                            bbox_to_anchor=(1, 0.5), ncol=1)
+            plot_dir = presentation_plot_dir
+        plt.tight_layout()
+        plt.savefig(plot_dir / 'prediction-test-mcc.pdf', bbox_inches='tight')
 
     print('\nMCC for beam search with w=100, random forests:')
     data = prediction_results[(prediction_results['algorithm'] == 'beam_search') &
@@ -240,20 +270,28 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
     data.rename(columns={'problem': 'Dataset'}, inplace=True)
     global_sbs_data = search_results.loc[(search_results['algorithm'] == 'mip_search') &
                                          (search_results['k'] == 1), ['problem', 'fold_id', 'test_objective']]
-    plt.rcParams['font.size'] = 22
-    plt.figure()
-    facet_grid = sns.catplot(x='k', y='objective', hue='Approach', col='Dataset', data=data,
-                             kind='box', linewidth=2, palette='Set2', facet_kws={'despine': False},
-                             height=5, aspect=1)
-    for dataset_name, dataset_subplot in facet_grid.axes_dict.items():  # add baseline performance
-        dataset_subplot.axhline(
-            y=global_sbs_data.loc[global_sbs_data['problem'] == dataset_name, 'test_objective'].mean(),
-            color=sns.color_palette('Set2').as_hex()[3])
-    facet_grid.set_axis_labels(x_var='Portfolio size $k$', y_var='PAR-2 score')
-    sns.move_legend(facet_grid, edgecolor='white', loc='upper center', bbox_to_anchor=(0.6, 0.15), ncol=3)
-    facet_grid.legend.get_title().set_position((-312, -31))
-    plt.tight_layout()
-    plt.savefig(plot_dir / 'prediction-test-objective-beam.pdf', bbox_inches='tight')
+    for is_for_paper in (False, True):
+        plt.rcParams['font.size'] = 22 if is_for_paper else 24
+        plt.figure()
+        facet_grid = sns.catplot(x='k', y='objective', hue='Approach', col='Dataset', data=data,
+                                 kind='box', linewidth=2, palette='Set2', facet_kws={'despine': False},
+                                 height=5, aspect=1)
+        for dataset_name, dataset_subplot in facet_grid.axes_dict.items():  # add baseline performance
+            dataset_subplot.axhline(
+                y=global_sbs_data.loc[global_sbs_data['problem'] == dataset_name, 'test_objective'].mean(),
+                color=sns.color_palette('Set2').as_hex()[3])
+        facet_grid.set_axis_labels(x_var='Portfolio size $k$', y_var='PAR-2 score')
+        if is_for_paper:
+            sns.move_legend(facet_grid, edgecolor='white', loc='upper center',
+                            bbox_to_anchor=(0.6, 0.15), ncol=3)
+            facet_grid.legend.get_title().set_position((-312, -31))
+            plot_dir = paper_plot_dir
+        else:
+            sns.move_legend(facet_grid, edgecolor='white', loc='center left',
+                            bbox_to_anchor=(1, 0.5), ncol=1)
+            plot_dir = presentation_plot_dir
+        plt.tight_layout()
+        plt.savefig(plot_dir / 'prediction-test-objective-beam.pdf', bbox_inches='tight')
 
     # Figure 5: Objective value of model-based and VBS-based optimal (MIP search) portfolios over k
     data = prediction_results.loc[(prediction_results['algorithm'] == 'mip_search')]
@@ -277,7 +315,7 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, plot_dir: pathli
     sns.move_legend(facet_grid, edgecolor='white', loc='upper center', bbox_to_anchor=(0.6, 0.15), ncol=3)
     facet_grid.legend.get_title().set_position((-312, -31))
     plt.tight_layout()
-    plt.savefig(plot_dir / 'prediction-test-objective-optimal.pdf', bbox_inches='tight')
+    plt.savefig(paper_plot_dir / 'prediction-test-objective-optimal.pdf', bbox_inches='tight')
 
     print('\n----6.2.3 Feature Importance----')
 
@@ -301,8 +339,10 @@ if __name__ == '__main__':
                         help='Directory with input data, i.e., runtimes and instance features.')
     parser.add_argument('-r', '--results', type=pathlib.Path, default='data/',
                         dest='results_dir', help='Directory with experimental results.')
-    parser.add_argument('-p', '--plots', type=pathlib.Path, default='../text/plots/',
-                        dest='plot_dir', help='Output directory for plots.')
+    parser.add_argument('-a', '--paper-plots', type=pathlib.Path, default='../text/plots/',
+                        dest='paper_plot_dir', help='Output directory for paper plots.')
+    parser.add_argument('-e', '--presentation-plots', type=pathlib.Path, default='../presentation/plots/',
+                        dest='presentation_plot_dir', help='Output directory for presentation plots.')
     print('Evaluation started.')
     evaluate(**vars(parser.parse_args()))
     print('Plots created and saved.')
