@@ -132,6 +132,32 @@
 	\end{figure}
 \end{frame}
 
+\section{Summary}
+
+\begin{frame}[t]{Summary and Future Work}
+	\begin{itemize}
+		\item Evaluated solver portfolios on data from SAT Competitions 2020 and 2021
+		\pause
+		\item Small portfolios already show high runtime improvement
+		\pause
+		\item Greedy portfolio search already close to optimal portfolio
+		\pause
+		\item Our prediction approach does not benefit from increased portfolio size
+		\pause
+		\vspace{\baselineskip}
+		\item Exemplary directions for future work:
+		\begin{itemize}
+			\item Improve prediction performance, e.g., by using new features like community-based ones~\cite{Ansotegui:2019:CommunityStructure, Li:2021:HCS}
+			%JB: did not perform deep analysis of feature importance, but RF's built-in one spread over many features (no single or small set of very useful features)
+			%JB: features might also be redundant (which, however, should not impact prediction performance of tree-based models negatively)
+			\item Use more specialized solvers and solver configurations
+			%JB: while the solvers submitted to SAT Competition's Main Track rather are general-purpose solvers
+			\item Compare to sophisticated portfolio approaches like SATzilla~\cite{xu2008satzilla, xu2012satzilla2012}
+			%JB: our focus was not on creating best overall portfolio approach, but analyzing portfolio construction/size, while we kept prediction approach simple
+		\end{itemize}
+	\end{itemize}
+\end{frame}
+
 \appendix
 \beginbackup % subsequent slides do not impact overall slide count
 
