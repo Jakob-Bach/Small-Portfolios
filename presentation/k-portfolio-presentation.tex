@@ -40,6 +40,40 @@
 
 \KITtitleframe
 
+\section{Basics}
+
+\begin{frame}[t]{Related Work}
+	\begin{itemize}
+		\item Analyzing solver complementarity: Xu et al.~\cite{Xu:2012:EvalContribVBS}, Fr{\'e}chette et al.~\cite{frechette2016using}
+		%JB: former analyze marginal contribution, latter analyze Shapley values
+		%JB: both works use datasets with fixed solver set, don't vary k (focus is on individual solvers rather tha portfolios)
+		%JB: both works find that usefulness in portfolios might differ from standalone performance
+		\pause
+		\vspace{\baselineskip}
+		\item Instance-specific solver selection: SATzilla~\cite{xu2008satzilla, xu2012satzilla2012}, ISAC~\cite{Kadioglu:2010:ISAC}, SNNAP~\cite{Collautti:2013:SNNAP}
+		%JB: also a topic outside SAT: survey and further references mentioned in our paper
+		%JB: SATzilla is rather complex; besides main prediction model(s) (depending on version, solver classification or runtime regression) also pre-solvers and backup-solver
+		%JB: ISAC uses clustering, SNNAP uses nearest-neighbors approach
+		% JB: all theses approaches have fixed portfolio, following works vary portfolio size (but domain different to ours)
+		\pause
+		\vspace{\baselineskip}
+		\item Analyzing $k$-portfolios for Constraint Satisfaction Problems: Amadini~\cite{amadini2014empirical, amadini2016extensive}
+		%JB: vary k, analyze runtime and solved instances
+		%JB: compare various classifiers and multiple sophisticated portfolios approaches (like SATzilla)
+		%JB: one search heuristic ("local search"), no exact/random solution
+		%JB: 4547 instances (International CAP Solver Competition and MiniZinc suite benchmark), 22 solver configurations (6 distinct solvers)
+		%JB: results: classifier-based portfolios clearly beat single solvers, though gap to VBS; initial improvement over k, but performance might get slightly worse again if too many solvers in portfolio
+		\pause
+		\vspace{\baselineskip}
+		\item Analyzing $k$-portfolios for anytime algorithms: Nof and Strichman~\cite{nof2020real}
+		%JB: vary k, analyze two objective function (one is ours just as maximization)
+		%JB: anytime: algos run for 0.1 s or 1 s (compare that to the 5000 s in SAT Competition)
+		%JB: SMT solver, k-best, and greedy search (we additionally use beam width, random search, and prediction models)
+		%JB: 1000 instances (generated based on a real-world allocation problem), 24 solvers
+		%JB: results: greedy very close to optimum, k-best worse
+	\end{itemize}
+\end{frame}
+
 \section{Experiments}
 
 \begin{frame}[t]{Experimental Design}
@@ -86,7 +120,7 @@
 		%JB: conducted five-fold cross-validation; portfolios search and model training on training set only
 		%JB: figures are average over CV folds, in case of random sampling also over sampling repetitions
 		%JB: all approaches: strong decrease with k; optimal 10-portfolio only 25% (SC2020) / 17% (SC2021) worse than portfolio out of all solvers
-		%JB: greedy search is beam search with k=1; already very close to optimum (though problem NP-complete); slight improvement by increasing w
+		%JB: greedy search is beam search with k=1; already very close to optimum (though problem NP-complete; similar findings of Nof and Strichman); slight improvement by increasing w
 		%JB: also looked at composition of optimal portfolio and found that usually just 1 or 2 solvers added from k to k+1, which is nice scenario for greedy search
 		%JB: upper bound follows from submodularity; far away from greedy search
 		%JB: k-best between greedy and random; depends on datasets to which closer; gaps widens after first few k
@@ -128,6 +162,7 @@
 		%JB: SBS corresponds to sensible baseline (best constant prediction), though results could even be worse
 		%JB: horizontal line is global SBS, "SBS" boxes are portfolio-specific
 		%JB: while VBS decreases, predictions cannot leverage new solvers (decrease from k=2 to k=3 or k=4, but not beyond)
+		%JB: similar findings of Amadini et al. (though they had an improvement at least for a few more k)
 		%JB: at least score of predicted solver (for k > 2) better than (global, and thus also portfolio) SBS
 	\end{figure}
 \end{frame}
