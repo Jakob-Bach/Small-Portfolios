@@ -15,6 +15,8 @@
 \groupname{}
 %\groupnamewidth{50mm} % default
 
+\DeclareMathOperator*{\argmin}{arg\,min}
+
 \title[A Comprehensive Study of k-Portfolios of Recent SAT Solvers]{A Comprehensive Study of k-Portfolios of Recent SAT Solvers} % [footer]{title slide}
 \subtitle{SAT 2022 | Haifa, Israel}
 \author[\underline{Jakob Bach}, Markus Iser, and Klemens Böhm]{\underline{Jakob Bach}, Markus Iser, and Klemens Böhm} % [footer]{title slide}
@@ -41,6 +43,36 @@
 \KITtitleframe
 
 \section{Basics}
+
+\begin{frame}[t]{Problem Definition}
+	\begin{definition}[K-Portfolio-Problem]
+		Given a set of solvers $S = \{s_1, \dots, s_n\}$,
+		a scoring function $c: 2^S \rightarrow \mathbb{R}$,
+		and portfolio size $k \in \mathbb{N}$,
+		find a solver subset (= portfolio) $P$ of size $|P| = k$ with minimum cost: $\argmin\limits_{P \subseteq S, |P| = k} c(P)$
+	\end{definition}
+	%JB: term portfolio is a bit overloaded (see references in paper): set of algorithms 1) run in interleaved schedule, 2) with algorithm selector, or 3) run in parallel (with or wihthout exchanging information); in our case, algorithm selector
+	\pause
+	\begin{itemize}
+		\item To express portfolio cost $c(P)$, we use
+		%JB: definition above allows for other scoring, but we focus on problem in following form
+		\begin{itemize}
+			\item Set of SAT instances $I = \{i_1, \dots, i_l\}$
+			\item Instance-specific scoring function $c: I \times S \rightarrow \mathbb{R}$; here: PAR-2 score (penalized runtimes)
+			%JB: i.e., we use scoring as in SAT Competitions, whose datasets we analyze
+			%JB: in preliminary experiments, also two slightly different objectives: the number of unsolved instances and the PAR-2 score normalized for each instance -> general trends remained same
+			\item[$\rightarrow$] Average score over instances
+		\end{itemize}
+		\vspace{\baselineskip}
+		\pause
+		\item We analyze two methods for instance-specific solver selection from portfolio:
+		\begin{itemize}
+			\item Virtual Best Solver (VBS): oracle always selects best solver
+			%JB: mathenatically, we take min over solver runtimes on instance
+			\item Prediction model selects solver based on instance features
+		\end{itemize}
+	\end{itemize}
+\end{frame}
 
 \begin{frame}[t]{Related Work}
 	\begin{itemize}
