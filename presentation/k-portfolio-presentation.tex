@@ -27,6 +27,7 @@
 \usepackage[style=numeric, backend=bibtex]{biblatex}  % original template uses "biber" as backend
 %\usepackage{graphicx} % plots; apparently pre-loaded
 %\usepackage{hyperref} % links and URLs; apparently pre-loaded
+\usepackage{mathtools} % extends "amsmath"; provides \mathrlap
 \usepackage{subcaption} % figures with multiple sub-figures; just used for \caption* here
 
 \addbibresource{k-portfolio-presentation.bib}
@@ -128,7 +129,7 @@
 		% JB: all theses approaches have fixed portfolio, following works vary portfolio size (but domain different to ours)
 		\pause
 		\vspace{\baselineskip}
-		\item Analyzing $k$-portfolios for Constraint Satisfaction Problems: Amadini~\cite{amadini2014empirical, amadini2016extensive}
+		\item Analyzing $k$-portfolios for Constraint Satisfaction Problems: Amadini et al.~\cite{amadini2014empirical, amadini2016extensive}
 		%JB: vary k, analyze runtime and solved instances
 		%JB: compare various classifiers and multiple sophisticated portfolios approaches (like SATzilla)
 		%JB: one search heuristic ("local search"), no exact/random solution
@@ -143,6 +144,66 @@
 		%JB: 1000 instances (generated based on a real-world allocation problem), 24 solvers
 		%JB: results: greedy very close to optimum, k-best worse
 	\end{itemize}
+\end{frame}
+
+\begin{frame}[t]{Solution Approaches -- Overview}
+	\begin{itemize}
+		\item K-Portfolio Problem with VBS selector is NP-complete and submodular~\cite{nof2020real}
+		%JB: Nof and Strichman consider  maximizing quality instead of minimizing cost, but else their problem (called "K-Algorithms Max-Sum Problem") is same as ours
+		%JB: while the NP-completeness sounds discouraging, the latter is encouraging for heuristics
+		%JB: "submodular" means decreasing marginal utility, e.g., adding a solver to a portfolio P decreases cost at least as much as adding same solver to superset of P
+		\pause
+		\vspace{\baselineskip}
+		\item Examples for heuristic solutions:
+		\begin{itemize}
+			\item K-best~\cite{nof2020real}: Sort solvers by individual performance, pick top $k$
+			\pause
+			\item Beam search:
+			\begin{itemize}
+				\item Iteratively build portfolios of size $k+1$ from portfolios of size $k$
+				\item Add the solver with highest marginal contribution to current portfolio
+				\item Beam width $w$: Number of portfolios retained for next iteration
+				\pause
+				\item Submodularity bounds quality of greedy search ($w=1$) relative to optimal solution~\cite{nemhauser1978analysis, nof2020real}
+				%JB: besides submodularity, also monotonicity (i.e., adding solvers to portfolio does not make costs worse) and non-negativity required
+			\end{itemize}
+		\end{itemize}
+		\pause
+		\vspace{\baselineskip}
+		\item Examples for exact solutions:
+		\begin{itemize}
+			\item Encoding with Satisfiability Module Theories (SMT) by Nof and Strichman~\cite{nof2020real}
+			\pause
+			\item Encoding as integer linear program in our experiments
+			%JB: was considerably faster than SMT with Z3
+		\end{itemize}
+	\end{itemize}
+\end{frame}
+
+\begin{frame}[t]{Solution Approaches -- Integer Linear Program}
+	\begin{alignat*}{4}
+		\onslide<3->{
+			\min_{x,y} \quad & \mathrlap{\frac{1}{|I|} \cdot \sum_{i \in I} \sum_{s \in S} c(i,s) \cdot x_{i,s}} & & \\
+		}
+		\onslide<2->{
+			\text{s.t.}\quad & & \sum_{s \in S} y_s &\leq k \tag*{(portfolio size)} \\
+			%JB: since we have a minimization problem, exactly k solvers will be picked if there are are still useful solvers (with positive marginal contribution) available
+		}
+		\onslide<4->{
+			& \forall i\in I: & \sum_{s \in S} x_{i,s} &= 1 \tag*{(one solver per instance)} \\
+			%JB: since we have a minimization problem, the fastest solver from the portfolio will be picked automatically
+		}
+		\onslide<5->{
+			& \forall s \in S:  & \sum_{i \in I} x_{i,s}  &\leq |I| \cdot y_s \tag*{(only use solvers from portfolio)} \\
+		}
+		\onslide<3->{
+			& \forall i \in I \text{, } \forall s \in S: & x_{i,s} &\in \{0,1\} \tag*{(solver selected for instance or not)} \\
+			%JB: also allows selecting solvers not improving portfolio (all x_{i,s} == 0); however, 1) since we have a minimization problem, existing solvers with positive marginal contribution will and preferred and 2) it might be that there is no available solver improving portfolio (in particular, if portfolio quite large)
+		}
+		\onslide<1->{
+			& \forall s \in S: & y_s &\in \{0,1\} \tag*{(solver selected or not)}
+		}
+	\end{alignat*}
 \end{frame}
 
 \section{Experiments}
@@ -166,10 +227,11 @@
 		\item Four solution approaches:
 		%JB: all of them run for both datasets and all k (from 1 to number of solvers)
 		\begin{itemize}
-			\item \emph{Optimal solution} via MIP solving~\cite{python-mip}
+			\item \emph{Optimal solution} via integer programming~\cite{python-mip}
 			%JB: that's the exact approach, others are heuristics
 			%JB: package "mip" uses the solver "COIN-OR branch-and-cut" (Cbc) internally
 			%JB: Cbc was very fast, mean runtime of 15 s, max ~5 min
+			%JB: other exact optimizers should yield same portfolio cost anyway
 			\item \emph{Beam search} with beam width $w \in \{1, 2, 3, \dots, 10, 20, 30, \dots, 100\}$
 			\item \emph{K-best}
 			\item \emph{Random sampling} with 1000 repetitions
