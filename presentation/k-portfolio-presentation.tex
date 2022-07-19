@@ -44,32 +44,71 @@
 
 \section{Basics}
 
+%\begin{frame}[t]{Problem Definition}
+%	\begin{definition}[K-Portfolio-Problem]
+%		Given a set of solvers $S = \{s_1, \dots, s_n\}$,
+%		a scoring function $c: 2^S \rightarrow \mathbb{R}$,
+%		and portfolio size $k \in \mathbb{N}$,
+%		find a solver subset (= portfolio) $P$ of size $|P| = k$ with minimum cost: $\argmin\limits_{P \subseteq S, |P| = k} c(P)$
+%	\end{definition}
+%	%JB: term portfolio is a bit overloaded (see references in paper): set of algorithms 1) run in interleaved schedule, 2) with algorithm selector, or 3) run in parallel (with or wihthout exchanging information)
+%	%JB: in our case, algorithm selector, though definition here is more general
+%	\pause
+%	\begin{itemize}
+%		\item To express portfolio cost $c(P)$, we use
+%		%JB: definition above allows for other scoring, but we focus on problem in following form
+%		\begin{itemize}
+%			\item Set of SAT instances $I = \{i_1, \dots, i_l\}$
+%			\item Scoring function $c: I \times S \rightarrow \mathbb{R}$; here: PAR-2 score (penalized runtimes)
+%			%JB: i.e., we use scoring as in SAT Competitions, whose datasets we analyze
+%			%JB: in preliminary experiments, also two slightly different objectives: the number of unsolved instances and the PAR-2 score normalized for each instance -> general trends remained same
+%			\item[$\rightarrow$] Determine score per instance and average this score over instances
+%		\end{itemize}
+%		\vspace{\baselineskip}
+%		\pause
+%		\item We analyze two methods for instance-specific solver selection from portfolio:
+%		\begin{itemize}
+%			\item Virtual Best Solver (VBS): oracle always selects best solver
+%			%JB: mathenatically, we take min over solver runtimes on instance
+%			\item Prediction model selects solver based on instance features
+%		\end{itemize}
+%	\end{itemize}
+%\end{frame}
+
 \begin{frame}[t]{Problem Definition}
-	\begin{definition}[K-Portfolio-Problem]
-		Given a set of solvers $S = \{s_1, \dots, s_n\}$,
-		a scoring function $c: 2^S \rightarrow \mathbb{R}$,
-		and portfolio size $k \in \mathbb{N}$,
-		find a solver subset (= portfolio) $P$ of size $|P| = k$ with minimum cost: $\argmin\limits_{P \subseteq S, |P| = k} c(P)$
+	\begin{definition}[K-Portfolio Problem]
+		\setlength{\leftmargini}{0.4cm} % further indentation for items in box (bullet should not touch border of box)
+		Given
+		%JB: all formal stuff in one box, therefore box somewhat large
+		\pause
+		\begin{itemize}
+			\itemsep0em
+			\item a set of solvers $S = \{s_1, \dots, s_n\}$,
+			\pause
+			\item a set of SAT instances $I = \{i_1, \dots, i_l\}$,
+			\pause
+			\item a scoring function $c: I \times S \rightarrow \mathbb{R}$ (here: PAR-2 score),
+			%JB: scoring used in SAT Competitions
+			%JB: in preliminary experiments, also two slightly different objectives: the number of unsolved instances and the PAR-2 score normalized for each instance -> general trends remained same
+			\pause
+			\item an instance-specific solver selector $m: I \rightarrow S$, and
+			%JB: term portfolio is a bit overloaded (see references in paper): set of algorithms 1) run in interleaved schedule, 2) with algorithm selector, or 3) run in parallel (with or wihthout exchanging information); in our case, algorithm selector
+			\pause
+			\item a portfolio size $k \in \mathbb{N}$,
+		\end{itemize}
+		find a solver subset $P$ of size $k$ with minimum average cost: $\argmin\limits_{P \subseteq S, |P| = k} c(P,m) := \frac{1}{|I|} \cdot \sum\limits_{i \in I}{c(i,m(i))}$
 	\end{definition}
-	%JB: term portfolio is a bit overloaded (see references in paper): set of algorithms 1) run in interleaved schedule, 2) with algorithm selector, or 3) run in parallel (with or wihthout exchanging information); in our case, algorithm selector
 	\pause
 	\begin{itemize}
-		\item To express portfolio cost $c(P)$, we use
-		%JB: definition above allows for other scoring, but we focus on problem in following form
+		\item We analyze two methods for instance-specific solver selection:
 		\begin{itemize}
-			\item Set of SAT instances $I = \{i_1, \dots, i_l\}$
-			\item Instance-specific scoring function $c: I \times S \rightarrow \mathbb{R}$; here: PAR-2 score (penalized runtimes)
-			%JB: i.e., we use scoring as in SAT Competitions, whose datasets we analyze
-			%JB: in preliminary experiments, also two slightly different objectives: the number of unsolved instances and the PAR-2 score normalized for each instance -> general trends remained same
-			\item[$\rightarrow$] Average score over instances
-		\end{itemize}
-		\vspace{\baselineskip}
-		\pause
-		\item We analyze two methods for instance-specific solver selection from portfolio:
-		\begin{itemize}
-			\item Virtual Best Solver (VBS): oracle always selects best solver
-			%JB: mathenatically, we take min over solver runtimes on instance
-			\item Prediction model selects solver based on instance features
+			\item Virtual Best Solver (VBS): Oracle always selects best solver
+			%JB: theoretical K-Portfolio Problem, which we consider in portfolio search
+			%JB: mathenatically, we take min() over solver runtimes on instance
+			\pause
+			\item Model-based: Prediction model selects solver based on instance features
+			%JB: practical K-Portfolio Problem
+			%JB: cost lower-bounded by VBS
 		\end{itemize}
 	\end{itemize}
 \end{frame}
