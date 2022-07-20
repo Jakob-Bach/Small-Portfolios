@@ -25,6 +25,7 @@
 %\usepackage{amsmath} % mathematical symbols and equations; apparently pre-loaded
 %\usepackage{amssymb} % mathematical symbols; apparently pre-loaded
 \usepackage[style=numeric, backend=bibtex]{biblatex}  % original template uses "biber" as backend
+\usepackage{booktabs} % simple and clean tables
 %\usepackage{graphicx} % plots; apparently pre-loaded
 %\usepackage{hyperref} % links and URLs; apparently pre-loaded
 \usepackage{mathtools} % extends "amsmath"; provides \mathrlap
@@ -44,6 +45,44 @@
 \KITtitleframe
 
 \section{Basics}
+
+\begin{frame}[t]{Motivation}
+	\begin{itemize}
+		%JB: ongoing research on new solvers / modification of existing solvers, evaluated on diverse benchmark instances
+		%JB: solvers might be targeted at specific applications or be general-purpose
+		\item Solvers are complementary, e.g., in Main Track of SAT Competitions:
+		%JB: complementary: some solvers good on some instances, others good on other instances
+		%JB: in fact, Main Track of SCs favors general-purpose solvers; results might be even more pronounced for scenarios with more specialized instances and solvers
+		\begin{itemize}
+			\item 2020: 316 instances solved; 2021: 325 instances solved
+			\pause
+			\item On how many instances do the best individual solvers win? \\
+			%JB: "best individual" based on overall (= average) PAR-2 score
+			\vspace{\baselineskip}
+			\begin{tabular}{ccc}
+				\toprule
+				& \multicolumn{2}{c}{Instances won} \\
+				\cmidrule{2-3}
+				Solver \# & 2020 & 2021 \\
+				\midrule
+				1 & 48 & 25 \\
+				2 & 38 & 22 \\
+				3 & 26 & 20 \\
+				\bottomrule
+			\end{tabular}
+			%JB: note that even if solver did not win, it might be very close to winner; however, we'll see later that complementarity extends to runtimes / PAR-2 scores as well
+		\end{itemize}
+		\vspace{\baselineskip}
+		\pause
+		\item 2021: Special Innovation Price for \emph{CaDiCaL\_PriPro}
+		\begin{itemize}
+			\item Place 10 in Main Track, but part of best two-solver portfolio ...
+			\pause
+			\item ... together with \emph{lstech\_maple} (Place 13 in Main Track)
+			%JB: though Place 2 for Main Track SAT
+		\end{itemize}
+	\end{itemize}
+\end{frame}
 
 %\begin{frame}[t]{Problem Definition}
 %	\begin{definition}[K-Portfolio-Problem]
@@ -111,6 +150,7 @@
 			%JB: practical K-Portfolio Problem
 			%JB: cost lower-bounded by VBS
 		\end{itemize}
+		%JB: overall, our paper is an empirical study of such k-portfolios, comparing impact of k, solution approaches, etc. (details will follow)
 	\end{itemize}
 \end{frame}
 
@@ -252,7 +292,7 @@
 		\caption*{Training-set VBS performance for different datasets, values of $k$, and portfolio-search approaches.}
 		%JB: conducted five-fold cross-validation; portfolios search and model training on training set only
 		%JB: figures are average over CV folds, in case of random sampling also over sampling repetitions
-		%JB: all approaches: strong decrease with k; optimal 10-portfolio only 25% (SC2020) / 17% (SC2021) worse than portfolio out of all solvers
+		%JB: all approaches: strong decrease with k; optimal 10-portfolio only 25% (SC2020) / 17% (SC2021) higher cost than portfolio out of all solvers, while single best solver has 451% (SC2020) / 374% (SC2021) higher cost (i.e., 5.51 / 4.74 times the cost); figures less impressive if timeout instances kept (see Froleys at al. (2021)), because these strongly impact overall score (add ~2000 s to each portfolio)
 		%JB: greedy search is beam search with k=1; already very close to optimum (though problem NP-complete; similar findings of Nof and Strichman); slight improvement by increasing w
 		%JB: also looked at composition of optimal portfolio and found that usually just 1 or 2 solvers added from k to k+1, which is nice scenario for greedy search
 		%JB: upper bound follows from submodularity; far away from greedy search
