@@ -182,12 +182,16 @@
 		%background: ISAC uses clustering, SNNAP uses nearest-neighbors approach
 		\pause
 		\vspace{\baselineskip}
-		\item Analyzing $k$-portfolios for Constraint Satisfaction Problems: Amadini et al.~\cite{amadini2014empirical, amadini2016extensive}
-		%JB: one search heuristic ("local search"), no exact solution
-		%JB: compare various classifiers and multiple sophisticated portfolios approaches (like SATzilla)
-		%background: results: classifier-based portfolios clearly beat single solvers, though gap to VBS; initial improvement over k, but performance might get slightly worse again if too many solvers in portfolio
-		%background: vary k, analyze runtime and solved instances
-		%background: 4547 instances (International CAP Solver Competition and MiniZinc suite benchmark), 22 solver configurations (6 distinct solvers)
+		\item Analyzing $k$-portfolios for Constraint Satisfaction Problems: Amadini et al.~\cite{amadini2014empirical, amadini2016extensive}, Dang~\cite{dang2022portfolio}
+		%JB: Amadini et al.: one search heuristic ("local search"), no exact solution
+		%JB: Amadini et al.: compare various classifiers and multiple sophisticated portfolios approaches (like SATzilla)
+		%JB: work of Dang is brand-new, presented at ModRef workshop two days ago
+		%JB: Dang: only exact solution for varying k, no prediction model, but analysis of marginal contribution
+		%background: Amadini et al.: results: classifier-based portfolios clearly beat single solvers, though gap to VBS; initial improvement over k, but performance might get slightly worse again if too many solvers in portfolio
+		%background: Amadini et al.: vary k, analyze runtime and solved instances
+		%background: Amadini et al.: 4547 instances (International CAP Solver Competition and MiniZinc suite benchmark), 22 solver configurations (6 distinct solvers)
+		%background: Dang works with 4 tracks from the MiniZinc Challenges 2013-2021; apparently 100 instances and 10-15 solvers per year
+		%background: Dang also finds complementarity, e.g., not-so-good overall solvers might be good in portfolios and 50% of solvers might achieve 80% score of all-solver-portfolio (less pronounced than on our datasets)
 		\pause
 		\vspace{\baselineskip}
 		\item Analyzing $k$-portfolios for anytime algorithms: Nof and Strichman~\cite{nof2020real}
