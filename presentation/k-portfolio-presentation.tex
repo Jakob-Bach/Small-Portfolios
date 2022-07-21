@@ -51,12 +51,14 @@
 
 \begin{frame}[t]{Motivation}
 	\begin{itemize}
-		%JB: why use portfolio: shouldn't I use just one solver for each instance? short answer: no; long answer:
-		%JB: ongoing research on new solvers / modification of existing solvers, evaluated on diverse benchmark instances
+		%JB: why portfolio and not one solver for all instances?
+		%JB: as you know, tons of solvers, and ongoing research on new solvers
 		%JB: solvers might be targeted at specific applications or be general-purpose
 		\pause
-		\item Solvers are complementary, e.g., in Main Track of SAT Competitions:
-		%JB: no best solver for all instances; complementary: some solvers good on some instances, others good on other instances; to give concrete example:
+		\item Solvers often exhibit complementarity in benchmarks, e.g., in Main Track of SAT Competitions:
+		%JB: complementary: some solvers good on some instances, others good on other instances
+		%JB: of course, benchmarks like SAT Competition show that some solvers are better on average than others, but highly unlikely that one best solver for all instances
+		%JB: to give concrete example:
 		\begin{itemize}
 			\item 2020: 316 instances solved; 2021: 325 instances solved
 			%JB: out of 400 instances
@@ -136,7 +138,7 @@
 			%JB: on which the solvers are run on
 			\pause
 			\item a scoring function $c: I \times S \rightarrow \mathbb{R}$ (here: PAR-2 score),
-			%JB: "c" stands for cost
+			%JB: "c" stands for cost, so lower values are better
 			%JB: PAR-2 scoring used in SAT Competitions: runtime till a timeout, else penalized with 2 * timeout
 			%background: in preliminary experiments, also two slightly different objectives: the number of unsolved instances and the PAR-2 score normalized for each instance -> general trends remained same
 			\pause
@@ -146,7 +148,7 @@
 			\item a portfolio size $k \in \mathbb{N}$,
 			\pause
 		\end{itemize}
-		find a solver subset $P$ of size $k$ with minimum average cost: $\argmin\limits_{P \subseteq S, |P| = k} c(P,m) := \frac{1}{|I|} \cdot \sum\limits_{i \in I}{c(i,m(i))}$
+		find a solver subset $P$ of size $k$ with minimum average cost: $\argmin\limits_{P \subseteq S, |P| = k} \frac{1}{|I|} \cdot \sum\limits_{i \in I}{c(i,m(i))}$
 		%JB: run one solver on each instance, determine cost, and then average over instances
 	\end{definition}
 	\pause
@@ -202,40 +204,47 @@
 
 \begin{frame}[t]{Solution Approaches -- Overview}
 	\begin{itemize}
-		\item K-Portfolio Problem with VBS selector is NP-complete and submodular~\cite{nof2020real}
-		%JB: Nof and Strichman consider  maximizing quality instead of minimizing cost, but else their problem (called "K-Algorithms Max-Sum Problem") is same as ours
-		%JB: while the NP-completeness sounds discouraging, the latter is encouraging for heuristics
+		\item K-Portfolio Problem with VBS selector is NP-complete, but also monotone and submodular~\cite{nof2020real}
+		%JB: Nof and Strichman consider maximizing quality instead of minimizing cost, but else their problem (called "K-Algorithms Max-Sum Problem") is same as ours
+		%JB: while the NP-completeness sounds a bit discouraging for efficient solution, the latter are encouraging for heuristics
+		%JB: "monotone" means adding solver will not make portfolio worse; in worst case, new solver has no impact on VBS
 		%JB: "submodular" means decreasing marginal utility, e.g., adding a solver to a portfolio P decreases cost at least as much as adding same solver to superset of P
+		\pause
+		\vspace{\baselineskip}
+		\item Examples for exact solutions:
+		%JB: these approaches all yield portfolios with same cost, but might differ in runtime
+		%background: exact portfolio composition might vary if some solvers don't contribute to reducing portfolio cost
+		\begin{itemize}
+			\item Exhaustive search: evaluates $\binom{|S|}{k}$ portfolios
+			%JB: very expensive beyond first few k
+			\pause
+			\item Encoding with Satisfiability Module Theories (SMT) by Nof and Strichman~\cite{nof2020real}
+			\pause
+			\item Encoding as integer linear program developed by us
+			%JB: this encoding is novel; was considerably faster than SMT with Z3
+		\end{itemize}
 		\pause
 		\vspace{\baselineskip}
 		\item Examples for heuristic solutions:
 		\begin{itemize}
-			\item Beam search:
+			\item Beam search with beam width $w$: evaluates $O(|S| \cdot w \cdot k)$ portfolios
+			%JB: iteratively build portfolios of size $k+1$ from portfolios of size $k$ by considering marginal utility
+			%JB: beam width $w$: Number of portfolios retained for next iteration
 			\begin{itemize}
-				\item Iteratively build portfolios of size $k+1$ from portfolios of size $k$
-				\item Add the solver with highest marginal contribution to current portfolio
-				\item Beam width $w$: Number of portfolios retained for next iteration
-				\pause
 				\item Submodularity bounds quality of greedy search ($w=1$) relative to optimal solution~\cite{nemhauser1978analysis, nof2020real}
-				%background: besides submodularity, also monotonicity (i.e., adding solvers to portfolio does not make costs worse) and non-negativity required
+				%background: besides submodularity, also monotonicity and non-negativity required
 			\end{itemize}
 			\pause
-			\item K-best~\cite{nof2020real}: Sort solvers by individual performance, pick top $k$
+			\item K-best~\cite{nof2020real}: evaluates $O(|S|)$ portfolios
+			%JB: sort solvers by individual performance, pick top $k$
 			%JB: i.e., do not consider interaction between solvers
-		\end{itemize}
-		\pause
-		\vspace{\baselineskip}
-		\item Examples for exact solutions:
-		\begin{itemize}
-			\item Encoding with Satisfiability Module Theories (SMT) by Nof and Strichman~\cite{nof2020real}
-			\pause
-			\item Encoding as integer linear program by us
-			%JB: was considerably faster than SMT with Z3
+			%background: total complexity is O(|S| * k), because we still need to pick fastest solvers after computing their score (if k large, sort solvers to get O(|S| * log(|S|)))
 		\end{itemize}
 	\end{itemize}
 \end{frame}
 
 \begin{frame}[t]{Solution Approaches -- Integer Linear Program}
+	%JB: expresses k-portfolio problem with VBS; allows exact solution
 	\begin{alignat*}{4}
 		\onslide<3->{
 			\min_{x,y} \quad & \mathrlap{\frac{1}{|I|} \cdot \sum_{i \in I} \sum_{s \in S} c(i,s) \cdot x_{i,s}} & & \\
@@ -277,6 +286,7 @@
 		\end{enumerate}
 		\begin{itemize}
 			\item 138 features from feature extractor of SATzilla~2012~\cite{xu2012features, xu2012satzilla2012}
+			%JB: features used by instance-specific solver selector
 			%JB. SATzilla is well-established portfolio approach
 			%JB: features from twelve categories, simple ones (like number of instances) to complicated ones (like variable-clause graph node degree)
 			%background: missing values due to timeouts and memouts replaced with out-of-range value
@@ -312,6 +322,7 @@
 		\includegraphics[width=\textwidth]{plots/search-train-objective.pdf}
 		\caption*{Training-set VBS performance for different datasets, values of $k$, and portfolio-search approaches.}
 		%JB: results without prediction models first
+		%JB: reminder: PAR-2 measures penalized runtimes, i.e., cost, so lower values are better
 		%JB: why "training set"? conducted five-fold cross-validation; portfolios search and model training on training set only
 		%JB: all approaches: strong decrease with k, even given that decrease of marginal utiliy known
 		%JB: optimal solution: optimal 1-portfolio about 5 times cost of all-solver portfolio, optimal 10-portfolio only about 20% more expensive
@@ -377,7 +388,9 @@
 		\pause
 		\item Small portfolios already show potential of high runtime improvement compared to single solvers
 		\pause
-		\item Greedy portfolio search already close to optimal portfolio
+		\item Greedy portfolio search close to optimal portfolio
+		\pause
+		\item K-best (only considering single-solver performance) worse than greedy and optimal portfolio
 		\pause
 		\item Our prediction approach does not benefit from increased portfolio size
 		\pause
@@ -387,8 +400,12 @@
 			\item Improve prediction performance, e.g., by using new features like community-based ones~\cite{Ansotegui:2019:CommunityStructure, Li:2021:HCS}
 			%JB: did not perform deep analysis of feature importance, but RF's built-in one spread over many features (no single or small set of very useful features)
 			%JB: features might also be redundant (which, however, should not impact prediction performance of tree-based models negatively)
+			\pause
 			\item Analyze special-purpose solvers and solver configurations
 			%JB: while the solvers submitted to SAT Competition's Main Track rather are general-purpose solvers
+			\pause
+			\item Tune solvers within portfolios~\cite{Kadioglu:2010:ISAC}
+			\pause
 			\item Compare to sophisticated portfolio approaches like SATzilla~\cite{xu2008satzilla, xu2012satzilla2012}
 			%JB: our focus was not on creating best overall portfolio approach, but analyzing portfolio construction/size, while we kept prediction approach simple
 		\end{itemize}
