@@ -43,18 +43,23 @@
 \begin{document}
 
 \KITtitleframe
+%JB: welcome, I'm Jakob, Markus is in audience
+%JB: talk about k-portfolios of SAT solvers -- why is this interesting and what is portfolio anyway?
+%JB: give formal definition of portfolio soon; for now: set of solvers, out of which you can pick one to solve a SAT instance
 
 \section{Basics}
 
 \begin{frame}[t]{Motivation}
 	\begin{itemize}
+		%JB: why use portfolio: shouldn't I use just one solver for each instance? short answer: no; long answer:
 		%JB: ongoing research on new solvers / modification of existing solvers, evaluated on diverse benchmark instances
 		%JB: solvers might be targeted at specific applications or be general-purpose
+		\pause
 		\item Solvers are complementary, e.g., in Main Track of SAT Competitions:
-		%JB: complementary: some solvers good on some instances, others good on other instances
-		%JB: in fact, Main Track of SCs favors general-purpose solvers; results might be even more pronounced for scenarios with more specialized instances and solvers
+		%JB: no best solver for all instances; complementary: some solvers good on some instances, others good on other instances; to give concrete example:
 		\begin{itemize}
 			\item 2020: 316 instances solved; 2021: 325 instances solved
+			%JB: out of 400 instances
 			\pause
 			\item On how many instances do the best individual solvers win? \\
 			%JB: "best individual" based on overall (= average) PAR-2 score
@@ -70,16 +75,18 @@
 				3 & 26 & 20 \\
 				\bottomrule
 			\end{tabular}
-			%JB: note that even if solver did not win, it might be very close to winner; however, we'll see later that complementarity extends to runtimes / PAR-2 scores as well
+			%JB: caveat: even if solver did not win, it might be very close to winner; however, we'll see later that complementarity extends to runtimes / PAR-2 scores as well
+			%background: in fact, Main Track of SCs favors general-purpose solvers; results might be even more pronounced for scenarios with more specialized instances and solvers
 		\end{itemize}
 		\vspace{\baselineskip}
 		\pause
-		\item 2021: Special Innovation Price for \emph{CaDiCaL\_PriPro}
+		%JB: another motivating example, this time directly related to portfolios:
+		\item SAT Competition: 2021: Special Innovation Price for \emph{CaDiCaL\_PriPro}
 		\begin{itemize}
 			\item Place 10 in Main Track, but part of best two-solver portfolio ...
 			\pause
 			\item ... together with \emph{lstech\_maple} (Place 13 in Main Track)
-			%JB: though Place 2 for Main Track SAT
+			%background: though Place 2 for Main Track SAT
 		\end{itemize}
 	\end{itemize}
 \end{frame}
@@ -118,71 +125,78 @@
 \begin{frame}[t]{Problem Definition}
 	\begin{definition}[K-Portfolio Problem]
 		\setlength{\leftmargini}{0.4cm} % further indentation for items in box (bullet should not touch border of box)
-		Given
-		%JB: all formal stuff in one box, therefore box somewhat large
 		\pause
+		Given
+		%JB: don't worry about size of box; also some notation in it
 		\begin{itemize}
 			\itemsep0em
 			\item a set of solvers $S = \{s_1, \dots, s_n\}$,
 			\pause
 			\item a set of SAT instances $I = \{i_1, \dots, i_l\}$,
+			%JB: on which the solvers are run on
 			\pause
 			\item a scoring function $c: I \times S \rightarrow \mathbb{R}$ (here: PAR-2 score),
-			%JB: scoring used in SAT Competitions
-			%JB: in preliminary experiments, also two slightly different objectives: the number of unsolved instances and the PAR-2 score normalized for each instance -> general trends remained same
+			%JB: "c" stands for cost
+			%JB: PAR-2 scoring used in SAT Competitions: runtime till a timeout, else penalized with 2 * timeout
+			%background: in preliminary experiments, also two slightly different objectives: the number of unsolved instances and the PAR-2 score normalized for each instance -> general trends remained same
 			\pause
 			\item an instance-specific solver selector $m: I \rightarrow S$, and
 			%JB: term portfolio is a bit overloaded (see references in paper): set of algorithms 1) run in interleaved schedule, 2) with algorithm selector, or 3) run in parallel (with or wihthout exchanging information); in our case, algorithm selector
 			\pause
 			\item a portfolio size $k \in \mathbb{N}$,
+			\pause
 		\end{itemize}
 		find a solver subset $P$ of size $k$ with minimum average cost: $\argmin\limits_{P \subseteq S, |P| = k} c(P,m) := \frac{1}{|I|} \cdot \sum\limits_{i \in I}{c(i,m(i))}$
+		%JB: run one solver on each instance, determine cost, and then average over instances
 	\end{definition}
 	\pause
 	\begin{itemize}
-		\item We analyze two methods for instance-specific solver selection:
+		\item We analyze two methods for instance-specific solver selection $m$:
 		\begin{itemize}
 			\item Virtual Best Solver (VBS): Oracle always selects best solver
 			%JB: theoretical K-Portfolio Problem, which we consider in portfolio search
-			%JB: mathenatically, we take min() over solver runtimes on instance
+			%JB: mathematically, we take min() over solver runtimes on instance (suitable for exact optimization)
 			\pause
 			\item Model-based: Prediction model selects solver based on instance features
 			%JB: practical K-Portfolio Problem
-			%JB: cost lower-bounded by VBS
+			%JB: cost lower-bounded by VBS, as model might make errors
 		\end{itemize}
-		%JB: overall, our paper is an empirical study of such k-portfolios, comparing impact of k, solution approaches, etc. (details will follow)
+		%JB: overall, our paper is an empirical study of such k-portfolios on SAT-Competition data, comparing impact of k, solution approaches, etc. (details will follow)
 	\end{itemize}
 \end{frame}
 
 \begin{frame}[t]{Related Work}
 	\begin{itemize}
 		\item Analyzing solver complementarity: Xu et al.~\cite{Xu:2012:EvalContribVBS}, Fr{\'e}chette et al.~\cite{frechette2016using}
-		%JB: former analyze marginal contribution, latter analyze Shapley values
 		%JB: both works use datasets with fixed solver set, don't vary k (focus is on individual solvers rather tha portfolios)
 		%JB: both works find that usefulness in portfolios might differ from standalone performance
+		%background: former analyze marginal contribution, latter analyze Shapley values
 		\pause
 		\vspace{\baselineskip}
-		\item Instance-specific solver selection: SATzilla~\cite{xu2008satzilla, xu2012satzilla2012}, ISAC~\cite{Kadioglu:2010:ISAC}, SNNAP~\cite{Collautti:2013:SNNAP}
-		%JB: also a topic outside SAT: survey and further references mentioned in our paper
-		%JB: SATzilla is rather complex; besides main prediction model(s) (depending on version, solver classification or runtime regression) also pre-solvers and backup-solver
-		%JB: ISAC uses clustering, SNNAP uses nearest-neighbors approach
-		% JB: all theses approaches have fixed portfolio, following works vary portfolio size (but domain different to ours)
+		\item Instance-specific solver selection: SATzilla~\cite{xu2008satzilla, xu2012satzilla2012}, ISAC~\cite{Kadioglu:2010:ISAC}, SNNAP~\cite{Collautti:2013:SNNAP}, etc.
+		%JB: just examples; also a topic outside SAT: survey and further references mentioned in our paper
+		%JB: all theses approaches have fixed portfolio and focus on prediction; following works vary portfolio size k, as we do (but domain different to ours)
+		%background: SATzilla is rather complex; besides main prediction model(s) (depending on version, solver classification or runtime regression) also pre-solvers and backup-solver
+		%background: ISAC uses clustering, SNNAP uses nearest-neighbors approach
 		\pause
 		\vspace{\baselineskip}
 		\item Analyzing $k$-portfolios for Constraint Satisfaction Problems: Amadini et al.~\cite{amadini2014empirical, amadini2016extensive}
-		%JB: vary k, analyze runtime and solved instances
+		%JB: one search heuristic ("local search"), no exact solution
 		%JB: compare various classifiers and multiple sophisticated portfolios approaches (like SATzilla)
-		%JB: one search heuristic ("local search"), no exact/random solution
-		%JB: 4547 instances (International CAP Solver Competition and MiniZinc suite benchmark), 22 solver configurations (6 distinct solvers)
-		%JB: results: classifier-based portfolios clearly beat single solvers, though gap to VBS; initial improvement over k, but performance might get slightly worse again if too many solvers in portfolio
+		%background: results: classifier-based portfolios clearly beat single solvers, though gap to VBS; initial improvement over k, but performance might get slightly worse again if too many solvers in portfolio
+		%background: vary k, analyze runtime and solved instances
+		%background: 4547 instances (International CAP Solver Competition and MiniZinc suite benchmark), 22 solver configurations (6 distinct solvers)
 		\pause
 		\vspace{\baselineskip}
 		\item Analyzing $k$-portfolios for anytime algorithms: Nof and Strichman~\cite{nof2020real}
-		%JB: vary k, analyze two objective function (one is ours just as maximization)
 		%JB: anytime: algos run for 0.1 s or 1 s (compare that to the 5000 s in SAT Competition)
-		%JB: SMT solver, k-best, and greedy search (we additionally use beam width, random search, and prediction models)
-		%JB: 1000 instances (generated based on a real-world allocation problem), 24 solvers
-		%JB: results: greedy very close to optimum, k-best worse
+		%JB: SMT solver and two heuristics (k-best and greedy search)
+		%JB: also, theoretical analysis, which we discuss now
+		%background: results: heuristic close to optimum
+		%background: greedy very close to optimum, k-best worse
+		%background: vary k, analyze two objective function (one is ours just as maximization)
+		%background: we additionally use beam width, random search, and prediction models
+		%background: 1000 instances (generated based on a real-world allocation problem), 24 solvers
 	\end{itemize}
 \end{frame}
 
@@ -196,8 +210,6 @@
 		\vspace{\baselineskip}
 		\item Examples for heuristic solutions:
 		\begin{itemize}
-			\item K-best~\cite{nof2020real}: Sort solvers by individual performance, pick top $k$
-			\pause
 			\item Beam search:
 			\begin{itemize}
 				\item Iteratively build portfolios of size $k+1$ from portfolios of size $k$
@@ -205,8 +217,11 @@
 				\item Beam width $w$: Number of portfolios retained for next iteration
 				\pause
 				\item Submodularity bounds quality of greedy search ($w=1$) relative to optimal solution~\cite{nemhauser1978analysis, nof2020real}
-				%JB: besides submodularity, also monotonicity (i.e., adding solvers to portfolio does not make costs worse) and non-negativity required
+				%background: besides submodularity, also monotonicity (i.e., adding solvers to portfolio does not make costs worse) and non-negativity required
 			\end{itemize}
+			\pause
+			\item K-best~\cite{nof2020real}: Sort solvers by individual performance, pick top $k$
+			%JB: i.e., do not consider interaction between solvers
 		\end{itemize}
 		\pause
 		\vspace{\baselineskip}
@@ -214,7 +229,7 @@
 		\begin{itemize}
 			\item Encoding with Satisfiability Module Theories (SMT) by Nof and Strichman~\cite{nof2020real}
 			\pause
-			\item Encoding as integer linear program in our experiments
+			\item Encoding as integer linear program by us
 			%JB: was considerably faster than SMT with Z3
 		\end{itemize}
 	\end{itemize}
@@ -224,10 +239,11 @@
 	\begin{alignat*}{4}
 		\onslide<3->{
 			\min_{x,y} \quad & \mathrlap{\frac{1}{|I|} \cdot \sum_{i \in I} \sum_{s \in S} c(i,s) \cdot x_{i,s}} & & \\
+			%JB: average over instances and use of cost c(i,s) should make sense
 		}
 		\onslide<2->{
 			\text{s.t.}\quad & & \sum_{s \in S} y_s &\leq k \tag*{(portfolio size)} \\
-			%JB: since we have a minimization problem, exactly k solvers will be picked if there are are still useful solvers (with positive marginal contribution) available
+			%JB: since we have a monotonic problem, exactly k solvers will be picked if there are are still useful solvers (with positive marginal contribution) available
 		}
 		\onslide<4->{
 			& \forall i\in I: & \sum_{s \in S} x_{i,s} &= 1 \tag*{(one solver per instance)} \\
@@ -235,13 +251,16 @@
 		}
 		\onslide<5->{
 			& \forall s \in S:  & \sum_{i \in I} x_{i,s}  &\leq |I| \cdot y_s \tag*{(only use solvers from portfolio)} \\
+			%JB: link variables "x" and "y"
+			%background: also allows selecting solvers not improving portfolio (all x_{i,s} == 0 for that solver); however, 1) since we have a minimization problem, existing solvers with positive marginal contribution will and preferred and 2) it might be that there is no available solver improving portfolio (in particular, if portfolio quite large)
 		}
 		\onslide<3->{
 			& \forall i \in I \text{, } \forall s \in S: & x_{i,s} &\in \{0,1\} \tag*{(solver selected for instance or not)} \\
-			%JB: also allows selecting solvers not improving portfolio (all x_{i,s} == 0); however, 1) since we have a minimization problem, existing solvers with positive marginal contribution will and preferred and 2) it might be that there is no available solver improving portfolio (in particular, if portfolio quite large)
+			%JB: these variables allow us to formulate the VBS (minimum) if we add further constraints
 		}
 		\onslide<1->{
 			& \forall s \in S: & y_s &\in \{0,1\} \tag*{(solver selected or not)}
+			%JB: theses are the decision variables one would expect
 		}
 	\end{alignat*}
 \end{frame}
@@ -254,34 +273,36 @@
 		\begin{enumerate}[1)]
 			\item \emph{SC2020} (316 instances, 48 solvers)~\cite{balyo2020proceedings}
 			\item \emph{SC2021} (325 instances, 46 solvers)~\cite{balyo2021proceedings}
-			%JB: took all solvers, but removed instances not solved any of them
+			%JB: took all solvers, but removed instances not solved any of them, since boring for portfolios (but remember this if you compare our PAR-2 scores to scores given on competition website or in publications)
 		\end{enumerate}
 		\begin{itemize}
 			\item 138 features from feature extractor of SATzilla~2012~\cite{xu2012features, xu2012satzilla2012}
+			%JB. SATzilla is well-established portfolio approach
 			%JB: features from twelve categories, simple ones (like number of instances) to complicated ones (like variable-clause graph node degree)
-			%JB: missing values due to timeouts and memouts replaced with out-of-range value
+			%background: missing values due to timeouts and memouts replaced with out-of-range value
 			\item Instance features and solver runtimes retrieved from GBD~\cite{iser2020collaborative}
 		\end{itemize}
 		\pause
 		\vspace{\baselineskip}
 		\item Four solution approaches:
-		%JB: all of them run for both datasets and all k (from 1 to number of solvers)
+		%JB: all of them run for both datasets and all portfolio sizes k (from 1 to number of solvers)
 		\begin{itemize}
 			\item \emph{Optimal solution} via integer programming~\cite{python-mip}
 			%JB: that's the exact approach, others are heuristics
-			%JB: package "mip" uses the solver "COIN-OR branch-and-cut" (Cbc) internally
-			%JB: Cbc was very fast, mean runtime of 15 s, max ~5 min
 			%JB: other exact optimizers should yield same portfolio cost anyway
+			%background: package "mip" uses the solver "COIN-OR branch-and-cut" (Cbc) internally
+			%background: Cbc was very fast, mean runtime of 15 s, max ~5 min
 			\item \emph{Beam search} with beam width $w \in \{1, 2, 3, \dots, 10, 20, 30, \dots, 100\}$
 			\item \emph{K-best}
 			\item \emph{Random sampling} with 1000 repetitions
+			%JB: to not only compare heuristics with optimal solution, but also other direction
 		\end{itemize}
 		\pause
 		\vspace{\baselineskip}
 		\item Two multi-class prediction models: Random forests~\cite{breiman2001random, scikit-learn} and XGBoost~\cite{xgboost} with 100 trees each
 		%JB: ensemble tree models: powerful and can learn non-linear dependencies (RFs also used in SATzilla 2012)
-		%JB: in preliminary experiments, also tried other models (e.g., kNN, untuned neural network) -> worse performance
-		%JB: in preliminary experiments, also regression, instance-weighted classififcation, one-vs-one classification -> worse performance
+		%background: in preliminary experiments, also tried other models (e.g., kNN, untuned neural network) -> worse performance
+		%background: in preliminary experiments, also regression, instance-weighted classififcation, one-vs-one classification -> worse performance
 	\end{itemize}
 \end{frame}
 
@@ -290,13 +311,17 @@
 		\centering
 		\includegraphics[width=\textwidth]{plots/search-train-objective.pdf}
 		\caption*{Training-set VBS performance for different datasets, values of $k$, and portfolio-search approaches.}
-		%JB: conducted five-fold cross-validation; portfolios search and model training on training set only
-		%JB: figures are average over CV folds, in case of random sampling also over sampling repetitions
-		%JB: all approaches: strong decrease with k; optimal 10-portfolio only 25% (SC2020) / 17% (SC2021) higher cost than portfolio out of all solvers, while single best solver has 451% (SC2020) / 374% (SC2021) higher cost (i.e., 5.51 / 4.74 times the cost); figures less impressive if timeout instances kept (see Froleys at al. (2021)), because these strongly impact overall score (add ~2000 s to each portfolio)
-		%JB: greedy search is beam search with k=1; already very close to optimum (though problem NP-complete; similar findings of Nof and Strichman); slight improvement by increasing w
+		%JB: results without prediction models first
+		%JB: why "training set"? conducted five-fold cross-validation; portfolios search and model training on training set only
+		%JB: all approaches: strong decrease with k, even given that decrease of marginal utiliy known
+		%JB: optimal solution: optimal 1-portfolio about 5 times cost of all-solver portfolio, optimal 10-portfolio only about 20% more expensive
+		%JB: greedy search: is beam search with w=1; already very close to optimum (though problem NP-complete; similar findings of Nof and Strichman, who analyzed a different domain, i.e., anytime approaches); slight improvement by increasing w
 		%JB: also looked at composition of optimal portfolio and found that usually just 1 or 2 solvers added from k to k+1, which is nice scenario for greedy search
-		%JB: upper bound follows from submodularity; far away from greedy search
-		%JB: k-best between greedy and random; depends on datasets to which closer; gaps widens after first few k
+		%JB: upper bound: follows from submodularity; far away from greedy search
+		%JB: k-best: between greedy and random; depends on datasets to which closer; gaps widens after first few k, probably because it does not considersolver interactions
+		%JB: random search: shows that searching for portfolios most important if portfolios small
+		%background: figures are average over CV folds, in case of random sampling also over sampling repetitions
+		%background: optimal 10-portfolio only 25% (SC2020) / 17% (SC2021) higher cost than portfolio out of all solvers, while single best solver has 451% (SC2020) / 374% (SC2021) higher cost (i.e., 5.51 / 4.74 times the cost); figures less impressive if timeout instances kept (see Froleys at al. (2021)), because these strongly impact overall score (add ~2000 s to each portfolio)
 	\end{figure}
 \end{frame}
 
@@ -305,6 +330,7 @@
 		\centering
 		\includegraphics[width=\textwidth]{plots/search-test-objective.pdf}
 		\caption*{Test-set VBS performance for different datasets, values of $k$, and portfolio-search approaches.}
+		%JB: here, we take portfolios searched on training set and evaluate them on new instances
 		%JB: overall, rather similar trends as on training set
 		%JB: k-best closer to greedy/optimal than on training set; there might be slight overfitting (best potrfolio on train instances not necessarily best on test instances)
 	\end{figure}
@@ -315,13 +341,15 @@
 		\centering
 		\includegraphics[width=\textwidth]{plots/prediction-test-mcc.pdf}
 		\caption*{Test-set prediction performance in terms of Matthews correlation coefficient (MCC)~\cite{matthews1975comparison,gorodkin2004comparing} for different datasets, values of $k$, and prediction models. Randomly sampled portfolios.}
-		%JB: that's direct way of evaluating predictions; does not consider how bad wrongly recommended solver is; indirect evaluation on next slide
-		%JB: MCC is suitable for imbalanced classes; is in [-1, 1]; higher is better; 0 for random guessing and constant prediction
-		%JB: random sampling to have many portfolios; prediction performance for beam-search/optimal porfolios similar
-		%JB: training-set MCC close to 1, as typical for unpruned tree models (overfitting)
-		%JB: prediction performance not good, but better than random guessing (apparently there is some information in features)
+		%JB: moving on to portfolios with prediction model for solver recommendation ...
+		%JB: here, direct way of evaluating predictions; does not consider how bad wrongly recommended solver is; indirect evaluation via PAR2 score on next slide
+		%JB: MCC evaluates prediction quality, is in [-1, 1]
+		%JB: MCC=0 for random guessing and always recommending same solver; fortunately, we are above that (leverage some information from features)
+		%JB: MCC=1 for prefect prediction; unfortunately, we are below that
 		%JB: slightly larger MCC and clearly more variation for small k
 		%JB: random forest and XGBoost similar; focus on former in the following
+		%background: training-set MCC close to 1, as typical for unpruned tree models (overfitting)
+		%background: use of random-sampling portfolios to have many portfolios; prediction performance for beam-search/optimal porfolios similar
 	\end{figure}
 \end{frame}
 
@@ -329,14 +357,15 @@
 	\begin{figure}[htb]
 		\centering
 		\includegraphics[width=\textwidth]{plots/prediction-test-objective-beam.pdf}
-		\caption*{Test-set solver performance for different datasets, values of $k$, and solver-recommendation approaches. Portfolios from \emph{beam search} with $w=100$. Random forests for predictions.}
-		%JB: beam search with w=10o to predict for a bunch of good portfolios (similar resutls for optimal portfolios)
+		\caption*{Test-set solver performance for different datasets, values of $k$, and solver-recommendation approaches. Global SBS pictured as horizontal line. Portfolios from \emph{beam search} with $w=100$. Random forests for predictions.}
+		%JB: evaluation with PAR-2 score of recommended solvers now
 		%JB: VBS corresponds to optimal prediction
-		%JB: SBS corresponds to sensible baseline (best constant prediction), though results could even be worse
+		%JB: SBS corresponds to sensible baseline (best constant prediction form portfolio), though results could even be worse
 		%JB: horizontal line is global SBS, "SBS" boxes are portfolio-specific
 		%JB: while VBS decreases, predictions cannot leverage new solvers (decrease from k=2 to k=3 or k=4, but not beyond)
-		%JB: similar findings of Amadini et al. (though they had an improvement at least for a few more k)
 		%JB: at least score of predicted solver (for k > 2) better than (global, and thus also portfolio) SBS
+		%JB: similar findings (decrease of score of predicted solver only till certain k) of Amadini et al. (who analyzed portfolios for CSPs; though they had an improvement at least for a few more k)
+		%background: use of beam search with w=100 to predict for a large amount of good portfolios (similar results for optimal portfolios, but there are considerably less of them)
 	\end{figure}
 \end{frame}
 
@@ -346,19 +375,19 @@
 	\begin{itemize}
 		\item Evaluated solver portfolios on data from SAT Competitions 2020 and 2021
 		\pause
-		\item Small portfolios already show high runtime improvement
+		\item Small portfolios already show potential of high runtime improvement compared to single solvers
 		\pause
 		\item Greedy portfolio search already close to optimal portfolio
 		\pause
 		\item Our prediction approach does not benefit from increased portfolio size
 		\pause
 		\vspace{\baselineskip}
-		\item Exemplary directions for future work:
+		\item Directions for future work:
 		\begin{itemize}
 			\item Improve prediction performance, e.g., by using new features like community-based ones~\cite{Ansotegui:2019:CommunityStructure, Li:2021:HCS}
 			%JB: did not perform deep analysis of feature importance, but RF's built-in one spread over many features (no single or small set of very useful features)
 			%JB: features might also be redundant (which, however, should not impact prediction performance of tree-based models negatively)
-			\item Use more specialized solvers and solver configurations
+			\item Analyze special-purpose solvers and solver configurations
 			%JB: while the solvers submitted to SAT Competition's Main Track rather are general-purpose solvers
 			\item Compare to sophisticated portfolio approaches like SATzilla~\cite{xu2008satzilla, xu2012satzilla2012}
 			%JB: our focus was not on creating best overall portfolio approach, but analyzing portfolio construction/size, while we kept prediction approach simple
