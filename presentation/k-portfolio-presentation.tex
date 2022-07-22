@@ -63,7 +63,7 @@
 			\item 2020: 316 instances solved; 2021: 325 instances solved
 			%JB: out of 400 instances
 			\pause
-			\item On how many instances do the best individual solvers win? \\
+			\item On how many instances did the best individual solvers win? \\
 			%JB: "best individual" based on overall (= average) PAR-2 score
 			\vspace{\baselineskip}
 			\begin{tabular}{ccc}
@@ -72,7 +72,8 @@
 				\cmidrule{2-3}
 				Solver \# & 2020 & 2021 \\
 				\midrule
-				1 & 48 & 25 \\
+				1 & 46 & 25 \\
+				%JB: a lot more than if wins were equally distributed over solvers, but still far from majority of instances
 				2 & 38 & 22 \\
 				3 & 26 & 20 \\
 				\bottomrule
@@ -182,27 +183,26 @@
 		%background: ISAC uses clustering, SNNAP uses nearest-neighbors approach
 		\pause
 		\vspace{\baselineskip}
-		\item Analyzing $k$-portfolios for Constraint Satisfaction Problems: Amadini et al.~\cite{amadini2014empirical, amadini2016extensive}, Dang~\cite{dang2022portfolio}
+		\item Analyzing $k$-portfolios for Constraint Satisfaction Problems (CSPs): Amadini et al.~\cite{amadini2014empirical, amadini2016extensive}, Dang~\cite{dang2022portfolio}
 		%JB: Amadini et al.: one search heuristic ("local search"), no exact solution
 		%JB: Amadini et al.: compare various classifiers and multiple sophisticated portfolios approaches (like SATzilla)
 		%JB: work of Dang is brand-new, presented at ModRef workshop two days ago
 		%JB: Dang: only exact solution for varying k, no prediction model, but analysis of marginal contribution
-		%background: Amadini et al.: results: classifier-based portfolios clearly beat single solvers, though gap to VBS; initial improvement over k, but performance might get slightly worse again if too many solvers in portfolio
 		%background: Amadini et al.: vary k, analyze runtime and solved instances
 		%background: Amadini et al.: 4547 instances (International CAP Solver Competition and MiniZinc suite benchmark), 22 solver configurations (6 distinct solvers)
+		%background: Amadini et al.: results: classifier-based portfolios clearly beat single solvers, though gap to VBS; initial improvement over k, but performance might get slightly worse again if too many solvers in portfolio
 		%background: Dang works with 4 tracks from the MiniZinc Challenges 2013-2021; apparently 100 instances and 10-15 solvers per year
 		%background: Dang also finds complementarity, e.g., not-so-good overall solvers might be good in portfolios and 50% of solvers might achieve 80% score of all-solver-portfolio (less pronounced than on our datasets)
 		\pause
 		\vspace{\baselineskip}
 		\item Analyzing $k$-portfolios for anytime algorithms: Nof and Strichman~\cite{nof2020real}
-		%JB: anytime: algos run for 0.1 s or 1 s (compare that to the 5000 s in SAT Competition)
+		%JB: anytime: algos run for fixed time (0.1 s or 1 s) and observe quality (compare that to the 5000 s in SAT Competition)
 		%JB: SMT solver and two heuristics (k-best and greedy search)
 		%JB: also, theoretical analysis, which we discuss now
-		%background: results: heuristic close to optimum
-		%background: greedy very close to optimum, k-best worse
 		%background: vary k, analyze two objective function (one is ours just as maximization)
 		%background: we additionally use beam width, random search, and prediction models
 		%background: 1000 instances (generated based on a real-world allocation problem), 24 solvers
+		%background: results: greedy very close to optimum, k-best worse
 	\end{itemize}
 \end{frame}
 
@@ -213,11 +213,12 @@
 		%JB: while the NP-completeness sounds a bit discouraging for efficient solution, the latter are encouraging for heuristics
 		%JB: "monotone" means adding solver will not make portfolio worse; in worst case, new solver has no impact on VBS
 		%JB: "submodular" means decreasing marginal utility, e.g., adding a solver to a portfolio P decreases cost at least as much as adding same solver to superset of P
+		%background: to show NP-completeness, Nof and Strichman reduce maximum coverage problem to their K-Algorithms Max-Sum Problem
 		\pause
 		\vspace{\baselineskip}
-		\item Examples for exact solutions:
+		\item Examples for exact (i.e., optimal) solutions:
 		%JB: these approaches all yield portfolios with same cost, but might differ in runtime
-		%background: exact portfolio composition might vary if some solvers don't contribute to reducing portfolio cost
+		%background: exact portfolio composition might still vary if some solvers don't contribute to reducing portfolio cost
 		\begin{itemize}
 			\item Exhaustive search: evaluates $\binom{|S|}{k}$ portfolios
 			%JB: very expensive beyond first few k
@@ -252,7 +253,7 @@
 	\begin{alignat*}{4}
 		\onslide<3->{
 			\min_{x,y} \quad & \mathrlap{\frac{1}{|I|} \cdot \sum_{i \in I} \sum_{s \in S} c(i,s) \cdot x_{i,s}} & & \\
-			%JB: average over instances and use of cost c(i,s) should make sense
+			%JB: average over instances and use of cost c(i,s) should be intutive, variable x_{i,s} is new
 		}
 		\onslide<2->{
 			\text{s.t.}\quad & & \sum_{s \in S} y_s &\leq k \tag*{(portfolio size)} \\
@@ -294,12 +295,12 @@
 			%JB. SATzilla is well-established portfolio approach
 			%JB: features from twelve categories, simple ones (like number of instances) to complicated ones (like variable-clause graph node degree)
 			%background: missing values due to timeouts and memouts replaced with out-of-range value
-			\item Instance features and solver runtimes retrieved from GBD~\cite{iser2020collaborative}
+			\item Instance features and solver runtimes retrieved from Global Benchmark Database (GBD)~\cite{iser2020collaborative}
 		\end{itemize}
 		\pause
 		\vspace{\baselineskip}
 		\item Four solution approaches:
-		%JB: all of them run for both datasets and all portfolio sizes k (from 1 to number of solvers)
+		%JB: all of them run on both datasets and for all portfolio sizes k (from 1 to number of solvers)
 		\begin{itemize}
 			\item \emph{Optimal solution} via integer programming~\cite{python-mip}
 			%JB: that's the exact approach, others are heuristics
@@ -309,7 +310,7 @@
 			\item \emph{Beam search} with beam width $w \in \{1, 2, 3, \dots, 10, 20, 30, \dots, 100\}$
 			\item \emph{K-best}
 			\item \emph{Random sampling} with 1000 repetitions
-			%JB: to not only compare heuristics with optimal solution, but also other direction
+			%JB: to not only compare heuristics with optimal solution, but also in other direction
 		\end{itemize}
 		\pause
 		\vspace{\baselineskip}
@@ -327,7 +328,7 @@
 		\caption*{Training-set VBS performance for different datasets, values of $k$, and portfolio-search approaches.}
 		%JB: results without prediction models first
 		%JB: reminder: PAR-2 measures penalized runtimes, i.e., cost, so lower values are better
-		%JB: why "training set"? conducted five-fold cross-validation; portfolios search and model training on training set only
+		%JB: why "training set"? conducted five-fold cross-validation; portfolio search and model training on training set only
 		%JB: all approaches: strong decrease with k, even given that decrease of marginal utiliy known
 		%JB: optimal solution: optimal 1-portfolio about 5 times cost of all-solver portfolio, optimal 10-portfolio only about 20% more expensive
 		%JB: greedy search: is beam search with w=1; already very close to optimum (though problem NP-complete; similar findings of Nof and Strichman, who analyzed a different domain, i.e., anytime approaches); slight improvement by increasing w
@@ -390,11 +391,11 @@
 	\begin{itemize}
 		\item Evaluated solver portfolios on data from SAT Competitions 2020 and 2021
 		\pause
-		\item Small portfolios already show potential of high runtime improvement compared to single solvers
+		\item Small portfolios already show potential of high runtime improvement compared to individual solvers
 		\pause
 		\item Greedy portfolio search close to optimal portfolio
 		\pause
-		\item K-best (only considering single-solver performance) worse than greedy and optimal portfolio
+		\item K-best (only considering individual solver performance) worse than greedy and optimal portfolio
 		\pause
 		\item Our prediction approach does not benefit from increased portfolio size
 		\pause
