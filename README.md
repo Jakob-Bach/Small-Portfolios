@@ -4,8 +4,7 @@ This repository contains the code and text of the paper
 
 > Bach, Jakob, Markus Iser, and Klemens Böhm. "A Comprehensive Study of k-Portfolios of Recent SAT Solvers"
 
-(The paper is accepted at [SAT 2022](http://satisfiability.org/SAT22/) but not published yet.
-Once it's published, we'll add a link to it here.)
+[published](https://doi.org/10.4230/LIPIcs.SAT.2022.2) at [`SAT 2022`](http://satisfiability.org/SAT22/).
 You can find the corresponding complete experimental data (inputs as well as results) on [KITopenData](https://doi.org/10.5445/IR/1000146629).
 
 This document provides:
