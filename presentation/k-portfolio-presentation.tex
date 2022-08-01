@@ -171,7 +171,7 @@
 \begin{frame}[t]{Related Work}
 	\begin{itemize}
 		\item Analyzing solver complementarity: Xu et al.~\cite{Xu:2012:EvalContribVBS}, Fr{\'e}chette et al.~\cite{frechette2016using}
-		%JB: both works use datasets with fixed solver set, don't vary k (focus is on individual solvers rather tha portfolios)
+		%JB: both works use datasets with fixed solver set, don't vary k systematically (focus is on individual solvers rather than portfolios, though solvers are evaluated in context of other solvers)
 		%JB: both works find that usefulness in portfolios might differ from standalone performance
 		%background: former analyze marginal contribution, latter analyze Shapley values
 		\pause
@@ -184,13 +184,12 @@
 		\pause
 		\vspace{\baselineskip}
 		\item Analyzing $k$-portfolios for Constraint Satisfaction Problems (CSPs): Amadini et al.~\cite{amadini2014empirical, amadini2016extensive}, Dang~\cite{dang2022portfolio}
-		%JB: Amadini et al.: one search heuristic ("local search"), no exact solution
-		%JB: Amadini et al.: compare various classifiers and multiple sophisticated portfolios approaches (like SATzilla)
 		%JB: work of Dang is brand-new, presented at ModRef workshop two days ago
-		%JB: Dang: only exact solution for varying k, no prediction model, but analysis of marginal contribution
+		%background: Amadini et al.: one search heuristic ("local search"), no exact solution; compare various classifiers and multiple sophisticated portfolios approaches (like SATzilla)
 		%background: Amadini et al.: vary k, analyze runtime and solved instances
 		%background: Amadini et al.: 4547 instances (International CAP Solver Competition and MiniZinc suite benchmark), 22 solver configurations (6 distinct solvers)
 		%background: Amadini et al.: results: classifier-based portfolios clearly beat single solvers, though gap to VBS; initial improvement over k, but performance might get slightly worse again if too many solvers in portfolio
+		%background: Dang: only exact solution for varying k, no prediction model, but analysis of marginal contribution
 		%background: Dang works with 4 tracks from the MiniZinc Challenges 2013-2021; apparently 100 instances and 10-15 solvers per year
 		%background: Dang also finds complementarity, e.g., not-so-good overall solvers might be good in portfolios and 50% of solvers might achieve 80% score of all-solver-portfolio (less pronounced than on our datasets)
 		\pause
@@ -253,7 +252,7 @@
 	\begin{alignat*}{4}
 		\onslide<3->{
 			\min_{x,y} \quad & \mathrlap{\frac{1}{|I|} \cdot \sum_{i \in I} \sum_{s \in S} c(i,s) \cdot x_{i,s}} & & \\
-			%JB: average over instances and use of cost c(i,s) should be intutive, variable x_{i,s} is new
+			%JB: average over instances and use of cost c(i,s) should be intuitive, variable x_{i,s} is new
 		}
 		\onslide<2->{
 			\text{s.t.}\quad & & \sum_{s \in S} y_s &\leq k \tag*{(portfolio size)} \\
@@ -348,7 +347,8 @@
 		\caption*{Test-set VBS performance for different datasets, values of $k$, and portfolio-search approaches.}
 		%JB: here, we take portfolios searched on training set and evaluate them on new instances
 		%JB: overall, rather similar trends as on training set
-		%JB: k-best closer to greedy/optimal than on training set; there might be slight overfitting (best potrfolio on train instances not necessarily best on test instances)
+		%JB: k-best closer to greedy/optimal than on training set
+		%JB: there is slight overfitting (best portfolio on train instances not necessarily best on test instances), which can be seen by flipping between current and previous slide
 	\end{figure}
 \end{frame}
 
