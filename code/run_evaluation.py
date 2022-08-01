@@ -101,6 +101,8 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, paper_plot_dir: 
         else:
             sns.move_legend(facet_grid, edgecolor='white', loc='center left',
                             bbox_to_anchor=(1, 0.5), ncol=1)
+            plt.xticks(range(0, 51, 10))
+            plt.yticks(range(0, 5001, 1000))
             plot_dir = presentation_plot_dir
         for handle in facet_grid.legend.legendHandles:
             handle.set_linewidth(4)
@@ -122,6 +124,8 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, paper_plot_dir: 
         else:
             sns.move_legend(facet_grid, edgecolor='white', loc='center left',
                             bbox_to_anchor=(1, 0.5), ncol=1)
+            plt.xticks(range(0, 51, 10))
+            plt.yticks(range(0, 5001, 1000))
             plot_dir = presentation_plot_dir
         for handle in facet_grid.legend.legendHandles:
             handle.set_linewidth(4)
@@ -224,6 +228,7 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, paper_plot_dir: 
         else:
             sns.move_legend(facet_grid, edgecolor='white', loc='center left',
                             bbox_to_anchor=(1, 0.5), ncol=1)
+            plt.yticks([x / 5 for x in range(6)])
             plot_dir = presentation_plot_dir
         plt.tight_layout()
         plt.savefig(plot_dir / 'prediction-test-mcc.pdf', bbox_inches='tight')
@@ -289,6 +294,7 @@ def evaluate(data_dir: pathlib.Path, results_dir: pathlib.Path, paper_plot_dir: 
         else:
             sns.move_legend(facet_grid, edgecolor='white', loc='center left',
                             bbox_to_anchor=(1, 0.5), ncol=1)
+            plt.yticks(range(0, 3001, 500))
             plot_dir = presentation_plot_dir
         plt.tight_layout()
         plt.savefig(plot_dir / 'prediction-test-objective-beam.pdf', bbox_inches='tight')
