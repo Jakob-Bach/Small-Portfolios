@@ -183,8 +183,9 @@
 		%background: ISAC uses clustering, SNNAP uses nearest-neighbors approach
 		\pause
 		\vspace{\baselineskip}
-		\item Analyzing $k$-portfolios for Constraint Satisfaction Problems (CSPs): Amadini et al.~\cite{amadini2014empirical, amadini2016extensive}, Dang~\cite{dang2022portfolio}
+		\item Analyzing $k$-portfolios for CSPs: Amadini et al.~\cite{amadini2014empirical, amadini2016extensive}, Dang~\cite{dang2022portfolio}, Ulrich-Oltean et al.~\cite{ulrich2022selecting}
 		%JB: work of Dang is brand-new, presented at ModRef workshop two days ago
+		%JB: work of Ulrich-Oltean et al. is even newer, presented at CP five hours ago
 		%background: Amadini et al.: one search heuristic ("local search"), no exact solution; compare various classifiers and multiple sophisticated portfolios approaches (like SATzilla)
 		%background: Amadini et al.: vary k, analyze runtime and solved instances
 		%background: Amadini et al.: 4547 instances (International CAP Solver Competition and MiniZinc suite benchmark), 22 solver configurations (6 distinct solvers)
@@ -192,6 +193,7 @@
 		%background: Dang: only exact solution for varying k, no prediction model, but analysis of marginal contribution
 		%background: Dang works with 4 tracks from the MiniZinc Challenges 2013-2021; apparently 100 instances and 10-15 solvers per year
 		%background: Dang also finds complementarity, e.g., not-so-good overall solvers might be good in portfolios and 50% of solvers might achieve 80% score of all-solver-portfolio (less pronounced than on our datasets)
+		%background: Ulrich-Oltean et al. want to recommend PB/LI encodings (to be able to use SAT solver for CSP), use portfolio analysis to reduce number of encoding configurations (as their prediction approach trains pairwise binary recommenders), i.e., portfolio analysis is not their focus
 		\pause
 		\vspace{\baselineskip}
 		\item Analyzing $k$-portfolios for anytime algorithms: Nof and Strichman~\cite{nof2020real}
