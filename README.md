@@ -9,10 +9,10 @@ You can find the corresponding complete experimental data (inputs as well as res
 
 This document provides:
 
-- an outline of the repo structure
-- a short demo of portfolio search with our code
-- guidelines for developers who want to modify or extend the code base
-- steps to reproduce the experiments, including setting up a virtual environment
+- an [outline](#repo-structure) of the repo structure
+- a short [demo](#demo) of searching solver portfolios with our code
+- [guidelines](#development) for developers who want to modify or extend the code base
+- steps to [reproduce](#reproducing-the-experiments) the experiments, including [setting up](#setup) a virtual environment
 
 ## Repo Structure
 
@@ -36,13 +36,31 @@ The code files are:
 
 ## Demo
 
-Let's prepare a small demo dataset with solver runtimes:
+`search.py` provides several functions that search for solver portfolios:
+
+- exact: `exhaustive_search()`, `mip_search()`, `smt_search()`, `smt_search_nof()`
+- heuristic: `beam_search()`, `kbest_search()`, `random_search()`
+
+All functions expect a `pandas.DataFrame` as input, where the rows represent problem (e.g., SAT) instances, the columns solvers, and the cells runtimes.
+Let's create a small demo dataset with solver runtimes:
 
 ```python
 import pandas as pd
 import search
 
-runtimes = pd.DataFrame({'Solver1': [1, 2, 3, 4], 'Solver2': [2, 2, 5, 1], 'Solver3': [5, 3, 2, 1]})
+runtimes = pd.DataFrame({'Solver1': [1, 2, 3, 4],
+                         'Solver2': [2, 2, 5, 1],
+                         'Solver3': [5, 3, 2, 1]})
+```
+
+I.e., the data looks as follows:
+
+```
+   Solver1  Solver2  Solver3
+0        1        2        5
+1        2        2        3
+2        3        5        2
+3        4        1        1
 ```
 
 Let's try exhaustive search:
