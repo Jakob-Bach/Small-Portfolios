@@ -1,8 +1,16 @@
-"""Portfolio search
+"""K-portfolio search
 
-Algorithms to search for k-portfolios. All algorithms take a data frame of runtimes, portfolio size k,
-and potentially further parameters. They return a list of portfolios and objective values.
-Not all algorithms are actually used in the experimental pipeline.
+Methods to search for k-portfolios. The search methods do not have a common superclass or some
+other mechanism to enforce compatibility but implicitly share the first two parameters, i.e.,
+a data frame of runtimes (rows represent problem instances, columns represent solvers) and the
+portfolio size `k`. The existence of further parameters depends on the search method.
+All search methods return a list, where each entry is a portfolio described by the solver names
+and objective value (average runtime of virtual best solver).
+
+Not all search methods are actually used in the experimental pipeline of the corresponding paper
+
+> Bach, Jakob, Markus Iser, and Klemens Böhm (2022). "A Comprehensive Study of k-Portfolios of
+Recent SAT Solvers"
 """
 
 import itertools
@@ -14,14 +22,55 @@ import pandas as pd
 import z3
 
 
-# Exhaustively search over all k-portfolios and return portfolios with their objective values.
 def exhaustive_search(runtimes: pd.DataFrame, k: int) -> List[Tuple[List[str], float]]:
+    """Exhaustive search for k-portfolios
+
+    Lists all solver portfolios of size `k` (without filtering or sorting by objective value).
+    Apart from very small `k`, may take a long time and return a huge results object.
+
+    Parameters
+    ----------
+    runtimes : pd.DataFrame
+        Solver runtimes (rows represent problem instances, columns represent solvers).
+    k : int
+        The number of solvers in the portfolio.
+
+    Returns
+    -------
+    (List[Tuple[List[str], float]])
+        List of portfolios, with each entry consisting of (1) the solver (= column) names and
+        (2) the objective value (average runtime of the virtual best solver from the portfolio).
+    """
+
     return [(list(portfolio), runtimes[list(portfolio)].min(axis='columns').mean())
             for portfolio in itertools.combinations(runtimes.columns, k)]
 
 
-# Randomly sample k-portfolios. Repeat w times.
 def random_search(runtimes: pd.DataFrame, k: int, w: int) -> List[Tuple[List[str], float]]:
+    """Random search for k-portfolios
+
+    Randomly samples a fixed number of portfolios and lists all of them (i.e., does not filter or
+    sort by objective value). The overall sampling procedure is with replacement (e.g., the same
+    portfolio may be returned multiple times), while the solvers in each portfolio are sampled
+    without replacement (i.e., each portfolio contains exactly `k` distinct solvers).
+
+    Parameters
+    ----------
+    runtimes : pd.DataFrame
+        Solver runtimes (rows represent problem instances, columns represent solvers).
+    k : int
+        The number of solvers in the portfolio.
+    w : int
+        Number of repetitions, i.e., number of portfolios returned.
+
+    Returns
+    -------
+    (List[Tuple[List[str], float]])
+        List of portfolios (length = `w`), with each entry consisting of (1) the solver (= column)
+        names and (2) the objective value (average runtime of the virtual best solver from the
+        portfolio).
+    """
+
     rng = random.Random(25)
     results = []
     for _ in range(w):
@@ -30,8 +79,29 @@ def random_search(runtimes: pd.DataFrame, k: int, w: int) -> List[Tuple[List[str
     return results
 
 
-# Determine optimal k-portfolio by solving an integer problem exactly.
 def mip_search(runtimes: pd.DataFrame, k: int) -> List[Tuple[List[str], float]]:
+    """K-portfolio search with a MIP-Solver
+
+    Formulates the k-portfolio problem as a Mixed Integer Programming (MIP) problem and solves it
+    exactly with a solver. Returns one portfolio, corresponding to the global optimum. The chosen
+    formulation is a contribution of the paper Bach, Jakob, Markus Iser, and Klemens Böhm (2022).
+    "A Comprehensive Study of k-Portfolios of Recent SAT Solvers".
+
+    Parameters
+    ----------
+    runtimes : pd.DataFrame
+        Solver runtimes (rows represent problem instances, columns represent solvers).
+    k : int
+        The number of solvers in the portfolio.
+
+    Returns
+    -------
+    (List[Tuple[List[str], float]])
+        List of portfolios (length = 1), with its single entry consisting of (1) the solver
+        (= column) names and (2) the objective value (average runtime of the virtual best solver
+        from the portfolio).
+    """
+
     model = mip.Model()
     model.verbose = 0
     model.threads = 1
@@ -53,10 +123,29 @@ def mip_search(runtimes: pd.DataFrame, k: int) -> List[Tuple[List[str], float]]:
     return [(best_solution, model.objective_value)]
 
 
-# Determine optimal k-portfolio by solving an SMT problem exactly.
-# Formulation inspired (though simplified here) by Nof, Y., & Strichman, O. (2020). Real-time
-# solving of computationally hard problems using optimal algorithm portfolios.
 def smt_search(runtimes: pd.DataFrame, k: int) -> List[Tuple[List[str], float]]:
+    """K-portfolio search with an SMT solver
+
+    Formulates the k-portfolio problem as a Satisfiability Modulo Theories (SMT) problem and solves
+    it exactly with a solver. Returns one portfolio, corresponding to the global optimum. The
+    chosen formulation is novel and simplifies the model of Nof, Yair, & Strichman, Ofer (2020).
+    "Real-time solving of computationally hard problems using optimal algorithm portfolios".
+
+    Parameters
+    ----------
+    runtimes : pd.DataFrame
+        Solver runtimes (rows represent problem instances, columns represent solvers).
+    k : int
+        The number of solvers in the portfolio.
+
+    Returns
+    -------
+    (List[Tuple[List[str], float]])
+        List of portfolios (length = 1), with its single entry consisting of (1) the solver
+        (= column) names and (2) the objective value (average runtime of the virtual best solver
+        from the portfolio).
+    """
+
     instance_vars = [z3.Real(f'v_{i}') for i in range(runtimes.shape[0])]
     solver_vars = [z3.Bool(f's_{j}') for j in range(runtimes.shape[1])]
     value_constraints = [z3.Or([z3.And(instance_vars[i] == runtimes.iloc[i, j], solver_vars[j])
@@ -74,15 +163,35 @@ def smt_search(runtimes: pd.DataFrame, k: int) -> List[Tuple[List[str], float]]:
     return [(best_solution, objective_value)]
 
 
-# Determine optimal k-portfolio by solving an SMT problem exactly.
-# Problem formulation should be very similar to the output of the tool "nchoosek"
-# (C++ implementation, creates an SMT-LIB file; code: https://doi.org/10.5281/zenodo.3841422 ) for
-# the paper Nof, Y., & Strichman, O. (2020). Real-time solving of computationally hard problems
-# using optimal algorithm portfolios.
-# "cardinality_encoding" enables a special encoding for the cardinality constraint, which is used
-# in the implementation of "nchoosek", but which might be slower than using Z3's native AtMost
-# constraint.
 def smt_search_nof(runtimes: pd.DataFrame, k: int, cardinality_encoding: bool = True) -> List[Tuple[List[str], float]]:
+    """K-portfolio search with an SMT solver
+
+    Formulates the k-portfolio problem as a Satisfiability Modulo Theories (SMT) problem and solves
+    it exactly with a solver. Returns one portfolio, corresponding to the global optimum. The
+    chosen SMT formulation is a contribution of the paper Nof, Yair, & Strichman, Ofer (2020).
+    "Real-time solving of computationally hard problems using optimal algorithm portfolios" and the
+    corresponding tool "nchoosek" (https://doi.org/10.5281/zenodo.3841422).
+
+    Parameters
+    ----------
+    runtimes : pd.DataFrame
+        Solver runtimes (rows represent problem instances, columns represent solvers).
+    k : int
+        The number of solvers in the portfolio.
+    cardinality_encoding : bool, optional
+        Encode the cardinality constraint as in "nchoosek", i.e., with the sequential counter from
+        Sinz, Carsten (2005). "Towards an optimal CNF encoding of boolean cardinality constraints".
+        Otherwise, use the native `AtMost` constraint from the solver `Z3`, which may be faster.
+        The default is True.
+
+    Returns
+    -------
+    (List[Tuple[List[str], float]])
+        List of portfolios (length = 1), with its single entry consisting of (1) the solver
+        (= column) names and (2) the objective value (average runtime of the virtual best solver
+        from the portfolio).
+    """
+
     instance_vars = [z3.Real(f'v{i}') for i in range(runtimes.shape[0])]
     solver_vars = [z3.Bool(f'e{j}') for j in range(runtimes.shape[1])]
     optimizer = z3.Optimize()
@@ -99,8 +208,8 @@ def smt_search_nof(runtimes: pd.DataFrame, k: int, cardinality_encoding: bool = 
             constraints.append(z3.Implies(instance_vars[i] == value, z3.Or(affected_solvers)))
     optimizer.add(z3.And(constraints))
     if cardinality_encoding:
-        # Cardinality constraint with cardinality encoding from Sinz, C. (2005). Towards an
-        # optimal CNF encoding of boolean cardinality constraints. (see page 2, Sequential Counter)
+        # Cardinality constraint with cardinality encoding from Sinz, Carsten (2005). "Towards an
+        # optimal CNF encoding of boolean cardinality constraints" (see page 2, Sequential Counter)
         constraints = []
         solver_choice_vars = [[z3.Bool(f's{j+1}_{s+1}') for s in range(k)]
                               for j in range(runtimes.shape[1])]
@@ -129,10 +238,32 @@ def smt_search_nof(runtimes: pd.DataFrame, k: int, cardinality_encoding: bool = 
     return [(best_solution, objective_value)]
 
 
-# Greedy forward search (starting with portfolio of size 0 and iteratively adding solvers) up
-# to k, retaining the w best solutions each iteration. Returns not only best w portfolios for
-# final k, but also the intermediate solutions.
 def beam_search(runtimes: pd.DataFrame, k: int, w: int) -> List[Tuple[List[str], float]]:
+    """Beam search for k-portfolios
+
+    Greedy forward search. Starts with a portfolio of size 0 and iteratively adds further solvers
+    one-by-one up to portfolio size `k`. In each iteration, combines each current portfolio with
+    each feature not in it and retains the `w` portfolios with the highest objective value for the
+    next iteration (this is the beam). Returns not only the best `w` portfolios for the final `k`
+    but also the intermediate solutions (smaller portfolios that formed the beam).
+
+    Parameters
+    ----------
+    runtimes : pd.DataFrame
+        Solver runtimes (rows represent problem instances, columns represent solvers).
+    k : int
+        The number of solvers in the portfolio.
+    w : int
+        Beam width, i.e., number of best portfolios retained in each iteration.
+
+    Returns
+    -------
+    (List[Tuple[List[str], float]])
+        List of portfolios (length = `k` * `w`), with each entry consisting of (1) the solver
+        (= column) names and (2) the objective value (average runtime of the virtual best solver
+        from the portfolio).
+    """
+
     results = []
     old_portfolios = [([], float('inf'))]
     for _ in range(k):
@@ -154,14 +285,29 @@ def beam_search(runtimes: pd.DataFrame, k: int, w: int) -> List[Tuple[List[str],
     return results
 
 
-# Rank solvers by individual performance and create k-portfolio by taking top k solvers from this
-# list.
-# Idea from Nof, Y., & Strichman, O. (2020). Real-time solving of computationally hard problems
-# using optimal algorithm portfolios.
-# Implementation here is similar to our beam-search implementation, i.e., not only k-portfolios
-# are returned, but also all smaller portfolios (so solver ranking has only to be done once,
-# though effort for this is neglectable anyway).
 def kbest_search(runtimes: pd.DataFrame, k: int) -> List[Tuple[List[str], float]]:
+    """K-best search for k-portfolios
+
+    Baseline that ranks solvers by their individual objective value and creates k-portfolios by
+    taking the top `k` solvers from this list. Introduced in Nof, Yair, & Strichman, Ofer (2020).
+    "Real-time solving of computationally hard problems using optimal algorithm portfolios".
+    Returns not only the portfolios for the final `k` but also the intermediate solutions.
+
+    Parameters
+    ----------
+    runtimes : pd.DataFrame
+        Solver runtimes (rows represent problem instances, columns represent solvers).
+    k : int
+        The number of solvers in the portfolio.
+
+    Returns
+    -------
+    (List[Tuple[List[str], float]])
+        List of portfolios (length = `k`), with each entry consisting of (1) the solver (= column)
+        names and (2) the objective value (average runtime of the virtual best solver from the
+        portfolio).
+    """
+
     results = []
     sorted_solvers = runtimes.mean().sort_values().index.to_list()
     for i in range(1, k + 1):
