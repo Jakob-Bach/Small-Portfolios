@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kpsearch"
+version = "1.0.0"
+authors = [
+    {name="Jakob Bach"},
+]
+description = "K-portfolio search"
+keywords = ["portfolio search", "portfolios", "algorithms", "solvers"]
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "mip>=1.13.0",
+    "pandas>=1.4.2",
+    "z3-solver>=4.8.17.0",
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://github.com/Jakob-Bach/Small-Portfolios"
+Issues = "https://github.com/Jakob-Bach/Small-Portfolios/issues"

@@ -5,19 +5,18 @@ This repository contains the code and text of the paper
 > Bach, Jakob, Markus Iser, and Klemens Böhm. "A Comprehensive Study of k-Portfolios of Recent SAT Solvers"
 
 [published](https://doi.org/10.4230/LIPIcs.SAT.2022.2) at [`SAT 2022`](http://satisfiability.org/SAT22/).
-You can find the corresponding complete experimental data (inputs as well as results) on [KITopenData](https://doi.org/10.5445/IR/1000146629).
+The corresponding complete experimental data (inputs as well as results) are available on [KITopenData](https://doi.org/10.5445/IR/1000146629).
 
 This document provides:
 
 - an [outline](#repo-structure) of the repo structure
-- a short [demo](#demo) of searching solver portfolios with our code
 - [guidelines](#development) for developers who want to modify or extend the code base
 - steps to [reproduce](#reproducing-the-experiments) the experiments, including [setting up](#setup) a virtual environment
 
 ## Repo Structure
 
-The repo contains two folders, one with the text of the paper and one with the Python code.
-In the folder `code/`, there are five Python files and three non-code files.
+The repo contains three folders: one with the text of the paper, one with the conference presentation, and one with the Python code.
+The folder `code/` contains four Python files and three non-code files.
 The non-code files are:
 
 - `.gitignore`: For Python development.
@@ -32,63 +31,10 @@ The code files are:
   and functions for data handling.
 - `run_evaluation.py`: Third stage of the experiments (compute statistics and create plots for the paper).
 - `run_experiments.py`: Second stage of the experiments (search for portfolios and make predictions).
-- `search.py`: Functions to search for solver portfolios.
 
-## Demo
-
-`search.py` provides several functions that search for solver portfolios:
-
-- exact: `exhaustive_search()`, `mip_search()`, `smt_search()`, `smt_search_nof()`
-- heuristic: `beam_search()`, `kbest_search()`, `random_search()`
-
-All functions expect a `pandas.DataFrame` as input, where the rows represent problem (e.g., SAT) instances, the columns solvers, and the cells runtimes.
-Let's create a small demo dataset with solver runtimes:
-
-```python
-import pandas as pd
-import search
-
-runtimes = pd.DataFrame({'Solver1': [1, 2, 3, 4],
-                         'Solver2': [2, 2, 5, 1],
-                         'Solver3': [5, 3, 2, 1]})
-```
-
-I.e., the data looks as follows:
-
-```
-   Solver1  Solver2  Solver3
-0        1        2        5
-1        2        2        3
-2        3        5        2
-3        4        1        1
-```
-
-Let's try exhaustive search:
-
-```python
-print(search.exhaustive_search(runtimes=runtimes, k=2))
-```
-
-As you would expect, this search procedure returns all portfolios of the desired size `k`:
-
-```
-[(['Solver1', 'Solver2'], 1.75), (['Solver1', 'Solver3'], 1.5), (['Solver2', 'Solver3'], 1.75)]
-```
-
-Let's try greedy search, i.e., beam search with a beam width of one:
-
-```python
-print(search.beam_search(runtimes=runtimes, k=3, w=1))
-```
-
-This search procedure does not only yield a `k`-portfolio, but also all intermediate results:
-
-```
-[(['Solver1'], 2.5), (['Solver1', 'Solver3'], 1.5), (['Solver1', 'Solver2', 'Solver3'], 1.5)]
-```
-
-We can see that the third iteration does not lead to any marginal gain, i.e.,
-Solver 2 cannot solve any instance faster than both other solvers.
+Additionally, we have organized the portfolio-search methods for our experiments as the standalone Python package `kpsearch`,
+located in the directory `code/kpsearch_package/`.
+See the corresponding [README](code/kpsearch_package/README.md) for more information.
 
 ## Development
 
@@ -104,18 +50,9 @@ should be made in the same file as well.
 
 ### Portfolio Search
 
-If you want to add another portfolio-search routine, have a look at `search.py`.
-Though there is no formal superclass or interface, all search routines share two parameters:
-The solver `runtimes` as `DataFrame` and the number of solvers `k` as `int`.
-The result of each search routine is a list of tuples of
-
-- solver names (list of strings) and
-- portfolio performance (float).
-
-The list might also have a length of one in case the search only returns one portfolio.
-You can add further, arbitrarily named parameters as well.
-For example, beam search has the beam width `w` as another parameter.
-
+If you want to develop another portfolio-search method,
+have a look at the [package README of `kpsearch`](code/kpsearch_package/README.md)
+for details on how the search method's interface should look like.
 If you want to change which search routines are used in the experiments or how they are configured,
 have a look at the function `define_experimental_design()` in `run_experiments.py`.
 
@@ -138,8 +75,8 @@ In particular, you should store the dataset in the form of two CSVs:
 
 Having prepared the dataset(s) in this format, you need to adapt the function `run_experiments()` in
 `run_experiments.py` to use your datasets instead of / beside the SAT Competition ones.
-The evaluation code in `run_evaluation.py` also partly contains hard-coded dataset names but the
-evaluation functionality itself should work with results from arbitrary datasets.
+The evaluation code in `run_evaluation.py` also partly contains hard-coded dataset names,
+but the evaluation functionality itself should work with results from arbitrary datasets.
 
 ## Setup
 
@@ -236,7 +173,7 @@ python -m run_experiments
 ```
 
 Depending on your hardware, this might take several hours or even days.
-(It took about 25 hours on our server with 32 CPU cores having a base clock of 2.0 GHz.)
+(It took about 25 hours on our server with 32 CPU cores and a base clock of 2.0 GHz.)
 To create the plots for the paper and print some statistics to the console, run
 
 ```bash

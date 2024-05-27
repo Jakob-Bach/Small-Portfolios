@@ -19,9 +19,9 @@ import pandas as pd
 import sklearn.model_selection
 import tqdm
 
+import kpsearch
 import prediction
 import prepare_dataset
-import search
 
 
 CV_FOLDS = 5
@@ -93,7 +93,7 @@ def search_and_evaluate(problem_name: str, fold_id: int, search_id: int, search_
     runtimes_train = runtimes.iloc[train_idx]
     runtimes_test = runtimes.iloc[test_idx]
     start_time = time.process_time()
-    search_results = getattr(search, search_func)(runtimes=runtimes_train, **search_args)  # returns list of tuples
+    search_results = getattr(kpsearch, search_func)(runtimes=runtimes_train, **search_args)  # returns list of tuples
     end_time = time.process_time()
     search_results = pd.DataFrame(search_results, columns=['solvers', 'train_objective'])
     add_portfolio_performance(search_result=search_results, runtimes_train=runtimes_train,
