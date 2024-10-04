@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "kpsearch"
 version = "1.0.0"
 authors = [
-    {name="Jakob Bach"},
+    {name="Jakob Bach", email="jakob.bach.ka@gmail.com"},
 ]
 description = "K-portfolio search"
 keywords = ["portfolio search", "portfolios", "algorithms", "solvers"]
@@ -24,5 +24,5 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/Jakob-Bach/Small-Portfolios"
+Homepage = "https://github.com/Jakob-Bach/Small-Portfolios/tree/master/code/kpsearch_package"
 Issues = "https://github.com/Jakob-Bach/Small-Portfolios/issues"

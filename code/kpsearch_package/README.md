@@ -1,6 +1,13 @@
 # `kpsearch` -- A Python Package for K-Portfolio Search
 
-The package `kpsearch` contains several portfolio-search methods.
+The package `kpsearch` contains methods to search for portfolios of algorithms (e.g., SAT solvers).
+A portfolio is a set of algorithms,
+where the portfolio's runtime on a problem instance equals the runtime of the fastest algorithm from the portfolio.
+This VBS (virtual best solver) approach corresponds to running all the portfolio's algorithms in parallel
+and only recording the runtime of the fastest algorithm per problem instance.
+(In reality, one could use a prediction model to choose a (hopefully fast) algorithm for each problem instance.)
+Given the runtimes of multiple algorithms on multiple problem instances,
+one wants to find the overall optimal (fastest) portfolio of size `k`, i.e., containing `k` algorithms.
 
 This document provides:
 
@@ -18,13 +25,19 @@ If you use this package for a scientific publication, please cite [our paper](ht
   booktitle={25th International Conference on Theory and Applications of Satisfiability Testing (SAT 2022)},
   location={Haifa, Israel},
   year={2022},
-  doi={10.4230/LIPIcs.SAT.2022.2},
+  doi={10.4230/LIPIcs.SAT.2022.2}
 }
 ```
 
 ## Setup
 
-You can directly install this package from GitHub:
+You can install our package from [PyPI](https://pypi.org/):
+
+```
+python -m pip install kpsearch
+```
+
+Alternatively, you can install the package from GitHub:
 
 ```bash
 python -m pip install git+https://github.com/Jakob-Bach/Small-Portfolios.git#subdirectory=code/kpsearch_package
@@ -44,7 +57,7 @@ python -m pip install kpsearch_package/
 - exact: `exhaustive_search()`, `mip_search()`, `smt_search()`, `smt_search_nof()`
 - heuristic: `beam_search()`, `kbest_search()`, `random_search()`
 
-`mip_search()` is a novel contribution, using a MIP solver to find optimal k-portfolios.
+`mip_search()` is a novel contribution of our paper, using a MIP solver to find optimal k-portfolios.
 All other search methods are straightforward and/or adaptations from related work.
 `mip_search()` is usually the fastest exact search method except for very small or large `k`
 (where the plain `exhaustive_search()` may be faster).
@@ -67,7 +80,7 @@ All search methods return a list, where each entry is a portfolio described by
 
 ## Demo
 
-Let's create a small demo dataset with runtimes of three solvers on four instances:
+Let's create a small demo dataset with runtimes of three solvers on four problem instances:
 
 ```python
 import pandas as pd
@@ -94,7 +107,8 @@ Let's try exhaustive search:
 print(kpsearch.exhaustive_search(runtimes=runtimes, k=2))
 ```
 
-As you would expect, this search procedure returns all portfolios of the desired size `k`:
+This search procedure returns all portfolios of the desired size `k`
+(so if you only wanted the optimal portfolio, you would need to search in these results accordingly):
 
 ```
 [(['Solver1', 'Solver2'], 1.75), (['Solver1', 'Solver3'], 1.5), (['Solver2', 'Solver3'], 1.75)]
@@ -106,7 +120,8 @@ Let's try greedy search, i.e., a beam search with a beam width of one:
 print(kpsearch.beam_search(runtimes=runtimes, k=3, w=1))
 ```
 
-This search procedure does not only yield a `k`-portfolio, but also all intermediate results:
+This search procedure does not only yield a `k`-portfolio, but also all intermediate results,
+i.e., smaller portfolio sizes, since the procedure iteratively adds solvers to the portfolio:
 
 ```
 [(['Solver1'], 2.5), (['Solver1', 'Solver3'], 1.5), (['Solver1', 'Solver2', 'Solver3'], 1.5)]
@@ -118,7 +133,7 @@ Solver 2 cannot solve any instance faster than both other solvers.
 ## Developer Info
 
 Though there is no formal superclass or interface, all existing search methods follow specific conventions,
-which makes them compatible with each other and the experimental pipeline.
+which makes them compatible with each other.
 Thus, if you want to add another portfolio-search method, it may be beneficial to follow these conventions as well.
 
 All search methods share two parameters:
@@ -131,4 +146,4 @@ The result of each search method is a list of tuples of
 - solver names (list of strings, corresponding to column names in `runtimes`) and
 - portfolio performance (float) in terms of VBS score.
 
-The list may also have a length of one in case the search only returns one portfolio.
+The list may have a length of one in case the search only returns one portfolio.

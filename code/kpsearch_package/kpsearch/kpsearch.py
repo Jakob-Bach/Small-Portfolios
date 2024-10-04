@@ -7,9 +7,9 @@ portfolio size `k`. The existence of further parameters depends on the search me
 All search methods return a list, where each entry is a portfolio described by the solver names
 and objective value (average runtime of virtual best solver).
 
-Not all search methods are actually used in the experimental pipeline of the corresponding paper
-
-> Bach, Jakob, Markus Iser, and Klemens Böhm (2022). "A Comprehensive Study of k-Portfolios of
+Literature
+----------
+Bach, Jakob, Markus Iser, and Klemens Böhm (2022). "A Comprehensive Study of k-Portfolios of
 Recent SAT Solvers"
 """
 
